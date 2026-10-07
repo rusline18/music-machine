@@ -259,10 +259,11 @@ const generators = {
   '/audio/bachata/segunda/hit.wav': segunda,
 }
 
-// --- Recordings (all CC0) ---
+// --- Recordings (all CC0 / public domain) ---
 //
 // `vcsl`: file in audio-sources/vcsl, from the Versilian Community Sample
 //   Library (https://github.com/sgossner/VCSL).
+// `wikimedia`: file in audio-sources/wikimedia (Wikimedia Commons).
 // `freesound`: sound ID; the file downloaded from freesound.org keeps its
 //   default name (`<id>__<user>__<title>.wav`) in audio-sources/freesound.
 // `onset`: which detected hit to take (for sources with several hits).
@@ -283,8 +284,8 @@ const recordings = {
   '/audio/salsa/maracas/hit.wav': { vcsl: 'Mid_ShakerHighFaster_Down_rr1.wav', maxLength: 0.2 },
   '/audio/salsa/guiro/short.wav': { vcsl: 'Guiro_Hit_rr1_Mid.wav', maxLength: 0.25 },
   '/audio/salsa/guiro/long.wav': { vcsl: 'Guiro_Fast_rr1_Mid.wav', maxLength: 0.6 },
-  '/audio/bachata/guira/short.wav': { freesound: 44573, onset: 0, maxLength: 0.12 },
-  '/audio/bachata/guira/long.wav': { freesound: 44573, onset: 1, maxLength: 0.35 },
+  '/audio/bachata/guira/short.wav': { wikimedia: 'Guira_Tim_Ross.wav', onset: 1, maxLength: 0.12 },
+  '/audio/bachata/guira/long.wav': { wikimedia: 'Guira_Tim_Ross.wav', onset: 0, maxLength: 0.35 },
   '/audio/bachata/bongos/low.wav': { vcsl: 'BongoL_Hit1_v2_rr2_Mid.wav', maxLength: 0.5 },
   '/audio/bachata/bongos/high.wav': { vcsl: 'BongoH_Hit1_v2_rr2_Mid.wav', maxLength: 0.45 },
   '/audio/bachata/bongos/slap.wav': { vcsl: 'BongoH_HitMuted1_v3_rr2_Mid.wav', maxLength: 0.3 },
@@ -295,9 +296,9 @@ const recordings = {
 
 const SOURCES = join(ROOT, 'audio-sources')
 
-function findRecording({ vcsl, freesound }) {
-  if (vcsl) {
-    const file = join(SOURCES, 'vcsl', vcsl)
+function findRecording({ vcsl, wikimedia, freesound }) {
+  if (vcsl || wikimedia) {
+    const file = vcsl ? join(SOURCES, 'vcsl', vcsl) : join(SOURCES, 'wikimedia', wikimedia)
     return existsSync(file) ? file : null
   }
   const dir = join(SOURCES, 'freesound')
