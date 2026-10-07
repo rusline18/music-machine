@@ -3,20 +3,27 @@ import { resizeSteps } from '../../../composables/usePattern'
 import { BACHATA_PROGRESSION, BASS_BAR, SEGUNDA_BAR } from './derecho'
 
 /**
- * One 8-count block of requinto in the majao, where it steps forward:
- * thirds/sixths on 1 and 2& (echoing the bass), arpeggios in between, a
- * run back down to lead into the next block.
+ * One bar of majao bongo: the martillo opens up — a slap on 1&, open
+ * hembra (low) tones driving through 3, 4 and 4&.
+ */
+const BONGOS_MAJAO_BAR = ['high', 'slap', 'high', 'high', 'low', 'high', 'low', 'low']
+
+/**
+ * One 8-count block of requinto in the majao: the singers have the chorus,
+ * so the requinto answers — a dyad on 4, then a run down on 7 & 8 &.
  */
 const REQUINTO_MAJAO_BLOCK = [
-  'dyad', null, null, 'dyad', null, 'root', '3rd', '5th',
-  'dyad', null, null, 'dyad', '5th', '3rd', 'root', null,
+  null, null, null, null, null, null, 'dyad', null,
+  null, null, null, null, 'dyad', '5th', '3rd', 'root',
 ]
 
 /**
- * Majao (the lighter section): bongos and güira drop the upbeats and play
- * downbeats only; segunda and bass keep the derecho rhythm over the same
- * chords, and the requinto takes the lead. Same grid and caveats as
- * derecho.ts.
+ * Majao (usually the chorus): a step up in energy from the derecho. The
+ * bongo leaves the even martillo for a more syncopated pattern with open
+ * tones, the güira digs in harder, and the requinto answers the singers.
+ * Segunda and bass keep the derecho rhythm over the same chords. Same grid
+ * and caveats as derecho.ts — this one especially needs a bachata
+ * musician's ear.
  */
 export const bachataMajaoPattern: Pattern = {
   id: 'bachata-majao',
@@ -28,16 +35,23 @@ export const bachataMajaoPattern: Pattern = {
   chords: BACHATA_PROGRESSION,
   tracks: [
     {
+      // Long scrape on the beat, short on the &, as in derecho but louder.
       instrument: 'guira',
-      steps: Array.from({ length: 32 }, (_, i) => (i % 2 === 0 ? 'long' : null)),
-      volume: 0.8,
+      steps: Array.from({ length: 32 }, (_, i) => (i % 2 === 0 ? 'long' : 'short')),
+      volume: 0.95,
       muted: false,
     },
     {
       instrument: 'bongos',
-      steps: resizeSteps(['high', null, 'high', null, 'high', null, 'low', null], 32),
+      steps: resizeSteps(BONGOS_MAJAO_BAR, 32),
       volume: 1,
       muted: false,
+    },
+    {
+      instrument: 'campana',
+      steps: Array(32).fill(null),
+      volume: 0.8,
+      muted: true,
     },
     {
       instrument: 'bass',

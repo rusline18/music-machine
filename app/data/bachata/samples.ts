@@ -9,6 +9,7 @@ import { chordTones, noteFrom } from '../harmony'
 export const BACHATA_INSTRUMENTS = [
   'guira',
   'bongos',
+  'campana',
   'bass',
   'requinto',
   'segunda',
@@ -49,6 +50,12 @@ export const bachataSamples: Record<BachataInstrument, Record<string, string | s
     low: ['/audio/bachata/bongos/low.wav', '/audio/bachata/bongos/low-2.wav'],
     high: ['/audio/bachata/bongos/high.wav', '/audio/bachata/bongos/high-2.wav'],
     slap: ['/audio/bachata/bongos/slap.wav', '/audio/bachata/bongos/slap-2.wav'],
+  },
+  campana: {
+    // The bongo player's hand bell in the mambo: open (mouth) and a short,
+    // dull stroke near the neck.
+    open: '/audio/bachata/campana/open.wav',
+    neck: '/audio/bachata/campana/neck.wav',
   },
   bass: {
     a2: BASS_A2,

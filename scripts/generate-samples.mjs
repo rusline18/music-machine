@@ -191,6 +191,9 @@ const cowbell = () => {
   return bandpass(out, 900, 1.6)
 }
 
+/** A cowbell struck near the neck: same tone, choked short. */
+const cowbellNeck = () => fadeOut(cowbell().slice(0, Math.round(0.08 * SAMPLE_RATE)), 0.03)
+
 const maracas = () => {
   const out = buffer(0.15)
   noiseBurst(out, { seed: 41, hp: 4000, shape: (i) => envelope(i, 0.035, 0.006) })
@@ -258,6 +261,8 @@ const generators = {
   '/audio/bachata/bongos/low-2.wav': handDrum({ freq: 338, decay: 0.07, seed: 34 }),
   '/audio/bachata/bongos/high-2.wav': handDrum({ freq: 492, decay: 0.06, seed: 35 }),
   '/audio/bachata/bongos/slap-2.wav': handDrum({ freq: 517, decay: 0.025, slap: 1, seed: 36 }),
+  '/audio/bachata/campana/open.wav': cowbell,
+  '/audio/bachata/campana/neck.wav': cowbellNeck,
   '/audio/bachata/bass/a2.wav': bass,
   '/audio/bachata/guitar/e2.wav': guitarNote({ freq: 82.41, seed: 61 }),
   '/audio/bachata/guitar/g2.wav': guitarNote({ freq: 98, seed: 62 }),
@@ -319,6 +324,9 @@ const recordings = {
   '/audio/bachata/bongos/low-2.wav': { vcsl: 'BongoL_Hit1_v2_rr1_Mid.wav', maxLength: 0.5 },
   '/audio/bachata/bongos/high-2.wav': { vcsl: 'BongoH_Hit1_v2_rr1_Mid.wav', maxLength: 0.45 },
   '/audio/bachata/bongos/slap-2.wav': { vcsl: 'BongoH_HitMuted1_v3_rr1_Mid.wav', maxLength: 0.3 },
+  // Same VCSL cowbell as salsa; the neck stroke is the hit choked after 80 ms.
+  '/audio/bachata/campana/open.wav': { vcsl: 'Cowbell1_Hit_v3_rr1_Mid.wav', maxLength: 0.5 },
+  '/audio/bachata/campana/neck.wav': { vcsl: 'Cowbell1_Hit_v3_rr1_Mid.wav', maxLength: 0.08 },
   '/audio/bachata/bass/a2.wav': { freesound: 43938, maxLength: 0.9 },
   // Each Iowa file is a chromatic run up one string; `midi` picks the note.
   '/audio/bachata/guitar/e2.wav': { uiowa: 'Guitar.mf.sulE.E2B2.mono.aif', midi: 40, maxLength: 1.2 },

@@ -1,7 +1,7 @@
 export type Genre = 'salsa' | 'bachata'
 
 /** Lengths offered in the UI. Dancers phrase in 8-count blocks. */
-export const COUNT_OPTIONS = [8, 16, 24, 32] as const
+export const COUNT_OPTIONS = [8, 16, 24, 32, 48] as const
 export const COUNTS_PER_BLOCK = 8
 /** Chords change at most once a bar. */
 export const COUNTS_PER_BAR = 4

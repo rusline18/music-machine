@@ -90,6 +90,18 @@ describe('rhythm reference', () => {
     expect(onsets(pattern, 'bass')).toEqual(expected)
   })
 
+  it('bachata: the bongo player switches to campana for the mambo only', () => {
+    const plays = (pattern: Pattern, instrument: string) => {
+      const track = pattern.tracks.find((t) => t.instrument === instrument)!
+      return !track.muted && track.steps.some(Boolean)
+    }
+    for (const pattern of bachataPatterns.filter((p) => ['bachata-derecho', 'bachata-majao', 'bachata-mambo'].includes(p.id))) {
+      const mambo = pattern.id === 'bachata-mambo'
+      expect(plays(pattern, 'campana'), pattern.id).toBe(mambo)
+      expect(plays(pattern, 'bongos'), pattern.id).toBe(!mambo)
+    }
+  })
+
   it('preset ids are unique', () => {
     const ids = [...salsaPatterns, ...bachataPatterns].map((p) => p.id)
     expect(new Set(ids).size).toBe(ids.length)

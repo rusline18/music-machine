@@ -53,6 +53,13 @@ export const bachataDerechoPattern: Pattern = {
       muted: false,
     },
     {
+      // The bell only comes in for the mambo.
+      instrument: 'campana',
+      steps: Array(32).fill(null),
+      volume: 0.8,
+      muted: true,
+    },
+    {
       instrument: 'bass',
       steps: resizeSteps(BASS_BAR, 32),
       volume: 1,
