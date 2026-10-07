@@ -1,3 +1,4 @@
-import { bachataBasicPattern } from './basic'
+import { bachataDerechoPattern } from './derecho'
+import { bachataMajaoPattern } from './majao'
 
-export const bachataPatterns = [bachataBasicPattern]
+export const bachataPatterns = [bachataDerechoPattern, bachataMajaoPattern]

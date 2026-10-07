@@ -1,7 +1,6 @@
 /**
  * Sample maps for the Bachata instrument set (plan section 4).
- * Paths point into /public/audio/bachata — files are not included yet; see
- * plan section 3/5 (sample sourcing & licensing) before dropping audio in.
+ * Paths point into /public/audio/bachata, built by `npm run samples`.
  */
 export const BACHATA_INSTRUMENTS = [
   'guira',

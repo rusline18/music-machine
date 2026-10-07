@@ -1,7 +1,6 @@
 /**
  * Sample maps for the Salsa instrument set (plan section 4).
- * Paths point into /public/audio/salsa — files are not included yet; see
- * plan section 3/5 (sample sourcing & licensing) before dropping audio in.
+ * Paths point into /public/audio/salsa, built by `npm run samples`.
  */
 export const SALSA_INSTRUMENTS = [
   'clave',

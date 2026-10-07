@@ -71,5 +71,9 @@ npm run preview
 - Audio only initializes client-side and only on user interaction (browsers
   require a user gesture to start an `AudioContext`) — pages still render
   fully server-side for SEO.
-- The starter patterns in `app/data/*/patterns/basic.ts` are illustrative
-  placeholders, not verified rhythms — see plan sections 7 and 14.
+- Presets: Salsa verse/montuno in 3-2 son clave, Bachata derecho/majao.
+  They follow documented references but still need sign-off from a player
+  — see plan sections 7 and 14.
+- The Salsa grid is eighth notes across a two-bar clave cycle, so its BPM
+  is in half notes (90 ≈ 180 quarter-note BPM). Bachata's grid is one bar of
+  sixteenths, BPM in quarter notes.

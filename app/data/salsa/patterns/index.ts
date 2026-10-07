@@ -1,3 +1,4 @@
-import { salsaBasicPattern } from './basic'
+import { salsaVersePattern } from './verse'
+import { salsaMontunoPattern } from './montuno'
 
-export const salsaPatterns = [salsaBasicPattern]
+export const salsaPatterns = [salsaVersePattern, salsaMontunoPattern]
