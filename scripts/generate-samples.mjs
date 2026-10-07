@@ -371,14 +371,19 @@ function blockPeaks(signal) {
   return peaks
 }
 
-/** Start blocks of hits: rises above -20 dB of the peak after >= ~25 ms of quiet. */
+/**
+ * Start blocks of hits: rises above -20 dB of the peak after >= ~25 ms of
+ * quiet (below -26 dB, so a drum's decay wobbling around -20 dB doesn't
+ * retrigger). The first rise always counts, so recordings with a noise floor
+ * above -26 dB still register their first hit.
+ */
 function detectOnsets(peaks) {
   const loudest = Math.max(...peaks)
   const threshold = loudest * 0.1
   const onsets = []
   let quiet = Infinity
   for (let b = 0; b < peaks.length; b++) {
-    if (peaks[b] >= threshold && quiet >= 4) onsets.push(b)
+    if (peaks[b] >= threshold && (quiet >= 4 || onsets.length === 0)) onsets.push(b)
     quiet = peaks[b] < threshold * 0.5 ? quiet + 1 : 0
   }
   return onsets
