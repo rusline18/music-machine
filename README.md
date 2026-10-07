@@ -31,7 +31,7 @@ app/
     usePattern.ts        Pattern/track data model + (de)serialization
     useBeatMachine.ts     Ties pattern + engine + scheduler together per genre
   data/
-    salsa/, bachata/     Instrument sample maps + starter patterns (placeholders)
+    salsa/, bachata/     Instrument sample maps + preset patterns
   pages/
     index.vue, salsa.vue, bachata.vue
 
