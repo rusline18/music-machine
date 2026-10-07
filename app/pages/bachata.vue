@@ -3,6 +3,8 @@ import BeatGrid from '../components/beat/BeatGrid.vue'
 import Transport from '../components/beat/Transport.vue'
 import BpmControl from '../components/beat/BpmControl.vue'
 import PatternSelector from '../components/beat/PatternSelector.vue'
+import CountSelector from '../components/beat/CountSelector.vue'
+import FeelControls from '../components/beat/FeelControls.vue'
 
 useSeoMeta({
   title: 'Bachata Rhythm Trainer — Latin Beat Machine',
@@ -29,6 +31,10 @@ const machine = useBeatMachine('bachata')
         :max="160"
         @update:model-value="machine.setBpm"
       />
+      <CountSelector
+        :model-value="machine.pattern.value.counts"
+        @update:model-value="machine.setCounts"
+      />
       <Transport
         :is-playing="machine.isPlaying.value"
         @play="machine.play"
@@ -36,13 +42,23 @@ const machine = useBeatMachine('bachata')
       />
     </div>
 
+    <FeelControls
+      class="mb-6"
+      :feel="machine.feel.value"
+      :reverb="machine.reverb.value"
+      @update:feel="machine.setFeel"
+      @update:reverb="machine.setReverb"
+    />
+
     <BeatGrid
       :pattern="machine.pattern.value"
-      :samples="machine.config.samples"
+      :step-names="machine.stepNamesFor"
       :active-step="machine.activeStep.value"
+      :is-playing="machine.isPlaying.value"
       @toggle-step="machine.toggleStep"
       @update:volume="machine.updateVolume"
       @update:muted="machine.updateMuted"
+      @update:chord="machine.setChord"
     />
 
     <div class="mt-6 flex gap-3">

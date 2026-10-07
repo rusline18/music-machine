@@ -10,30 +10,42 @@ plan for the full concept, sourcing, and roadmap.
 
 This is the Phase 1 foundation: project scaffold, pattern data model, a
 Web Audio engine + lookahead scheduler, and Salsa/Bachata pages wired to a
-shared beat-machine composable. **No audio samples are included yet** —
-`public/audio/**` only has the folder layout. Dropping in samples requires
-checking licensing first (see the project plan, sections 3 and 5); until
-then the grids play silently (missing samples are skipped with a console
-warning).
+shared beat-machine composable.
+
+`public/audio/**` is built by `npm run samples`
+(`scripts/generate-samples.mjs`). Each one-shot is trimmed from a free
+recording in `audio-sources/` (CC0, except the University of Iowa guitar)
+when that source is present, and synthesized otherwise — see
+[audio-sources/README.md](audio-sources/README.md) for sources, licenses and
+which Freesound and Iowa files to download. To change a sound, edit its
+entry in `recordings` and re-run; don't hand-edit `public/audio`, since the
+script overwrites it.
 
 ## Project structure
 
 ```
 app/
-  components/beat/     UI: BeatGrid, InstrumentTrack, Transport, BpmControl, PatternSelector
+  components/beat/     UI: BeatGrid, InstrumentTrack, Transport, BpmControl, CountSelector, PatternSelector
   composables/
     useAudioEngine.ts    AudioContext, gain nodes, sample loading/playback
     useBeatScheduler.ts  Lookahead scheduler — keeps BPM/timing sample-accurate
     usePattern.ts        Pattern/track data model + (de)serialization
     useBeatMachine.ts     Ties pattern + engine + scheduler together per genre
   data/
-    salsa/, bachata/     Instrument sample maps + starter patterns (placeholders)
+    salsa/, bachata/     Instrument sample maps + preset patterns
   pages/
     index.vue, salsa.vue, bachata.vue
 
 public/audio/
-  salsa/<instrument>/    One-shot .wav files go here (not included yet)
+  salsa/<instrument>/    One-shot .wav files (built — don't edit by hand)
   bachata/<instrument>/
+
+audio-sources/           Raw recordings (VCSL, Freesound, Wikimedia, Iowa) + credits
+
+scripts/
+  generate-samples.mjs   Builds public/audio from recordings, synth fallback
+
+tests/                   Vitest: presets, pattern helpers, engine, scheduler
 ```
 
 ## Setup
@@ -57,10 +69,23 @@ npm run build
 npm run preview
 ```
 
+## Tests
+
+```bash
+npm test
+```
+
+Vitest covers preset integrity (lengths, sample names, files on disk), the
+clave/bass reference rhythms, pattern helpers, volume/mute, and scheduler
+timing. Audio output itself is checked by ear.
+
 ## Notes
 
 - Audio only initializes client-side and only on user interaction (browsers
   require a user gesture to start an `AudioContext`) — pages still render
   fully server-side for SEO.
-- The starter patterns in `app/data/*/patterns/basic.ts` are illustrative
-  placeholders, not verified rhythms — see plan sections 7 and 14.
+- Presets: Salsa verse/montuno in 3-2 son clave, Bachata derecho/majao,
+  plus 16-count chains of each pair. They follow documented references but still need sign-off from a player
+  — see plan sections 7 and 14.
+- Patterns are 8, 16, 24 or 32 dance counts long, shown as 8-count blocks.
+  Each count is two cells ("1 &"); BPM is counts per minute.
