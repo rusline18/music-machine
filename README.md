@@ -10,11 +10,15 @@ plan for the full concept, sourcing, and roadmap.
 
 This is the Phase 1 foundation: project scaffold, pattern data model, a
 Web Audio engine + lookahead scheduler, and Salsa/Bachata pages wired to a
-shared beat-machine composable. **No audio samples are included yet** —
-`public/audio/**` only has the folder layout. Dropping in samples requires
-checking licensing first (see the project plan, sections 3 and 5); until
-then the grids play silently (missing samples are skipped with a console
-warning).
+shared beat-machine composable.
+
+`public/audio/**` is built by `npm run samples`
+(`scripts/generate-samples.mjs`). Each one-shot is trimmed from a CC0
+recording in `audio-sources/` when that source is present, and synthesized
+otherwise — see [audio-sources/README.md](audio-sources/README.md) for
+sources and which Freesound files to download. To change a sound, edit its
+entry in `recordings` and re-run; don't hand-edit `public/audio`, since the
+script overwrites it.
 
 ## Project structure
 
@@ -32,8 +36,13 @@ app/
     index.vue, salsa.vue, bachata.vue
 
 public/audio/
-  salsa/<instrument>/    One-shot .wav files go here (not included yet)
+  salsa/<instrument>/    One-shot .wav files (built — don't edit by hand)
   bachata/<instrument>/
+
+audio-sources/           Raw CC0 recordings (VCSL, Freesound) + credits
+
+scripts/
+  generate-samples.mjs   Builds public/audio from recordings, synth fallback
 ```
 
 ## Setup

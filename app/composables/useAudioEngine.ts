@@ -39,12 +39,26 @@ export function useAudioEngine() {
     return gain
   }
 
+  // Volume and mute are tracked separately so unmuting restores the
+  // user's volume instead of resetting it, and a volume change while muted
+  // doesn't accidentally unmute.
+  const instrumentVolumes = new Map<string, number>()
+  const mutedInstruments = new Set<string>()
+
+  function applyInstrumentGain(instrument: string) {
+    const volume = instrumentVolumes.get(instrument) ?? 1
+    getInstrumentGain(instrument).gain.value = mutedInstruments.has(instrument) ? 0 : volume
+  }
+
   function setInstrumentVolume(instrument: string, volume: number) {
-    getInstrumentGain(instrument).gain.value = volume
+    instrumentVolumes.set(instrument, volume)
+    applyInstrumentGain(instrument)
   }
 
   function setInstrumentMuted(instrument: string, muted: boolean) {
-    getInstrumentGain(instrument).gain.value = muted ? 0 : 1
+    if (muted) mutedInstruments.add(instrument)
+    else mutedInstruments.delete(instrument)
+    applyInstrumentGain(instrument)
   }
 
   async function loadSample(url: string): Promise<AudioBuffer> {
@@ -88,6 +102,8 @@ export function useAudioEngine() {
 
   function dispose() {
     instrumentGains.clear()
+    instrumentVolumes.clear()
+    mutedInstruments.clear()
     bufferCache.clear()
     ctx?.close()
     ctx = null

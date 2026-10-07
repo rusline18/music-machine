@@ -45,8 +45,16 @@ export function useBeatMachine(genre: Genre) {
     samplesLoaded.value = true
   }
 
+  function syncTrackGains() {
+    for (const track of pattern.value.tracks) {
+      engine.setInstrumentVolume(track.instrument, track.volume)
+      engine.setInstrumentMuted(track.instrument, track.muted)
+    }
+  }
+
   async function play() {
     await ensureSamplesLoaded()
+    syncTrackGains()
     await scheduler.start(pattern.value, config.samples as Record<string, Record<string, string>>)
   }
 
