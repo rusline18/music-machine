@@ -3,7 +3,8 @@
  *
  * Each sample comes from a real recording when its source file is present
  * in audio-sources/ (see `recordings` below — all CC0), trimmed to a single
- * hit and peak-normalized. Otherwise it falls back to a synthesized
+ * hit (or, for pitched notes, one note tuned to exact pitch) and
+ * peak-normalized. Otherwise it falls back to a synthesized
  * placeholder (see `generators`), so the app always has a full set.
  *
  * Usage: npm run samples
@@ -211,7 +212,7 @@ const guira = ({ seconds, rate, seed }) => () => {
 
 const bass = () => {
   const out = buffer(0.9)
-  const freq = 55 // A1
+  const freq = 110 // A2, the pitch the app's bass zone assumes
   drumTone(out, { startFreq: freq, decay: 0.35 })
   drumTone(out, { startFreq: freq * 2, decay: 0.2, gain: 0.35 })
   drumTone(out, { startFreq: freq * 3, decay: 0.1, gain: 0.12 })
@@ -219,18 +220,11 @@ const bass = () => {
   return out
 }
 
-const requinto = () => {
-  const out = buffer(0.9)
-  pluck(out, { freq: 659.25, seed: 61, damping: 0.997, brightness: 0.9 }) // E5
-  return out
-}
-
-const segunda = () => {
-  // Short downstroke over an E major triad (E3 G#3 B3 E4).
-  const out = buffer(0.9)
-  ;[164.81, 207.65, 246.94, 329.63].forEach((freq, n) => {
-    pluck(out, { freq, seed: 71 + n, damping: 0.994, brightness: 0.55, offset: n * 0.012, gain: 0.6 })
-  })
+// Single guitar notes; the app pitch-shifts them, so they must sit exactly
+// on the pitch named in app/data/bachata/samples.ts.
+const guitarNote = ({ freq, seed }) => () => {
+  const out = buffer(1.2)
+  pluck(out, { freq, seed, damping: 0.997, brightness: 0.75 })
   return out
 }
 
@@ -242,6 +236,9 @@ const generators = {
   '/audio/salsa/bongos/low.wav': handDrum({ freq: 340, decay: 0.07, seed: 21 }),
   '/audio/salsa/bongos/high.wav': handDrum({ freq: 495, decay: 0.06, seed: 22 }),
   '/audio/salsa/bongos/slap.wav': handDrum({ freq: 520, decay: 0.025, slap: 1, seed: 23 }),
+  '/audio/salsa/bongos/low-2.wav': handDrum({ freq: 338, decay: 0.07, seed: 27 }),
+  '/audio/salsa/bongos/high-2.wav': handDrum({ freq: 492, decay: 0.06, seed: 28 }),
+  '/audio/salsa/bongos/slap-2.wav': handDrum({ freq: 517, decay: 0.025, slap: 1, seed: 29 }),
   '/audio/salsa/timbales/low.wav': timbale({ freq: 260, decay: 0.14, seed: 32 }),
   '/audio/salsa/timbales/high.wav': timbale({ freq: 385, decay: 0.11, seed: 33 }),
   '/audio/salsa/timbales/rim.wav': timbaleRim,
@@ -251,12 +248,30 @@ const generators = {
   '/audio/salsa/guiro/long.wav': guiro({ seconds: 0.4, rate: 38, seed: 43 }),
   '/audio/bachata/guira/short.wav': guira({ seconds: 0.08, rate: 60, seed: 44 }),
   '/audio/bachata/guira/long.wav': guira({ seconds: 0.28, rate: 50, seed: 45 }),
+  '/audio/bachata/guira/short-2.wav': guira({ seconds: 0.08, rate: 58, seed: 46 }),
+  '/audio/bachata/guira/short-3.wav': guira({ seconds: 0.08, rate: 62, seed: 47 }),
+  '/audio/bachata/guira/long-2.wav': guira({ seconds: 0.28, rate: 48, seed: 48 }),
+  '/audio/bachata/guira/long-3.wav': guira({ seconds: 0.28, rate: 52, seed: 49 }),
   '/audio/bachata/bongos/low.wav': handDrum({ freq: 340, decay: 0.07, seed: 24 }),
   '/audio/bachata/bongos/high.wav': handDrum({ freq: 495, decay: 0.06, seed: 25 }),
   '/audio/bachata/bongos/slap.wav': handDrum({ freq: 520, decay: 0.025, slap: 1, seed: 26 }),
-  '/audio/bachata/bass/hit.wav': bass,
-  '/audio/bachata/requinto/hit.wav': requinto,
-  '/audio/bachata/segunda/hit.wav': segunda,
+  '/audio/bachata/bongos/low-2.wav': handDrum({ freq: 338, decay: 0.07, seed: 34 }),
+  '/audio/bachata/bongos/high-2.wav': handDrum({ freq: 492, decay: 0.06, seed: 35 }),
+  '/audio/bachata/bongos/slap-2.wav': handDrum({ freq: 517, decay: 0.025, slap: 1, seed: 36 }),
+  '/audio/bachata/bass/a2.wav': bass,
+  '/audio/bachata/guitar/e2.wav': guitarNote({ freq: 82.41, seed: 61 }),
+  '/audio/bachata/guitar/g2.wav': guitarNote({ freq: 98, seed: 62 }),
+  '/audio/bachata/guitar/bb2.wav': guitarNote({ freq: 116.54, seed: 63 }),
+  '/audio/bachata/guitar/db3.wav': guitarNote({ freq: 138.59, seed: 64 }),
+  '/audio/bachata/guitar/e3.wav': guitarNote({ freq: 164.81, seed: 65 }),
+  '/audio/bachata/guitar/g3.wav': guitarNote({ freq: 196, seed: 66 }),
+  '/audio/bachata/guitar/bb3.wav': guitarNote({ freq: 233.08, seed: 67 }),
+  '/audio/bachata/guitar/db4.wav': guitarNote({ freq: 277.18, seed: 68 }),
+  '/audio/bachata/guitar/e4.wav': guitarNote({ freq: 329.63, seed: 69 }),
+  '/audio/bachata/guitar/g4.wav': guitarNote({ freq: 392, seed: 70 }),
+  '/audio/bachata/guitar/bb4.wav': guitarNote({ freq: 466.16, seed: 71 }),
+  '/audio/bachata/guitar/c5.wav': guitarNote({ freq: 523.25, seed: 72 }),
+  '/audio/bachata/guitar/e5.wav': guitarNote({ freq: 659.26, seed: 73 }),
 }
 
 // --- Recordings (all CC0 / public domain) ---
@@ -264,6 +279,10 @@ const generators = {
 // `vcsl`: file in audio-sources/vcsl, from the Versilian Community Sample
 //   Library (https://github.com/sgossner/VCSL).
 // `wikimedia`: file in audio-sources/wikimedia (Wikimedia Commons).
+// `uiowa`: file in audio-sources/uiowa, from the University of Iowa Musical
+//   Instrument Samples (free to use without restrictions, not formally CC0).
+// `midi`: for pitched sources, the note to cut out; it's tuned to exactly
+//   this pitch, so the app can treat it as a perfect zone.
 // `freesound`: sound ID; the file downloaded from freesound.org keeps its
 //   default name (`<id>__<user>__<title>.wav`) in audio-sources/freesound.
 // `onset`: which detected hit to take (for sources with several hits).
@@ -277,6 +296,9 @@ const recordings = {
   '/audio/salsa/bongos/low.wav': { vcsl: 'BongoL_Hit1_v2_rr1_Mid.wav', maxLength: 0.5 },
   '/audio/salsa/bongos/high.wav': { vcsl: 'BongoH_Hit1_v2_rr1_Mid.wav', maxLength: 0.45 },
   '/audio/salsa/bongos/slap.wav': { vcsl: 'BongoH_HitMuted1_v3_rr1_Mid.wav', maxLength: 0.3 },
+  '/audio/salsa/bongos/low-2.wav': { vcsl: 'BongoL_Hit1_v2_rr2_Mid.wav', maxLength: 0.5 },
+  '/audio/salsa/bongos/high-2.wav': { vcsl: 'BongoH_Hit1_v2_rr2_Mid.wav', maxLength: 0.45 },
+  '/audio/salsa/bongos/slap-2.wav': { vcsl: 'BongoH_HitMuted1_v3_rr2_Mid.wav', maxLength: 0.3 },
   '/audio/salsa/timbales/low.wav': { freesound: 533094, maxLength: 0.9 },
   '/audio/salsa/timbales/high.wav': { freesound: 533095, maxLength: 0.8 },
   '/audio/salsa/timbales/rim.wav': { freesound: 533089, maxLength: 0.5 },
@@ -286,19 +308,40 @@ const recordings = {
   '/audio/salsa/guiro/long.wav': { vcsl: 'Guiro_Fast_rr1_Mid.wav', maxLength: 0.6 },
   '/audio/bachata/guira/short.wav': { wikimedia: 'Guira_Tim_Ross.wav', onset: 1, maxLength: 0.12 },
   '/audio/bachata/guira/long.wav': { wikimedia: 'Guira_Tim_Ross.wav', onset: 0, maxLength: 0.35 },
+  // The recording repeats long-short-short three times: hits 0, 3 and 6 are long.
+  '/audio/bachata/guira/short-2.wav': { wikimedia: 'Guira_Tim_Ross.wav', onset: 4, maxLength: 0.12 },
+  '/audio/bachata/guira/short-3.wav': { wikimedia: 'Guira_Tim_Ross.wav', onset: 7, maxLength: 0.12 },
+  '/audio/bachata/guira/long-2.wav': { wikimedia: 'Guira_Tim_Ross.wav', onset: 3, maxLength: 0.35 },
+  '/audio/bachata/guira/long-3.wav': { wikimedia: 'Guira_Tim_Ross.wav', onset: 6, maxLength: 0.35 },
   '/audio/bachata/bongos/low.wav': { vcsl: 'BongoL_Hit1_v2_rr2_Mid.wav', maxLength: 0.5 },
   '/audio/bachata/bongos/high.wav': { vcsl: 'BongoH_Hit1_v2_rr2_Mid.wav', maxLength: 0.45 },
   '/audio/bachata/bongos/slap.wav': { vcsl: 'BongoH_HitMuted1_v3_rr2_Mid.wav', maxLength: 0.3 },
-  '/audio/bachata/bass/hit.wav': { freesound: 43938, maxLength: 0.9 },
-  '/audio/bachata/requinto/hit.wav': { freesound: 8393, maxLength: 0.9 },
-  '/audio/bachata/segunda/hit.wav': { freesound: 8403, maxLength: 0.9 },
+  '/audio/bachata/bongos/low-2.wav': { vcsl: 'BongoL_Hit1_v2_rr1_Mid.wav', maxLength: 0.5 },
+  '/audio/bachata/bongos/high-2.wav': { vcsl: 'BongoH_Hit1_v2_rr1_Mid.wav', maxLength: 0.45 },
+  '/audio/bachata/bongos/slap-2.wav': { vcsl: 'BongoH_HitMuted1_v3_rr1_Mid.wav', maxLength: 0.3 },
+  '/audio/bachata/bass/a2.wav': { freesound: 43938, maxLength: 0.9 },
+  // Each Iowa file is a chromatic run up one string; `midi` picks the note.
+  '/audio/bachata/guitar/e2.wav': { uiowa: 'Guitar.mf.sulE.E2B2.mono.aif', midi: 40, maxLength: 1.2 },
+  '/audio/bachata/guitar/g2.wav': { uiowa: 'Guitar.mf.sulE.E2B2.mono.aif', midi: 43, maxLength: 1.2 },
+  '/audio/bachata/guitar/bb2.wav': { uiowa: 'Guitar.mf.sulE.E2B2.mono.aif', midi: 46, maxLength: 1.2 },
+  '/audio/bachata/guitar/db3.wav': { uiowa: 'Guitar.mf.sulA.C3B3.mono.aif', midi: 49, maxLength: 1.2 },
+  '/audio/bachata/guitar/e3.wav': { uiowa: 'Guitar.mf.sulA.C3B3.mono.aif', midi: 52, maxLength: 1.2 },
+  '/audio/bachata/guitar/g3.wav': { uiowa: 'Guitar.mf.sulG.G3B3.mono.aif', midi: 55, maxLength: 1.2 },
+  '/audio/bachata/guitar/bb3.wav': { uiowa: 'Guitar.mf.sulG.G3B3.mono.aif', midi: 58, maxLength: 1.2 },
+  '/audio/bachata/guitar/db4.wav': { uiowa: 'Guitar.mf.sulB.C4B4.mono.aif', midi: 61, maxLength: 1.2 },
+  '/audio/bachata/guitar/e4.wav': { uiowa: 'Guitar.mf.sulB.C4B4.mono.aif', midi: 64, maxLength: 1.2 },
+  '/audio/bachata/guitar/g4.wav': { uiowa: 'Guitar.mf.sulB.C4B4.mono.aif', midi: 67, maxLength: 1.2 },
+  '/audio/bachata/guitar/bb4.wav': { uiowa: 'Guitar.mf.sulB.C4B4.mono.aif', midi: 70, maxLength: 1.2 },
+  '/audio/bachata/guitar/c5.wav': { uiowa: 'Guitar.mf.sul_E.C5B5.mono.aif', midi: 72, maxLength: 1.2 },
+  '/audio/bachata/guitar/e5.wav': { uiowa: 'Guitar.mf.sul_E.C5B5.mono.aif', midi: 76, maxLength: 1.2 },
 }
 
 const SOURCES = join(ROOT, 'audio-sources')
 
-function findRecording({ vcsl, wikimedia, freesound }) {
-  if (vcsl || wikimedia) {
-    const file = vcsl ? join(SOURCES, 'vcsl', vcsl) : join(SOURCES, 'wikimedia', wikimedia)
+function findRecording({ vcsl, wikimedia, uiowa, freesound }) {
+  const named = (vcsl && ['vcsl', vcsl]) || (wikimedia && ['wikimedia', wikimedia]) || (uiowa && ['uiowa', uiowa])
+  if (named) {
+    const file = join(SOURCES, ...named)
     return existsSync(file) ? file : null
   }
   const dir = join(SOURCES, 'freesound')
@@ -413,6 +456,106 @@ function sliceRecording(file, { onset = 0, maxLength }) {
   return { rate, signal: fadeOut(out, Math.min(0.03, out.length / rate / 4)) }
 }
 
+// --- Pitched notes ---
+
+/**
+ * Onsets as sudden rises (a block at least twice as loud as the ~20 ms
+ * before it), at least 2 s apart. Suits slow runs of ringing notes, where
+ * detectOnsets misses notes that start while the last one still sounds.
+ */
+function risingOnsets(peaks, rate) {
+  const loudest = Math.max(...peaks)
+  const minGap = Math.round((2 * rate) / BLOCK)
+  const onsets = []
+  for (let b = 0; b < peaks.length; b++) {
+    let recent = 0
+    for (let k = Math.max(0, b - 8); k < b; k++) recent = Math.max(recent, peaks[k])
+    const last = onsets.at(-1)
+    if (peaks[b] > loudest * 0.01 && peaks[b] > recent * 2 && (last === undefined || b - last > minGap)) onsets.push(b)
+  }
+  return onsets
+}
+
+/** Pitch (fractional MIDI) by autocorrelation over 250–500 ms after `start`, or NaN. */
+function measurePitch(signal, rate, start) {
+  const from = start + Math.round(0.25 * rate)
+  const length = Math.round(0.25 * rate)
+  const minLag = Math.round(rate / 1200)
+  const maxLag = Math.round(rate / 60)
+  if (from + length + maxLag >= signal.length) return NaN
+  const r = []
+  let best = 0
+  for (let lag = minLag; lag < maxLag; lag++) {
+    let sum = 0, e1 = 0, e2 = 0
+    for (let i = from; i < from + length; i += 2) {
+      sum += signal[i] * signal[i + lag]
+      e1 += signal[i] ** 2
+      e2 += signal[i + lag] ** 2
+    }
+    r[lag] = sum / Math.sqrt(e1 * e2 || 1)
+    best = Math.max(best, r[lag])
+  }
+  // First strong peak, not the strongest: later peaks are period multiples.
+  const lag = r.findIndex((v, l) => l > minLag && l < maxLag - 1 && v > 0.9 * best && v >= r[l - 1] && v >= r[l + 1])
+  if (lag < 0) return NaN
+  const [a, b, c] = [r[lag - 1], r[lag], r[lag + 1]]
+  const exactLag = lag + (a - c) / (2 * (a - 2 * b + c))
+  return 69 + 12 * Math.log2(rate / exactLag / 440)
+}
+
+/** RBJ biquad low-pass, applied in place. */
+function lowpass(signal, freq, rate, q = 0.707) {
+  const w0 = (2 * Math.PI * freq) / rate
+  const alpha = Math.sin(w0) / (2 * q)
+  const a0 = 1 + alpha
+  const b1 = (1 - Math.cos(w0)) / a0
+  const b0 = b1 / 2
+  const a1 = (-2 * Math.cos(w0)) / a0
+  const a2 = (1 - alpha) / a0
+  let x1 = 0, x2 = 0, y1 = 0, y2 = 0
+  for (let i = 0; i < signal.length; i++) {
+    const x = signal[i]
+    const y = b0 * x + b1 * x1 + b0 * x2 - a1 * y1 - a2 * y2
+    x2 = x1; x1 = x; y2 = y1; y1 = y
+    signal[i] = y
+  }
+  return signal
+}
+
+/**
+ * Cuts the note nearest `midi` out of a run of notes, then resamples it to
+ * SAMPLE_RATE and to exactly `midi` in one go (fixing the player's tuning).
+ */
+function sliceNote(file, { midi, maxLength }) {
+  const { rate, mono } = decodeAudio(file)
+  const onsets = risingOnsets(blockPeaks(mono), rate)
+  const notes = onsets.map((block, i) => ({ start: block * BLOCK, next: onsets[i + 1], pitch: measurePitch(mono, rate, block * BLOCK) }))
+  const note = notes.filter((n) => Math.abs(n.pitch - midi) < 0.5).sort((a, b) => Math.abs(a.pitch - midi) - Math.abs(b.pitch - midi))[0]
+  if (!note) throw new Error(`${file}: no note near MIDI ${midi} (found ${notes.map((n) => n.pitch.toFixed(1)).join(', ')})`)
+
+  // The rise detector can fire on finger noise just before the pluck; start
+  // where the note reaches a quarter of its peak so it isn't late in the app.
+  const window = Math.round(0.15 * rate)
+  let peak = 0
+  for (let i = note.start; i < note.start + window; i++) peak = Math.max(peak, Math.abs(mono[i]))
+  let attack = note.start
+  while (attack < note.start + window && Math.abs(mono[attack]) < peak / 4) attack++
+  const start = Math.max(0, attack - Math.round(0.002 * rate))
+  const end = Math.min(mono.length, note.next ? note.next * BLOCK : mono.length, start + Math.ceil(maxLength * rate * 1.1))
+  const source = lowpass(mono.slice(start, end), Math.min(18000, rate * 0.4), rate)
+
+  // Reading the source this much faster than real time lands on SAMPLE_RATE
+  // and raises the pitch by (midi - note.pitch) semitones.
+  const step = (rate / SAMPLE_RATE) * 2 ** ((midi - note.pitch) / 12)
+  const out = new Float32Array(Math.min(Math.floor((source.length - 1) / step), Math.round(maxLength * SAMPLE_RATE)))
+  for (let i = 0; i < out.length; i++) {
+    const pos = i * step
+    const j = Math.floor(pos)
+    out[i] = source[j] + (source[j + 1] - source[j]) * (pos - j)
+  }
+  return { rate: SAMPLE_RATE, signal: fadeOut(out, 0.08), tuning: midi - note.pitch }
+}
+
 // --- Output ---
 
 function fadeOut(signal, seconds) {
@@ -475,9 +618,11 @@ for (const path of referenced) {
   const recording = recordings[path]
   const source = recording && findRecording(recording)
   let wav
+  let detail = ''
   if (source) {
-    const { rate, signal } = sliceRecording(source, recording)
+    const { rate, signal, tuning } = recording.midi ? sliceNote(source, recording) : sliceRecording(source, recording)
     wav = encodeWav(finalize(signal), rate)
+    if (tuning !== undefined) detail = `  retuned ${tuning >= 0 ? '+' : ''}${Math.round(tuning * 100)} cents`
   } else {
     wav = encodeWav(finalize(generators[path]()))
     synthesized.push(path)
@@ -486,7 +631,7 @@ for (const path of referenced) {
   mkdirSync(dirname(target), { recursive: true })
   writeFileSync(target, wav)
   totalBytes += wav.length
-  console.log(`${path}  ${source ? 'recording' : 'synth    '}  ${(wav.length / 1024).toFixed(1)} KB`)
+  console.log(`${path}  ${source ? 'recording' : 'synth    '}  ${(wav.length / 1024).toFixed(1)} KB${detail}`)
 }
 console.log(`\n${referenced.size} samples, ${(totalBytes / 1024).toFixed(0)} KB total`)
 

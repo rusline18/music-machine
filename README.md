@@ -13,10 +13,11 @@ Web Audio engine + lookahead scheduler, and Salsa/Bachata pages wired to a
 shared beat-machine composable.
 
 `public/audio/**` is built by `npm run samples`
-(`scripts/generate-samples.mjs`). Each one-shot is trimmed from a CC0
-recording in `audio-sources/` when that source is present, and synthesized
-otherwise — see [audio-sources/README.md](audio-sources/README.md) for
-sources and which Freesound files to download. To change a sound, edit its
+(`scripts/generate-samples.mjs`). Each one-shot is trimmed from a free
+recording in `audio-sources/` (CC0, except the University of Iowa guitar)
+when that source is present, and synthesized otherwise — see
+[audio-sources/README.md](audio-sources/README.md) for sources, licenses and
+which Freesound and Iowa files to download. To change a sound, edit its
 entry in `recordings` and re-run; don't hand-edit `public/audio`, since the
 script overwrites it.
 
@@ -39,7 +40,7 @@ public/audio/
   salsa/<instrument>/    One-shot .wav files (built — don't edit by hand)
   bachata/<instrument>/
 
-audio-sources/           Raw CC0 recordings (VCSL, Freesound) + credits
+audio-sources/           Raw recordings (VCSL, Freesound, Wikimedia, Iowa) + credits
 
 scripts/
   generate-samples.mjs   Builds public/audio from recordings, synth fallback

@@ -1,9 +1,10 @@
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { COUNTS_PER_BLOCK, patternLength } from '../app/composables/usePattern'
+import { COUNTS_PER_BAR, COUNTS_PER_BLOCK, patternLength } from '../app/composables/usePattern'
 import type { Genre, Pattern } from '../app/composables/usePattern'
-import { genreConfig } from '../app/data/genres'
+import { genreConfig, stepNames } from '../app/data/genres'
+import { parseChord } from '../app/data/harmony'
 import { salsaPatterns } from '../app/data/salsa/patterns'
 import { bachataPatterns } from '../app/data/bachata/patterns'
 
@@ -17,10 +18,11 @@ function onsets(pattern: Pattern, instrument: string): number[] {
 }
 
 for (const genre of Object.keys(presets) as Genre[]) {
-  const { instruments, samples } = genreConfig[genre]
+  const config = genreConfig[genre]
+  const { instruments, samples } = config
 
   describe(`${genre} sample map`, () => {
-    it.each(Object.entries(samples).flatMap(([instrument, map]) => Object.values(map).map((url) => [instrument, url])))(
+    it.each(Object.entries(samples).flatMap(([instrument, map]) => Object.values(map).flat().map((url) => [instrument, url])))(
       '%s: %s exists in public/',
       (_instrument, url) => {
         expect(existsSync(publicDir + url)).toBe(true)
@@ -45,15 +47,22 @@ for (const genre of Object.keys(presets) as Genre[]) {
       }
     })
 
-    it('only uses sample names that exist for the instrument', () => {
+    it('only uses step names that exist for the instrument', () => {
       // An unknown name doesn't error — the scheduler silently skips it —
       // so a typo would just make a hit disappear.
       for (const track of pattern.tracks) {
-        const known = Object.keys(samples[track.instrument]!)
+        const known = stepNames(config, track.instrument)
         for (const step of track.steps) {
           if (step !== null) expect(known, `${track.instrument}: "${step}"`).toContain(step)
         }
       }
+    })
+
+    it('has one valid chord per bar if it has pitched tracks', () => {
+      const pitched = pattern.tracks.some((t) => !t.muted && config.pitched[t.instrument])
+      if (!pitched) return expect(pattern.chords).toBeUndefined()
+      expect(pattern.chords).toHaveLength(pattern.counts / COUNTS_PER_BAR)
+      for (const chord of pattern.chords!) expect(() => parseChord(chord)).not.toThrow()
     })
 
     it('has volumes between 0 and 1', () => {

@@ -3,6 +3,8 @@ export type Genre = 'salsa' | 'bachata'
 /** Lengths offered in the UI. Dancers phrase in 8-count blocks. */
 export const COUNT_OPTIONS = [8, 16, 24, 32] as const
 export const COUNTS_PER_BLOCK = 8
+/** Chords change at most once a bar. */
+export const COUNTS_PER_BAR = 4
 
 /**
  * A single step's sample choice, or null for silence.
@@ -28,11 +30,24 @@ export interface Pattern {
   stepsPerCount: number
   /** Tempo in counts per minute, i.e. quarter-note BPM. */
   bpm: number
+  /**
+   * One chord name per bar (counts / 4), e.g. ['Am', 'Dm', 'E', 'Am'].
+   * Pitched tracks (guitars, bass) follow it; patterns without pitched
+   * tracks leave it out.
+   */
+  chords?: string[]
   tracks: InstrumentTrack[]
 }
 
 export function patternLength(pattern: Pick<Pattern, 'counts' | 'stepsPerCount'>): number {
   return pattern.counts * pattern.stepsPerCount
+}
+
+/** The chord in force at a step, or undefined if the pattern has none. */
+export function chordAt(pattern: Pick<Pattern, 'chords' | 'stepsPerCount'>, stepIndex: number): string | undefined {
+  if (!pattern.chords?.length) return undefined
+  const bar = Math.floor(stepIndex / (pattern.stepsPerCount * COUNTS_PER_BAR))
+  return pattern.chords[bar % pattern.chords.length]
 }
 
 export function createEmptyTrack(instrument: string, length = 16): InstrumentTrack {
@@ -61,7 +76,7 @@ export function createEmptyPattern(genre: Genre, instruments: string[], counts =
  * going from 8 to 16 counts gives a second copy of the block to edit rather
  * than 8 counts of silence.
  */
-export function resizeSteps(steps: Step[], length: number): Step[] {
+export function resizeSteps<T extends Step>(steps: T[], length: number): (T | null)[] {
   if (steps.length === 0) return Array.from({ length }, () => null)
   return Array.from({ length }, (_, i) => steps[i % steps.length]!)
 }
@@ -70,7 +85,7 @@ export function resizeSteps(steps: Step[], length: number): Step[] {
  * Join patterns end to end — e.g. an 8-count verse block followed by a
  * montuno block. A track muted in one block plays silence there, and is
  * only muted overall if it's muted in every block. Tempo comes from the
- * first pattern.
+ * first pattern; chords are joined like the steps.
  */
 export function chainPatterns(id: string, name: string, first: Pattern, ...rest: Pattern[]): Pattern {
   const blocks = [first, ...rest]
@@ -84,6 +99,7 @@ export function chainPatterns(id: string, name: string, first: Pattern, ...rest:
     id,
     name,
     counts: blocks.reduce((sum, block) => sum + block.counts, 0),
+    chords: first.chords && blocks.flatMap((block) => block.chords ?? Array(block.counts / COUNTS_PER_BAR).fill(first.chords![0])),
     tracks: first.tracks.map((track) => {
       const parts = blocks.map((block) => {
         const blockTrack = block.tracks.find((t) => t.instrument === track.instrument)

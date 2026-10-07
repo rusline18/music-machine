@@ -1,6 +1,7 @@
 /**
  * Sample maps for the Salsa instrument set (plan section 4).
  * Paths point into /public/audio/salsa, built by `npm run samples`.
+ * A list of paths is several takes of the same stroke, played in turn.
  */
 export const SALSA_INSTRUMENTS = [
   'clave',
@@ -14,7 +15,7 @@ export const SALSA_INSTRUMENTS = [
 
 export type SalsaInstrument = (typeof SALSA_INSTRUMENTS)[number]
 
-export const salsaSamples: Record<SalsaInstrument, Record<string, string>> = {
+export const salsaSamples: Record<SalsaInstrument, Record<string, string | string[]>> = {
   clave: {
     hit: '/audio/salsa/clave/hit.wav',
   },
@@ -24,9 +25,9 @@ export const salsaSamples: Record<SalsaInstrument, Record<string, string>> = {
     open: '/audio/salsa/congas/open.wav',
   },
   bongos: {
-    low: '/audio/salsa/bongos/low.wav',
-    high: '/audio/salsa/bongos/high.wav',
-    slap: '/audio/salsa/bongos/slap.wav',
+    low: ['/audio/salsa/bongos/low.wav', '/audio/salsa/bongos/low-2.wav'],
+    high: ['/audio/salsa/bongos/high.wav', '/audio/salsa/bongos/high-2.wav'],
+    slap: ['/audio/salsa/bongos/slap.wav', '/audio/salsa/bongos/slap-2.wav'],
   },
   timbales: {
     low: '/audio/salsa/timbales/low.wav',

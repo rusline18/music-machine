@@ -1,9 +1,57 @@
-import type { Pattern } from './usePattern'
+import type { InstrumentTrack, Pattern } from './usePattern'
 import { patternLength } from './usePattern'
-import type { useAudioEngine } from './useAudioEngine'
+import type { Note, useAudioEngine } from './useAudioEngine'
 
 const LOOKAHEAD_MS = 25
 const SCHEDULE_AHEAD_S = 0.1
+
+/** What a track plays at a step: none, one sample, or several (a chord). */
+export type StepResolver = (pattern: Pattern, track: InstrumentTrack, stepIndex: number) => Note[]
+
+/** instrument → step name → sample URL, or several takes of it to rotate through. */
+export type SampleMap = Record<string, Record<string, string | string[]>>
+
+/**
+ * Resolver for plain one-shot tracks: the step name picks a sample URL.
+ * Several takes are played in turn (round robin), so repeated hits don't
+ * sound like the same recording over and over.
+ */
+export function sampleResolver(samples: SampleMap): StepResolver {
+  const nextTake = new Map<string[], number>()
+  return (_pattern, track, stepIndex) => {
+    const name = track.steps[stepIndex]
+    const entry = name ? samples[track.instrument]?.[name] : undefined
+    if (!entry) return []
+    if (typeof entry === 'string') return [{ url: entry }]
+    const take = nextTake.get(entry) ?? 0
+    nextTake.set(entry, (take + 1) % entry.length)
+    return [{ url: entry[take]! }]
+  }
+}
+
+// How far a fully loose (feel = 1) player strays from the grid.
+const MAX_LATE_S = 0.012
+const MAX_GAIN_SPREAD = 0.15
+const MAX_DETUNE_CENTS = 8
+const OFFBEAT_SOFTENING = 0.2
+
+/**
+ * Makes a note sound played rather than programmed: a few ms late, a little
+ * louder or softer, a few cents off pitch, and softer off the beat. `feel`
+ * runs from 0 (untouched) to 1. Notes only ever move later, never earlier,
+ * so nothing gets scheduled in the past.
+ */
+export function humanizeNote(note: Note, feel: number, offbeat: boolean, random: () => number = Math.random): Note {
+  if (feel <= 0) return note
+  const spread = (amount: number) => (random() * 2 - 1) * amount * feel
+  const accent = offbeat ? 1 - OFFBEAT_SOFTENING * feel : 1
+  return {
+    ...note,
+    delay: (note.delay ?? 0) + random() * MAX_LATE_S * feel,
+    gain: (note.gain ?? 1) * accent * (1 + spread(MAX_GAIN_SPREAD)),
+    rate: (note.rate ?? 1) * 2 ** (spread(MAX_DETUNE_CENTS) / 1200),
+  }
+}
 
 export interface SchedulerCallbacks {
   /** Called when a step is scheduled, for UI playhead highlighting. */
@@ -23,8 +71,9 @@ export function useBeatScheduler(engine: ReturnType<typeof useAudioEngine>) {
   let nextStepTime = 0
   let currentStep = 0
   let pattern: Pattern | null = null
-  let samples: Record<string, Record<string, string>> = {}
+  let resolve: StepResolver = () => []
   let callbacks: SchedulerCallbacks = {}
+  let feel = 0
 
   const isPlaying = ref(false)
   const activeStep = ref(0)
@@ -37,13 +86,12 @@ export function useBeatScheduler(engine: ReturnType<typeof useAudioEngine>) {
 
   function scheduleStep(stepIndex: number, time: number) {
     if (!pattern) return
+    const offbeat = stepIndex % pattern.stepsPerCount !== 0
     for (const track of pattern.tracks) {
       if (track.muted) continue
-      const sampleName = track.steps[stepIndex]
-      if (!sampleName) continue
-      const url = samples[track.instrument]?.[sampleName]
-      if (!url) continue
-      engine.playSample(track.instrument, url, time)
+      for (const note of resolve(pattern, track, stepIndex)) {
+        engine.playNote(track.instrument, humanizeNote(note, feel, offbeat), time)
+      }
     }
     callbacks.onStep?.(stepIndex, time)
   }
@@ -70,12 +118,12 @@ export function useBeatScheduler(engine: ReturnType<typeof useAudioEngine>) {
 
   async function start(
     newPattern: Pattern,
-    instrumentSamples: Record<string, Record<string, string>>,
+    stepResolver: StepResolver,
     newCallbacks: SchedulerCallbacks = {},
   ) {
     stop()
     pattern = newPattern
-    samples = instrumentSamples
+    resolve = stepResolver
     callbacks = newCallbacks
 
     await engine.resume()
@@ -100,11 +148,17 @@ export function useBeatScheduler(engine: ReturnType<typeof useAudioEngine>) {
     if (pattern) pattern.bpm = bpm
   }
 
+  /** 0 = machine-tight, 1 = loose live player; applies from the next scheduled step. */
+  function setFeel(amount: number) {
+    feel = amount
+  }
+
   return {
     isPlaying,
     activeStep,
     start,
     stop,
+    setFeel,
     setBpm,
   }
 }

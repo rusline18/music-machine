@@ -22,3 +22,6 @@ logs
 .env
 .env.*
 !.env.example
+
+# Large raw guitar recordings (~117 MB); see audio-sources/README.md to fetch
+audio-sources/uiowa/

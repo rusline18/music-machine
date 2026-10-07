@@ -1,10 +1,13 @@
 import type { Genre, Pattern } from './usePattern'
-import { clonePattern, resizeSteps } from './usePattern'
-import { genreConfig } from '../data/genres'
+import { clonePattern, COUNTS_PER_BAR, resizeSteps } from './usePattern'
+import { genreConfig, stepNames, stepResolver } from '../data/genres'
 import { salsaPatterns } from '../data/salsa/patterns'
 import { bachataPatterns } from '../data/bachata/patterns'
 import { useAudioEngine } from './useAudioEngine'
 import { useBeatScheduler } from './useBeatScheduler'
+
+/** Reverb wet level at the slider's top; beyond this the rhythm smears. */
+const MAX_REVERB_WET = 0.6
 
 const presetsByGenre: Record<Genre, Pattern[]> = {
   salsa: salsaPatterns,
@@ -28,6 +31,17 @@ export function useBeatMachine(genre: Genre) {
   const scheduler = useBeatScheduler(engine)
 
   const samplesLoaded = ref(false)
+  const resolveStep = stepResolver(config)
+
+  /** 0–1: how loosely the band plays (see humanizeNote). */
+  const feel = ref(0.5)
+  /** 0–1: room reverb on the mix; 1 maps to MAX_REVERB_WET. */
+  const reverb = ref(0.35)
+  scheduler.setFeel(feel.value)
+
+  function stepNamesFor(instrument: string): string[] {
+    return stepNames(config, instrument)
+  }
 
   watch(selectedPatternId, (id) => {
     const preset = presets.find((p) => p.id === id)
@@ -40,8 +54,8 @@ export function useBeatMachine(genre: Genre) {
 
   async function ensureSamplesLoaded() {
     if (samplesLoaded.value) return
-    const urls = Object.values(config.samples).flatMap((sampleMap) => Object.values(sampleMap))
-    await engine.preloadSamples(urls)
+    const urls = new Set(Object.values(config.samples).flatMap((sampleMap) => Object.values(sampleMap).flat()))
+    await engine.preloadSamples([...urls])
     samplesLoaded.value = true
   }
 
@@ -55,11 +69,23 @@ export function useBeatMachine(genre: Genre) {
   async function play() {
     await ensureSamplesLoaded()
     syncTrackGains()
-    await scheduler.start(pattern.value, config.samples as Record<string, Record<string, string>>)
+    engine.setReverb(reverb.value * MAX_REVERB_WET)
+    await scheduler.start(pattern.value, resolveStep)
   }
 
   function stop() {
     scheduler.stop()
+  }
+
+  function setFeel(amount: number) {
+    feel.value = amount
+    scheduler.setFeel(amount)
+  }
+
+  function setReverb(amount: number) {
+    reverb.value = amount
+    // Before the first play there's no audio graph yet; play() applies it.
+    if (samplesLoaded.value) engine.setReverb(amount * MAX_REVERB_WET)
   }
 
   function setBpm(bpm: number) {
@@ -76,13 +102,22 @@ export function useBeatMachine(genre: Genre) {
     for (const track of pattern.value.tracks) {
       track.steps = resizeSteps(track.steps, length)
     }
+    const { chords } = pattern.value
+    if (chords?.length) {
+      pattern.value.chords = resizeSteps(chords, counts / COUNTS_PER_BAR).map((chord) => chord ?? chords[0]!)
+    }
     pattern.value.counts = counts
+  }
+
+  function setChord(bar: number, chord: string) {
+    const chords = pattern.value.chords
+    if (chords && bar < chords.length) chords[bar] = chord
   }
 
   function toggleStep(instrument: string, stepIndex: number) {
     const track = pattern.value.tracks.find((t) => t.instrument === instrument)
     if (!track) return
-    const sampleNames = Object.keys(config.samples[instrument as keyof typeof config.samples] ?? {})
+    const sampleNames = stepNamesFor(instrument)
     if (sampleNames.length === 0) return
     const current = track.steps[stepIndex]
     const currentIndex = current ? sampleNames.indexOf(current) : -1
@@ -107,7 +142,7 @@ export function useBeatMachine(genre: Genre) {
   function randomize() {
     for (const track of pattern.value.tracks) {
       if (track.muted) continue
-      const sampleNames = Object.keys(config.samples[track.instrument as keyof typeof config.samples] ?? {})
+      const sampleNames = stepNamesFor(track.instrument)
       if (sampleNames.length === 0) continue
       track.steps = track.steps.map(() => (Math.random() > 0.75 ? sampleNames[Math.floor(Math.random() * sampleNames.length)]! : null))
     }
@@ -135,6 +170,12 @@ export function useBeatMachine(genre: Genre) {
     stop,
     setBpm,
     setCounts,
+    setChord,
+    feel,
+    setFeel,
+    reverb,
+    setReverb,
+    stepNamesFor,
     toggleStep,
     updateVolume,
     updateMuted,

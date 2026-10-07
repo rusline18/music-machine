@@ -66,6 +66,12 @@ describe('chainPatterns', () => {
     expect(chained).toMatchObject({ id: 'both', name: 'Both', bpm: 180 })
   })
 
+  it('joins chords like the steps', () => {
+    const a = { ...block('a', [['bass', Array(8).fill(null)]]), counts: 4, chords: ['Am'] }
+    const b = { ...block('b', [['bass', Array(16).fill(null)]]), counts: 8, chords: ['Dm', 'E'] }
+    expect(chainPatterns('ab', 'AB', a, b).chords).toEqual(['Am', 'Dm', 'E'])
+  })
+
   it('refuses blocks with a different grid resolution', () => {
     expect(() => chainPatterns('x', 'X', verse, { ...montuno, stepsPerCount: 4 })).toThrow(/stepsPerCount/)
   })

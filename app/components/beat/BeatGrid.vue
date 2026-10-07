@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { Pattern } from '../../composables/usePattern'
-import { COUNTS_PER_BLOCK } from '../../composables/usePattern'
+import { COUNTS_PER_BAR, COUNTS_PER_BLOCK } from '../../composables/usePattern'
+import { CHORD_NAMES } from '../../data/harmony'
 import InstrumentTrack from './InstrumentTrack.vue'
 
 const props = defineProps<{
   pattern: Pattern
-  samples: Record<string, Record<string, string>>
+  /** What each step of an instrument can be set to. */
+  stepNames: (instrument: string) => string[]
   activeStep: number
   isPlaying: boolean
 }>()
@@ -14,7 +16,16 @@ const emit = defineEmits<{
   'toggle-step': [instrument: string, stepIndex: number]
   'update:volume': [instrument: string, volume: number]
   'update:muted': [instrument: string, muted: boolean]
+  'update:chord': [bar: number, chord: string]
 }>()
+
+const barsPerBlock = COUNTS_PER_BLOCK / COUNTS_PER_BAR
+
+/** Bar indices (into pattern.chords) shown in a block, or none if the pattern has no chords. */
+function barsIn(block: number): number[] {
+  if (!props.pattern.chords?.length) return []
+  return Array.from({ length: barsPerBlock }, (_, i) => block * barsPerBlock + i)
+}
 
 // The grid is drawn one 8-count block at a time, matching how dancers
 // phrase the music; each block's header is labelled 1–8.
@@ -39,9 +50,6 @@ function isActiveCount(block: number, cellIndex: number): boolean {
   return props.activeStep >= countStart && props.activeStep < countStart + props.pattern.stepsPerCount
 }
 
-function sampleNamesFor(instrument: string): string[] {
-  return Object.keys(props.samples[instrument] ?? {})
-}
 </script>
 
 <template>
@@ -72,11 +80,28 @@ function sampleNamesFor(instrument: string): string[] {
         <span class="w-20 shrink-0" />
       </div>
 
+      <div v-if="barsIn(block - 1).length" class="flex items-center gap-3 pb-1">
+        <span class="w-28 shrink-0 text-xs text-neutral-500">Chords</span>
+        <div class="flex flex-1 gap-1.5">
+          <select
+            v-for="bar in barsIn(block - 1)"
+            :key="bar"
+            :value="pattern.chords![bar]"
+            :aria-label="`Chord for bar ${bar + 1}`"
+            class="min-w-0 flex-1 rounded bg-neutral-800 px-2 py-1 text-sm text-neutral-200"
+            @change="emit('update:chord', bar, ($event.target as HTMLSelectElement).value)"
+          >
+            <option v-for="chord in CHORD_NAMES" :key="chord" :value="chord">{{ chord }}</option>
+          </select>
+        </div>
+        <span class="w-20 shrink-0" />
+      </div>
+
       <InstrumentTrack
         v-for="track in pattern.tracks"
         :key="track.instrument"
         :track="track"
-        :sample-names="sampleNamesFor(track.instrument)"
+        :sample-names="stepNames(track.instrument)"
         :active-step="activeStep"
         :start="(block - 1) * stepsPerBlock"
         :length="stepsPerBlock"
