@@ -1,5 +1,5 @@
 import type { Genre, Pattern } from './usePattern'
-import { clonePattern } from './usePattern'
+import { clonePattern, resizeSteps } from './usePattern'
 import { genreConfig } from '../data/genres'
 import { salsaPatterns } from '../data/salsa/patterns'
 import { bachataPatterns } from '../data/bachata/patterns'
@@ -67,6 +67,18 @@ export function useBeatMachine(genre: Genre) {
     scheduler.setBpm(bpm)
   }
 
+  /**
+   * Change the loop length in counts. Mutates the pattern in place so a
+   * running scheduler picks it up on its next tick without restarting.
+   */
+  function setCounts(counts: number) {
+    const length = counts * pattern.value.stepsPerCount
+    for (const track of pattern.value.tracks) {
+      track.steps = resizeSteps(track.steps, length)
+    }
+    pattern.value.counts = counts
+  }
+
   function toggleStep(instrument: string, stepIndex: number) {
     const track = pattern.value.tracks.find((t) => t.instrument === instrument)
     if (!track) return
@@ -122,6 +134,7 @@ export function useBeatMachine(genre: Genre) {
     play,
     stop,
     setBpm,
+    setCounts,
     toggleStep,
     updateVolume,
     updateMuted,

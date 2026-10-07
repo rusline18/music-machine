@@ -10,8 +10,9 @@ export const salsaMontunoPattern: Pattern = {
   id: 'salsa-montuno-3-2',
   name: 'Montuno (3-2 clave, bells)',
   genre: 'salsa',
-  stepsPerBar: 16,
-  bpm: 95,
+  counts: 8,
+  stepsPerCount: 2,
+  bpm: 190,
   tracks: [
     {
       instrument: 'clave',

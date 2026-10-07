@@ -24,7 +24,7 @@ script overwrites it.
 
 ```
 app/
-  components/beat/     UI: BeatGrid, InstrumentTrack, Transport, BpmControl, PatternSelector
+  components/beat/     UI: BeatGrid, InstrumentTrack, Transport, BpmControl, CountSelector, PatternSelector
   composables/
     useAudioEngine.ts    AudioContext, gain nodes, sample loading/playback
     useBeatScheduler.ts  Lookahead scheduler — keeps BPM/timing sample-accurate
@@ -43,6 +43,8 @@ audio-sources/           Raw CC0 recordings (VCSL, Freesound) + credits
 
 scripts/
   generate-samples.mjs   Builds public/audio from recordings, synth fallback
+
+tests/                   Vitest: presets, pattern helpers, engine, scheduler
 ```
 
 ## Setup
@@ -66,14 +68,23 @@ npm run build
 npm run preview
 ```
 
+## Tests
+
+```bash
+npm test
+```
+
+Vitest covers preset integrity (lengths, sample names, files on disk), the
+clave/bass reference rhythms, pattern helpers, volume/mute, and scheduler
+timing. Audio output itself is checked by ear.
+
 ## Notes
 
 - Audio only initializes client-side and only on user interaction (browsers
   require a user gesture to start an `AudioContext`) — pages still render
   fully server-side for SEO.
-- Presets: Salsa verse/montuno in 3-2 son clave, Bachata derecho/majao.
-  They follow documented references but still need sign-off from a player
+- Presets: Salsa verse/montuno in 3-2 son clave, Bachata derecho/majao,
+  plus 16-count chains of each pair. They follow documented references but still need sign-off from a player
   — see plan sections 7 and 14.
-- The Salsa grid is eighth notes across a two-bar clave cycle, so its BPM
-  is in half notes (90 ≈ 180 quarter-note BPM). Bachata's grid is one bar of
-  sixteenths, BPM in quarter notes.
+- Patterns are 8, 16, 24 or 32 dance counts long, shown as 8-count blocks.
+  Each count is two cells ("1 &"); BPM is counts per minute.

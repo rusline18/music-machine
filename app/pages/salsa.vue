@@ -3,6 +3,7 @@ import BeatGrid from '../components/beat/BeatGrid.vue'
 import Transport from '../components/beat/Transport.vue'
 import BpmControl from '../components/beat/BpmControl.vue'
 import PatternSelector from '../components/beat/PatternSelector.vue'
+import CountSelector from '../components/beat/CountSelector.vue'
 
 useSeoMeta({
   title: 'Salsa Rhythm Trainer — Latin Beat Machine',
@@ -25,7 +26,13 @@ const machine = useBeatMachine('salsa')
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
       <BpmControl
         :model-value="machine.pattern.value.bpm"
+        :min="140"
+        :max="220"
         @update:model-value="machine.setBpm"
+      />
+      <CountSelector
+        :model-value="machine.pattern.value.counts"
+        @update:model-value="machine.setCounts"
       />
       <Transport
         :is-playing="machine.isPlaying.value"
@@ -38,6 +45,7 @@ const machine = useBeatMachine('salsa')
       :pattern="machine.pattern.value"
       :samples="machine.config.samples"
       :active-step="machine.activeStep.value"
+      :is-playing="machine.isPlaying.value"
       @toggle-step="machine.toggleStep"
       @update:volume="machine.updateVolume"
       @update:muted="machine.updateMuted"

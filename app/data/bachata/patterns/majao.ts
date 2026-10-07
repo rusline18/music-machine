@@ -9,20 +9,21 @@ export const bachataMajaoPattern: Pattern = {
   id: 'bachata-majao',
   name: 'Majao',
   genre: 'bachata',
-  stepsPerBar: 16,
+  counts: 8,
+  stepsPerCount: 2,
   bpm: 130,
   tracks: [
     {
       instrument: 'guira',
-      steps: Array.from({ length: 16 }, (_, i) => (i % 4 === 0 ? 'long' : null)),
+      steps: Array.from({ length: 16 }, (_, i) => (i % 2 === 0 ? 'long' : null)),
       volume: 0.8,
       muted: false,
     },
     {
       instrument: 'bongos',
       steps: [
-        'high', null, null, null, 'high', null, null, null,
-        'high', null, null, null, 'low', null, null, null,
+        'high', null, 'high', null, 'high', null, 'low', null,
+        'high', null, 'high', null, 'high', null, 'low', null,
       ],
       volume: 1,
       muted: false,
@@ -30,8 +31,8 @@ export const bachataMajaoPattern: Pattern = {
     {
       instrument: 'bass',
       steps: [
-        'hit', null, null, null, null, null, 'hit', null,
-        'hit', null, null, null, 'hit', null, null, null,
+        'hit', null, null, 'hit', 'hit', null, 'hit', null,
+        'hit', null, null, 'hit', 'hit', null, 'hit', null,
       ],
       volume: 1,
       muted: false,
@@ -44,7 +45,7 @@ export const bachataMajaoPattern: Pattern = {
     },
     {
       instrument: 'segunda',
-      steps: Array.from({ length: 16 }, (_, i) => (i % 2 === 0 ? 'hit' : null)),
+      steps: Array(16).fill('hit'),
       volume: 0.6,
       muted: false,
     },

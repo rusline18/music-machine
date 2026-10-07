@@ -6,7 +6,7 @@ export const genreConfig: Record<Genre, { instruments: readonly string[]; sample
   salsa: {
     instruments: SALSA_INSTRUMENTS,
     samples: salsaSamples,
-    defaultBpm: 90,
+    defaultBpm: 180,
   },
   bachata: {
     instruments: BACHATA_INSTRUMENTS,

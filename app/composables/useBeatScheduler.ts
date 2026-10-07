@@ -1,4 +1,5 @@
 import type { Pattern } from './usePattern'
+import { patternLength } from './usePattern'
 import type { useAudioEngine } from './useAudioEngine'
 
 const LOOKAHEAD_MS = 25
@@ -30,10 +31,8 @@ export function useBeatScheduler(engine: ReturnType<typeof useAudioEngine>) {
 
   function stepDuration(): number {
     if (!pattern) return 0
-    // 16 steps/bar over a 4/4 bar => each step is a sixteenth note.
-    const secondsPerBeat = 60 / pattern.bpm
-    const beatsPerStep = 4 / pattern.stepsPerBar
-    return secondsPerBeat * beatsPerStep
+    // bpm counts quarter notes; each count is split into stepsPerCount cells.
+    return 60 / pattern.bpm / pattern.stepsPerCount
   }
 
   function scheduleStep(stepIndex: number, time: number) {
@@ -53,6 +52,8 @@ export function useBeatScheduler(engine: ReturnType<typeof useAudioEngine>) {
     if (!pattern) return
     const context = engine.getContext()
     while (nextStepTime < context.currentTime + SCHEDULE_AHEAD_S) {
+      // The pattern can be shortened mid-play; wrap instead of running off the end.
+      if (currentStep >= patternLength(pattern)) currentStep = 0
       scheduleStep(currentStep, nextStepTime)
       const scheduledStep = currentStep
       const scheduledTime = nextStepTime
@@ -63,7 +64,7 @@ export function useBeatScheduler(engine: ReturnType<typeof useAudioEngine>) {
       }, delayMs)
 
       nextStepTime += stepDuration()
-      currentStep = (currentStep + 1) % pattern.stepsPerBar
+      currentStep = (currentStep + 1) % patternLength(pattern)
     }
   }
 

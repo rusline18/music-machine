@@ -1,9 +1,8 @@
 import type { Pattern } from '../../../composables/usePattern'
 
 /**
- * Salsa grid: the 16 steps are eighth notes across one two-bar clave cycle
- * (steps 0–7 = bar 1 "1 & 2 & 3 & 4 &", steps 8–15 = bar 2), so `bpm` is
- * counted in half notes — 90 here feels like 180 in quarter notes.
+ * One 8-count block = one two-bar clave cycle, in eighth notes
+ * (cells 0–7 = counts 1–4, cells 8–15 = counts 5–8).
  *
  * Verse feel in 3-2 son clave: tumbao on congas, martillo on bongos,
  * cáscara on the timbal shell. Built from documented references, but still
@@ -13,8 +12,9 @@ export const salsaVersePattern: Pattern = {
   id: 'salsa-verse-3-2',
   name: 'Verse (3-2 clave, cáscara)',
   genre: 'salsa',
-  stepsPerBar: 16,
-  bpm: 90,
+  counts: 8,
+  stepsPerCount: 2,
+  bpm: 180,
   tracks: [
     {
       // 3-2 son clave: 1, &2, 4 | 2, 3
