@@ -3,7 +3,7 @@ import type { StepResolver } from './audio/scheduler'
 import type { PitchedInstrument } from './harmony'
 import { parseChord, voicesToNotes } from './harmony'
 import type { Step } from './pattern'
-import { chordAt, countInBlock } from './pattern'
+import { chordAt, COUNTS_PER_BAR, countInBlock, patternLength } from './pattern'
 
 /** Step name → sample URL, or several takes of it to rotate through. */
 export type SampleMap = Record<string, string | string[]>
@@ -107,6 +107,8 @@ export function stepResolver(set: InstrumentSet, locale: () => string): StepReso
     const name = track.steps[stepIndex]
     const articulation = name ? pitched.articulations[name] : undefined
     if (!articulation) return []
-    return voicesToNotes(pitched, articulation(parseChord(chordAt(pattern, stepIndex) ?? DEFAULT_CHORD)))
+    const chord = (step: number) => parseChord(chordAt(pattern, step) ?? DEFAULT_CHORD)
+    const nextBar = (stepIndex + pattern.stepsPerCount * COUNTS_PER_BAR) % patternLength(pattern)
+    return voicesToNotes(pitched, articulation(chord(stepIndex), chord(nextBar)))
   }
 }

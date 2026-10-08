@@ -186,20 +186,22 @@ const timbaleRim = () => {
   return out
 }
 
-const cowbell = () => {
+const cowbell = ({ freqs = [562, 845] } = {}) => {
   // Classic two-oscillator cowbell: detuned squares through a band-pass.
   const out = buffer(0.5)
-  for (const freq of [562, 845]) {
+  for (const freq of freqs) {
     for (let i = 0; i < out.length; i++) {
       const square = Math.sin((2 * Math.PI * freq * i) / SAMPLE_RATE) >= 0 ? 1 : -1
       out[i] += 0.5 * square * (0.6 * envelope(i, 0.02) + 0.4 * envelope(i, 0.15))
     }
   }
-  return bandpass(out, 900, 1.6)
+  return bandpass(out, freqs[1] * 1.07, 1.6)
 }
 
 /** A cowbell struck near the neck: same tone, choked short. */
-const cowbellNeck = () => fadeOut(cowbell().slice(0, Math.round(0.08 * SAMPLE_RATE)), 0.03)
+const cowbellNeck = (options) => () => fadeOut(cowbell(options).slice(0, Math.round(0.08 * SAMPLE_RATE)), 0.03)
+/** The timbales bell: smaller and higher than the bongo bell. */
+const TIMBALE_BELL = { freqs: [780, 1170] }
 
 const maracas = () => {
   const out = buffer(0.15)
@@ -227,6 +229,16 @@ const bass = () => {
   drumTone(out, { startFreq: freq * 2, decay: 0.2, gain: 0.35 })
   drumTone(out, { startFreq: freq * 3, decay: 0.1, gain: 0.12 })
   pluck(out, { freq: freq * 2, seed: 51, damping: 0.99, brightness: 0.2, gain: 0.2 })
+  return out
+}
+
+// Single piano notes, pitch-shifted by the app like the guitar notes below:
+// a few inharmonic partials, the higher ones dying away faster.
+const pianoNote = (freq) => () => {
+  const out = buffer(1.5)
+  for (const [n, gain] of [[1, 1], [2, 0.5], [3, 0.3], [4, 0.15], [5, 0.08]]) {
+    drumTone(out, { startFreq: freq * n * (1 + 0.0004 * n * n), decay: 0.9 / n, gain })
+  }
   return out
 }
 
@@ -265,7 +277,21 @@ const generators = {
   '/audio/salsa/timbales/low.wav': timbale({ freq: 260, decay: 0.14, seed: 32 }),
   '/audio/salsa/timbales/high.wav': timbale({ freq: 385, decay: 0.11, seed: 33 }),
   '/audio/salsa/timbales/rim.wav': timbaleRim,
+  '/audio/salsa/congas/heel.wav': handDrum({ freq: 170, decay: 0.03, seed: 14 }),
+  '/audio/salsa/congas/toe.wav': handDrum({ freq: 230, decay: 0.02, slap: 0.2, seed: 15 }),
   '/audio/salsa/cowbell/hit.wav': cowbell,
+  '/audio/salsa/cowbell/neck.wav': cowbellNeck(),
+  '/audio/salsa/timbalebell/open.wav': () => cowbell(TIMBALE_BELL),
+  '/audio/salsa/timbalebell/neck.wav': cowbellNeck(TIMBALE_BELL),
+  '/audio/salsa/bass/a2.wav': bass,
+  '/audio/salsa/piano/c4.wav': pianoNote(261.63),
+  '/audio/salsa/piano/e4.wav': pianoNote(329.63),
+  '/audio/salsa/piano/g4.wav': pianoNote(392),
+  '/audio/salsa/piano/b4.wav': pianoNote(493.88),
+  '/audio/salsa/piano/d5.wav': pianoNote(587.33),
+  '/audio/salsa/piano/f5.wav': pianoNote(698.46),
+  '/audio/salsa/piano/a5.wav': pianoNote(880),
+  '/audio/salsa/piano/c6.wav': pianoNote(1046.5),
   '/audio/salsa/maracas/hit.wav': maracas,
   '/audio/salsa/guiro/short.wav': guiro({ seconds: 0.12, rate: 45, seed: 42 }),
   '/audio/salsa/guiro/long.wav': guiro({ seconds: 0.4, rate: 38, seed: 43 }),
@@ -282,7 +308,7 @@ const generators = {
   '/audio/bachata/bongos/high-2.wav': handDrum({ freq: 492, decay: 0.06, seed: 35 }),
   '/audio/bachata/bongos/slap-2.wav': handDrum({ freq: 517, decay: 0.025, slap: 1, seed: 36 }),
   '/audio/bachata/campana/open.wav': cowbell,
-  '/audio/bachata/campana/neck.wav': cowbellNeck,
+  '/audio/bachata/campana/neck.wav': cowbellNeck(),
   '/audio/bachata/bass/a2.wav': bass,
   '/audio/bachata/guitar/e2.wav': guitarNote({ freq: 82.41, seed: 61 }),
   '/audio/bachata/guitar/g2.wav': guitarNote({ freq: 98, seed: 62 }),
@@ -330,7 +356,25 @@ const recordings = {
   '/audio/salsa/timbales/low.wav': { freesound: 533094, maxLength: 0.9 },
   '/audio/salsa/timbales/high.wav': { freesound: 533095, maxLength: 0.8 },
   '/audio/salsa/timbales/rim.wav': { freesound: 533089, maxLength: 0.5 },
+  // Heel: a muffled stroke on the tumba; toe: fingertips on the conga.
+  '/audio/salsa/congas/heel.wav': { vcsl: 'Tumba_HitFM_v2_rr1_Sum.wav', maxLength: 0.25 },
+  '/audio/salsa/congas/toe.wav': { vcsl: 'Conga_HitFM_v1_rr1_Sum.wav', maxLength: 0.25 },
   '/audio/salsa/cowbell/hit.wav': { vcsl: 'Cowbell1_Hit_v3_rr1_Mid.wav', maxLength: 0.5 },
+  '/audio/salsa/cowbell/neck.wav': { vcsl: 'Cowbell1_Muted_v3_rr1_Mid.wav', maxLength: 0.15 },
+  // A second, different bell for the timbales, so the two bells don't blur.
+  '/audio/salsa/timbalebell/open.wav': { vcsl: 'Cowbell2_Normal_v3_rr1_Mid.wav', maxLength: 0.5 },
+  '/audio/salsa/timbalebell/neck.wav': { vcsl: 'Cowbell2_Muted_v3_rr1_Mid.wav', maxLength: 0.15 },
+  '/audio/salsa/bass/a2.wav': { freesound: 43938, maxLength: 0.9 },
+  // VCSL grand piano (Kawai), sustained notes; not committed, see
+  // audio-sources/README.md. VCSL names them an octave low: its "C3" is C4.
+  '/audio/salsa/piano/c4.wav': { vcsl: 'GrandPno_Main_Sus_C3_v3_rr1.wav', midi: 60, maxLength: 1.5 },
+  '/audio/salsa/piano/e4.wav': { vcsl: 'GrandPno_Main_Sus_E3_v3_rr1.wav', midi: 64, maxLength: 1.5 },
+  '/audio/salsa/piano/g4.wav': { vcsl: 'GrandPno_Main_Sus_G3_v3_rr1.wav', midi: 67, maxLength: 1.5 },
+  '/audio/salsa/piano/b4.wav': { vcsl: 'GrandPno_Main_Sus_B3_v3_rr1.wav', midi: 71, maxLength: 1.5 },
+  '/audio/salsa/piano/d5.wav': { vcsl: 'GrandPno_Main_Sus_D4_v3_rr1.wav', midi: 74, maxLength: 1.5 },
+  '/audio/salsa/piano/f5.wav': { vcsl: 'GrandPno_Main_Sus_F4_v3_rr1.wav', midi: 77, maxLength: 1.5 },
+  '/audio/salsa/piano/a5.wav': { vcsl: 'GrandPno_Main_Sus_A4_v3_rr1.wav', midi: 81, maxLength: 1.5 },
+  '/audio/salsa/piano/c6.wav': { vcsl: 'GrandPno_Main_Sus_C5_v3_rr1.wav', midi: 84, maxLength: 1.5 },
   '/audio/salsa/maracas/hit.wav': { vcsl: 'Mid_ShakerHighFaster_Down_rr1.wav', maxLength: 0.2 },
   '/audio/salsa/guiro/short.wav': { vcsl: 'Guiro_Hit_rr1_Mid.wav', maxLength: 0.25 },
   '/audio/salsa/guiro/long.wav': { vcsl: 'Guiro_Fast_rr1_Mid.wav', maxLength: 0.6 },
@@ -365,6 +409,15 @@ const recordings = {
   '/audio/bachata/guitar/bb4.wav': { uiowa: 'Guitar.mf.sulB.C4B4.mono.aif', midi: 70, maxLength: 1.2 },
   '/audio/bachata/guitar/c5.wav': { uiowa: 'Guitar.mf.sul_E.C5B5.mono.aif', midi: 72, maxLength: 1.2 },
   '/audio/bachata/guitar/e5.wav': { uiowa: 'Guitar.mf.sul_E.C5B5.mono.aif', midi: 76, maxLength: 1.2 },
+}
+
+// Quiet strokes, as a fraction of full level: every sample is normalized,
+// and a track has one volume, so a soft stroke has to be soft in its file.
+const levels = {
+  '/audio/salsa/congas/heel.wav': 0.35,
+  '/audio/salsa/congas/toe.wav': 0.3,
+  '/audio/salsa/cowbell/neck.wav': 0.5,
+  '/audio/salsa/timbalebell/neck.wav': 0.5,
 }
 
 const SOURCES = join(ROOT, 'audio-sources')
@@ -612,15 +665,15 @@ function fadeOut(signal, seconds) {
   return signal
 }
 
-/** Peak-normalize to -1 dBFS and add short edge fades so nothing clicks. */
-function finalize(signal) {
+/** Peak-normalize to -1 dBFS (times `level`) and add short edge fades so nothing clicks. */
+function finalize(signal, level = 1) {
   // Plucks start mid-waveform; ramp the first millisecond in.
   const fadeInLength = Math.round(0.001 * SAMPLE_RATE)
   for (let i = 0; i < fadeInLength; i++) signal[i] *= i / fadeInLength
   fadeOut(signal, 0.005)
   let peak = 0
   for (const v of signal) peak = Math.max(peak, Math.abs(v))
-  const scale = peak > 0 ? 0.891 / peak : 0
+  const scale = peak > 0 ? (0.891 * level) / peak : 0
   return signal.map((v) => v * scale)
 }
 
@@ -672,10 +725,10 @@ for (const path of referenced) {
   if (source) {
     const slice = recording.voice ? sliceWord : recording.midi ? sliceNote : sliceRecording
     const { rate, signal, tuning } = slice(source, recording)
-    wav = encodeWav(finalize(signal), rate)
+    wav = encodeWav(finalize(signal, levels[path]), rate)
     if (tuning !== undefined) detail = `  retuned ${tuning >= 0 ? '+' : ''}${Math.round(tuning * 100)} cents`
   } else {
-    wav = encodeWav(finalize(generators[path]()))
+    wav = encodeWav(finalize(generators[path](), levels[path]))
     synthesized.push(path)
   }
   const target = join(ROOT, 'public', path)

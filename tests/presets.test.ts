@@ -72,9 +72,9 @@ describe.each(genres.map((genre) => [genre.id, genre] as const))('%s', (_id, gen
       }
     })
 
-    it('has one valid chord per bar if it has pitched tracks', () => {
-      const pitched = pattern.tracks.some((t) => !t.muted && genre.pitched[t.instrument])
-      if (!pitched) return expect(pattern.chords).toBeUndefined()
+    it('has one valid chord per bar if the genre has pitched instruments', () => {
+      // Even if they're muted: a shared link always comes back with chords.
+      if (Object.keys(genre.pitched).length === 0) return expect(pattern.chords).toBeUndefined()
       expect(pattern.chords).toHaveLength(pattern.counts / COUNTS_PER_BAR)
       for (const chord of pattern.chords!) expect(() => parseChord(chord)).not.toThrow()
     })
@@ -122,6 +122,52 @@ describe('rhythm reference', () => {
       expect(verse23.tracks.find((t) => t.instrument === instrument)!.steps, instrument)
         .toEqual(verse32.tracks.find((t) => t.instrument === instrument)!.steps)
     }
+  })
+
+  it.each(salsaPresets.filter((p) => p.id !== 'salsa-guaguanco-3-2' && p.id !== 'salsa-chachacha-2-3').map((p) => [p.id, p] as const))(
+    '%s: full tumbao on the congas, bass on 2& and 4 and never on the 1',
+    (_id, pattern) => {
+      const bars = pattern.counts / COUNTS_PER_BAR
+      const congas = pattern.tracks.find((t) => t.instrument === 'congas')!.steps
+      expect(congas.slice(0, 8)).toEqual(['heel', 'toe', 'slap', 'toe', 'heel', 'toe', 'open', 'open'])
+      expect(onsets(pattern, 'bass')).toEqual(Array.from({ length: bars }, (_, b) => [3, 6].map((i) => i + b * 8)).flat())
+      const bass = pattern.tracks.find((t) => t.instrument === 'bass')!.steps
+      expect(bass.filter((_, i) => i % 8 === 6).every((step) => step === 'push')).toBe(true)
+    },
+  )
+
+  it('montuno: bongo player and timbalero move to their bells; verse: bongos and cáscara', () => {
+    const plays = (pattern: Pattern, instrument: string) => {
+      const track = pattern.tracks.find((t) => t.instrument === instrument)!
+      return !track.muted && track.steps.some(Boolean)
+    }
+    for (const id of ['salsa-verse-3-2', 'salsa-montuno-3-2', 'salsa-verse-2-3', 'salsa-montuno-2-3']) {
+      const pattern = salsaPresets.find((p) => p.id === id)!
+      const montuno = id.includes('montuno')
+      expect(plays(pattern, 'cowbell'), id).toBe(montuno)
+      expect(plays(pattern, 'timbalebell'), id).toBe(montuno)
+      expect(plays(pattern, 'bongos'), id).toBe(!montuno)
+      expect(plays(pattern, 'timbales'), id).toBe(!montuno)
+    }
+  })
+
+  it('mambo bell and piano montuno turn with the clave', () => {
+    const steps = (id: string, instrument: string) =>
+      salsaPresets.find((p) => p.id === id)!.tracks.find((t) => t.instrument === instrument)!.steps
+    for (const instrument of ['timbalebell', 'piano']) {
+      const turned = [...steps('salsa-montuno-3-2', instrument).slice(8), ...steps('salsa-montuno-3-2', instrument).slice(0, 8)]
+      expect(steps('salsa-montuno-2-3', instrument), instrument).toEqual(turned)
+    }
+    // The bell's mouth keeps the beat; its neck strokes are the cáscara's off-beats.
+    const bell = steps('salsa-montuno-3-2', 'timbalebell')
+    expect(bell.filter((_, i) => i % 2 === 0).every((step) => step === 'open')).toBe(true)
+    expect(bell.flatMap((step, i) => (step === 'neck' ? [i] : []))).toEqual([5, 7, 9])
+  })
+
+  it.each(['salsa-verse-montuno', 'salsa-verse-montuno-2-3'])('%s: the timbales fill into the montuno', (id) => {
+    const timbales = salsaPresets.find((p) => p.id === id)!.tracks.find((t) => t.instrument === 'timbales')!.steps
+    expect(timbales.slice(12, 16)).toEqual(['high', 'high', 'high', 'low'])
+    expect(timbales.slice(16).every((step) => step === null)).toBe(true)
   })
 
   it('cha-cha-chá: güiro long on the beat, two shorts after — the "cha-cha-chá" on 4 & 1', () => {

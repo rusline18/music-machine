@@ -26,6 +26,12 @@ describe('pattern links', () => {
     expect(decodePattern(encodePattern(pattern, genre), genre)).toEqual(pattern)
   })
 
+  it('keeps old salsa links working: new strokes are added after the old ones', () => {
+    // A link stores a step as its position in the instrument's step names.
+    expect(stepNames(salsa, 'congas').slice(0, 3)).toEqual(['low', 'slap', 'open'])
+    expect(stepNames(salsa, 'cowbell')[0]).toBe('hit')
+  })
+
   it('keeps edits: tempo, length, mutes, volumes, chords, the voice', () => {
     const pattern = structuredClone(bachata.presets[0]!)
     pattern.bpm = 141
@@ -105,7 +111,8 @@ describe('pattern links', () => {
     const decoded = decodePattern(codeFor(payload), salsa)
     if (decoded === null) return
     // Exactly what the scheduler and grid rely on, nothing else.
-    expect(Object.keys(decoded).sort()).toEqual(['bpm', 'counts', 'id', 'stepsPerCount', 'tracks'])
+    expect(Object.keys(decoded).sort()).toEqual(['bpm', 'chords', 'counts', 'id', 'stepsPerCount', 'tracks'])
+    expect(decoded.chords).toHaveLength(decoded.counts / 4)
     expect(decoded.bpm).toBeGreaterThanOrEqual(salsa.bpmRange[0])
     expect(decoded.bpm).toBeLessThanOrEqual(salsa.bpmRange[1])
     expect(decoded.tracks.map((t) => t.instrument)).toEqual([...salsa.instruments])

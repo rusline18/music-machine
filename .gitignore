@@ -25,6 +25,8 @@ logs
 
 # Large raw guitar recordings (~117 MB); see audio-sources/README.md to fetch
 audio-sources/uiowa/
+# VCSL grand piano notes (~14 MB); see audio-sources/README.md to fetch
+audio-sources/vcsl/GrandPno_*
 
 # Real songs for analysis (docs/track-analysis-plan.md); never committed
 audio-sources/tracks/

@@ -25,7 +25,7 @@ test.describe('salsa beat machine', () => {
 
   test('advanced mode: a click cycles through the sounds, then off', async ({ page }) => {
     await advanced(page)
-    const step = page.getByRole('button', { name: 'Congas step 1', exact: true })
+    const step = page.getByRole('button', { name: 'Bongos step 8', exact: true })
     await expect(step).toHaveText('')
     await step.click()
     await expect(step).not.toHaveText('')
