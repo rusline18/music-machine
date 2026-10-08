@@ -3,11 +3,13 @@ import { chainPatterns, definePattern } from '~/core/pattern'
 import { voiceTrack } from '../voice'
 
 // Figures are eighth notes: a bar is 8 cells (counts 1–4), an 8-count block
-// 16. Each section is two blocks — four bars of the minor-key i–iv–V–i
-// turnaround. Built from documented references, but still needs sign-off
-// from a bachata musician.
+// 16. Each section is one block, like salsa's, over the two-bar i–V loop
+// (Am–E). Every part repeats each block, so Counts can stretch it, and the
+// chord picker can turn it into the longer i–iv–V–i (Am Dm E Am). Built
+// from documented references, but still needs sign-off from a bachata
+// musician.
 
-const PROGRESSION = ['Am', 'Dm', 'E', 'Am']
+const PROGRESSION = ['Am', 'E']
 
 /** Güira: long scrape on the beat, short on the & */
 const GUIRA: Step[] = ['long', 'short']
@@ -29,7 +31,7 @@ interface SectionSpec {
 function bachataSection(spec: SectionSpec) {
   return definePattern({
     id: spec.id,
-    counts: 16,
+    counts: 8,
     bpm: 130,
     chords: PROGRESSION,
     tracks: [
