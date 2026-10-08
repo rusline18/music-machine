@@ -9,6 +9,9 @@
  *
  * Usage: npm run samples
  *
+ * Afterwards every WAV is also encoded to Opus (.webm) by encode-samples.mjs;
+ * that's what the app downloads, with the WAV as fallback.
+ *
  * The list of files to write is every '/audio/….wav' path quoted in
  * any .ts file under app/genres/, and the script fails if a path there has no
  * generator below — keeps the two in sync.
@@ -16,6 +19,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { encodeSamples } from './encode-samples.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const SAMPLE_RATE = 44100
@@ -681,6 +685,7 @@ for (const path of referenced) {
   console.log(`${path}  ${source ? 'recording' : 'synth    '}  ${(wav.length / 1024).toFixed(1)} KB${detail}`)
 }
 console.log(`\n${referenced.size} samples, ${(totalBytes / 1024).toFixed(0)} KB total`)
+encodeSamples()
 
 const missingDownloads = [...new Set(synthesized.map((path) => recordings[path]?.freesound).filter(Boolean))]
 if (missingDownloads.length > 0) {

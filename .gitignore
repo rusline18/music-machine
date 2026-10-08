@@ -28,3 +28,6 @@ audio-sources/uiowa/
 
 # Real songs for analysis (docs/track-analysis-plan.md); never committed
 audio-sources/tracks/
+
+# TypeScript build cache (npm run typecheck)
+*.tsbuildinfo

@@ -23,7 +23,7 @@ describe('audio engine volume and mute', () => {
   beforeEach(() => {
     gains = []
     vi.stubGlobal('AudioContext', class extends FakeAudioContext {
-      createGain() {
+      override createGain() {
         const gain = new FakeGain()
         gains.push(gain)
         return gain
