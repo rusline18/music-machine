@@ -133,6 +133,10 @@ The tests run against the production build (`nuxt build`, port 3000). If a
 server is already listening on 3000 (e.g. `npm run dev`), it is reused
 instead.
 
+GitHub Actions (`.github/workflows/ci.yml`) runs unit and e2e tests on every
+pull request and push to `main`; on failure, download the `playwright-report`
+artifact and open `index.html` to see traces.
+
 ## Notes
 
 - Audio only initializes client-side and only on user interaction (browsers
