@@ -3,8 +3,11 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   resolve: {
-    // Nuxt's alias for code shared by the app and the server.
-    alias: { '#shared': fileURLToPath(new URL('./shared', import.meta.url)) },
+    alias: {
+      '~': fileURLToPath(new URL('./app', import.meta.url)),
+      // Nuxt's alias for code shared by the app and the server.
+      '#shared': fileURLToPath(new URL('./shared', import.meta.url)),
+    },
   },
   test: {
     include: ['tests/**/*.test.ts'],

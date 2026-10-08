@@ -1,127 +1,156 @@
 # Latin Beat Machine
 
 Interactive Salsa & Bachata rhythm trainer — build a beat from real percussion
-one-shots, practice it at your own tempo, and train your ear. See the project
-plan for the full concept, sourcing, and roadmap.
+one-shots, practice it at your own tempo, and train your ear. Available in
+English and Russian.
 
-**Stack:** Nuxt 4 (SSR on) + Vue 3 + TypeScript + Tailwind CSS + Web Audio API.
+**Stack:** Nuxt 4 (SSR) + Vue 3 + TypeScript + Tailwind CSS + Web Audio API +
+`@nuxtjs/i18n`.
 
-## Status
+## Architecture
 
-This is the Phase 1 foundation: project scaffold, pattern data model, a
-Web Audio engine + lookahead scheduler, and Salsa/Bachata pages wired to a
-shared beat-machine composable.
-
-`public/audio/**` is built by `npm run samples`
-(`scripts/generate-samples.mjs`). Each one-shot is trimmed from a free
-recording in `audio-sources/` (CC0, except the University of Iowa guitar)
-when that source is present, and synthesized otherwise — see
-[audio-sources/README.md](audio-sources/README.md) for sources, licenses and
-which Freesound and Iowa files to download. To change a sound, edit its
-entry in `recordings` and re-run; don't hand-edit `public/audio`, since the
-script overwrites it.
-
-Each WAV also gets an Opus copy (`.webm`, 128 kbps, ~5× smaller) from
-`scripts/encode-samples.mjs`, which `npm run samples` runs at the end; it
-needs `ffmpeg` with libopus. The app downloads the `.webm` and falls back to
-the WAV only where the browser can't decode Opus. After touching WAVs some
-other way, run `npm run samples:encode` to refresh the copies.
-
-## Feedback
-
-**Built but switched off** until it's decided where feedback should go. Set
-`NUXT_PUBLIC_FEEDBACK_ENABLED=true` to show a **Send feedback** link in the
-footer of every page (`app/components/FeedbackDialog.vue`); it posts to
-`POST /api/feedback` (`server/api/feedback.post.ts`), which answers 404 while
-the flag is off. Where feedback ends up is configuration, so it can change
-without touching code:
-
-- **Stored** in Nitro's `feedback` storage — by default JSON files under
-  `.data/feedback/<date>/<id>.json` on the server. For hosts without a
-  persistent disk (serverless, several instances) point `nitro.storage.feedback`
-  in `nuxt.config.ts` at another [unstorage driver](https://unstorage.unjs.io/drivers)
-  (Redis, S3, Cloudflare KV, …).
-- **Forwarded** to a webhook if `NUXT_FEEDBACK_WEBHOOK_URL` is set. The JSON
-  body has `text` (Slack), `content` (Discord, with pings disabled) and the
-  full entry under `feedback`, so an incoming webhook or an automation tool
-  (Zapier, Make, n8n → email, Telegram, GitHub issues) can take it as is.
-
-Feedback counts as delivered if either one works. Each entry keeps the kind,
-message, optional email, page path and browser user agent — no IP address.
-The endpoint takes JSON only, at most 16 KB, 5 per client per 10 minutes and
-200 per hour overall, and silently drops bots that fill a hidden honeypot
-field. Behind a reverse proxy set `NUXT_FEEDBACK_TRUST_PROXY=true`, or every
-visitor shares the proxy's rate limit. The API needs the Node server
-(`nuxt build`); on a static `nuxt generate` site the dialog says feedback
-isn't available.
-
-## Project structure
+Three layers, each depending only on the ones below it:
 
 ```
 app/
-  components/beat/     UI: BeatGrid, InstrumentTrack, Transport, BpmControl, CountSelector, PatternSelector
+  core/                Framework-free logic: no Vue, no Nuxt, unit-tested
+    pattern.ts           Pattern model, preset builder (definePattern), chaining, resizing
+    harmony.ts           Chords, chord tones, pitch-shifting notes onto recorded zones
+    resolve.ts           Turns a step into the notes to play: samples, chord-following
+                         notes, or the counting voice
+    tempo.ts             Slow / Normal / Fast, relative to a preset's own tempo
+    layers.ts            Order for "layer by layer"
+    links.ts             Checks configured external links (https only)
+    share.ts             Pattern ⇄ short link code; incoming links are checked and rebuilt
+    audio/
+      engine.ts          AudioContext, per-instrument gain, sample loading (Opus with
+                         WAV fallback, prefetch before the first click), playback, reverb
+      scheduler.ts       Lookahead scheduler — sample-accurate timing, live pattern edits
+      humanize.ts        "Feel": small timing/volume/pitch variations
+  genres/              Data: one folder per genre, plus the registry
+    index.ts             `genres` list and `findGenre(id)`
+    voice.ts             The counting voice shared by all genres (per language)
+    types.ts             The `Genre` shape: instruments, samples, pitched, bpmRange, presets
+    salsa/, bachata/
+      samples.ts         Sample paths (read by `npm run samples`) and pitched instruments
+      patterns.ts        Presets, written as repeating figures
+      index.ts           The genre definition
   composables/
-    useAudioEngine.ts    AudioContext, gain nodes, sample loading/playback
-    useBeatScheduler.ts  Lookahead scheduler — keeps BPM/timing sample-accurate
-    usePattern.ts        Pattern/track data model + (de)serialization
-    useBeatMachine.ts     Ties pattern + engine + scheduler together per genre
-  data/
-    salsa/, bachata/     Instrument sample maps + preset patterns
+    useBeatMachine.ts    Vue state for one genre page: wires pattern + engine + scheduler
+    useUiMode.ts         Simple / advanced mode, remembered in the browser
+    useNarrowScreen.ts   Phone-sized screen, for the one-bar-at-a-time grid
+  components/
+    beat/                BeatMachine (the whole trainer), BeatGrid, TrackRow,
+                         CountDisplay, LayerGuide, Transport, PresetSelector
+    SiteFooter.vue       Feedback and donation links (hidden until configured)
+    FeedbackDialog.vue   The feedback form
+    ui/                  RangeControl, SegmentedControl, ControlLabel (icon + label
+                         + tooltip), Tooltip, Icon
+  icons.ts             Line icons as SVG paths, keyed by instrument id or control
+    LanguageSwitcher.vue
   pages/
-    index.vue, salsa.vue, bachata.vue
-  components/FeedbackDialog.vue  "Send feedback" link + dialog in the footer
+    index.vue            Home: one link per genre
+    [genre].vue          Trainer page for any genre in the registry (404 otherwise)
 
-server/
-  api/feedback.post.ts   Validates, rate-limits and delivers feedback
-  feedback/              Delivery (storage + webhook) and the rate limiter
-shared/feedback.ts       Feedback kinds, limits and validation (app + server)
-
-public/audio/
-  salsa/<instrument>/    One-shot .wav files (built — don't edit by hand)
-  bachata/<instrument>/
-
-audio-sources/           Raw recordings (VCSL, Freesound, Wikimedia, Iowa) + credits
-
+server/                POST /api/feedback (rate-limited, off by default)
+shared/feedback.ts     Feedback limits and validation, used by the form and the server
+i18n/locales/          en.json, ru.json — every user-visible string
+public/audio/          Built one-shots (don't edit by hand — see below)
+audio-sources/         Raw recordings + credits
 scripts/
-  generate-samples.mjs   Builds public/audio from recordings, synth fallback
-  encode-samples.mjs     Opus (.webm) copies of the WAVs, what the app downloads
-
-tests/                   Vitest: presets, pattern helpers, engine, scheduler
-e2e/                     Playwright: pages, grid editing, transport in a real browser
+  generate-samples.mjs Builds public/audio from audio-sources, synth fallback
+  encode-samples.mjs   Adds an Opus (.webm) copy of every WAV
+  speak-counts.py      Speaks the counts with espeak-ng into audio-sources/voice
+tests/                 Vitest unit tests
+e2e/                   Playwright: pages, grid editing, transport, sharing in a real browser
+docs/                  Plans
 ```
+
+### Simple and advanced mode
+
+The trainer opens in simple mode: pattern picker with a short description,
+Slow / Normal / Fast, the counting voice, Play, and a grid where a click turns
+a hit on or off (with the sound that track plays most). **Advanced features**
+adds the BPM slider, loop length, feel, reverb, chords, volumes, the voice
+track and every sound of each instrument. The mode only changes what's shown;
+the pattern stays the same. Every instrument and control has an icon and a
+tooltip (hover, tap or keyboard focus) explaining what it is for.
+
+Both modes have **Build it layer by layer** (starts from the genre's
+foundation instrument and adds one at a time, in `teachingOrder` from the
+genre definition) and a large 1–8 count display with 1 and 5 marked. On a
+phone the grid shows one bar (4 counts) at a time and follows the music.
+
+### Sharing and saving
+
+**Share** copies a link like `/salsa?p=…` to the exact pattern: tempo, length,
+mutes, volumes, chords and the voice. Each step is one letter, so a 32-count
+pattern stays well under 2 KB. Opening a link loads the pattern and drops the
+code from the address bar; anything decoded is checked against the genre and
+rebuilt (`app/core/share.ts`). Edits are kept in the browser per genre
+(an untouched preset isn't, so preset fixes reach everyone); **Reset** goes
+back to the preset.
+
+### Feedback
+
+A "Send feedback" link in the footer opens a form that posts to
+`/api/feedback`. It's off until `NUXT_PUBLIC_FEEDBACK_ENABLED=true`. Feedback
+is stored with Nitro storage (`.data/feedback` by default) and, if
+`NUXT_FEEDBACK_WEBHOOK_URL` is set, also posted there; behind a reverse proxy
+set `NUXT_FEEDBACK_TRUST_PROXY=true` so rate limits see real client IPs.
+Production builds also send security headers (CSP and friends) and cache
+`/audio/**` for a week — see `nuxt.config.ts`.
+
+### Donations
+
+A "Support the developer" link in the footer opens a donation page hosted by
+a payment service (Boosty, Ko-fi, …). The app only links there: it has no
+payment code, keys or server, and never sees card details. Set the link with
+the `NUXT_PUBLIC_DONATE_URL` environment variable (https only); while it's
+unset the link is hidden.
+
+### Conventions
+
+- **Ids, not labels, in data.** Genres, instruments, step names and presets are
+  identified by ids; their display text lives in `i18n/locales/*.json` under
+  `genres.<id>`, `instruments.<id>`, `steps.<name>` and `presets.<id>`.
+  `tests/i18n.test.ts` fails if a locale is missing a key or one the data needs.
+- **`core/` stays framework-free** so it can be tested without Nuxt. Anything
+  that needs Vue reactivity or lifecycle goes in `composables/`.
+- **Code style is enforced by ESLint** (`@nuxt/eslint`, configured under
+  `eslint` in `nuxt.config.ts`) — no Prettier. CI runs lint, typecheck and
+  tests on every pull request.
+- **Components are auto-imported with their folder prefix**: `beat/TrackRow.vue`
+  is `<BeatTrackRow>`, `ui/RangeControl.vue` is `<UiRangeControl>`.
+  `npm run typecheck` (strict templates) catches a wrong name.
+
+### Adding things
+
+- **A language:** add `i18n/locales/<code>.json` (same keys as `en.json`) and
+  an entry in `i18n.locales` in `nuxt.config.ts`.
+- **A preset:** add a `definePattern({...})` to the genre's `patterns.ts`,
+  list it in the genre's presets, and add its name (`presets.<id>`) and a
+  one-line description for beginners (`help.presets.<id>`) to every locale.
+- **An instrument:** add it to the genre's `teachingOrder`, and besides its samples, give it a name
+  (`instruments.<id>`), a tooltip (`help.instruments.<id>`) and an icon in
+  `app/icons.ts` — a few strokes on a 24×24 grid. Tests fail if any is missing.
+- **A genre:** add `app/genres/<id>/` like the existing ones, register it in
+  `app/genres/index.ts`, and add its texts and an accent colour on the home
+  page. The `/<id>` page then exists automatically.
 
 ## Setup
 
 ```bash
 npm install
+npm run dev        # http://localhost:3000 (Russian at /ru)
+npm test           # unit tests
+npm run typecheck  # TypeScript + Vue templates
+npm run lint       # ESLint: bugs + code style (npm run lint:fix fixes most)
+npm run build && npm run preview
 ```
 
-## Development
-
-```bash
-npm run dev
-```
-
-Open `http://localhost:3000`.
-
-## Production
-
-```bash
-npm run build
-npm run preview
-```
-
-## Tests
-
-```bash
-npm test
-```
-
-Vitest covers preset integrity (lengths, sample names, files on disk), the
-clave/bass reference rhythms, pattern helpers, volume/mute, and scheduler
-timing. Audio output itself is checked by ear.
-
-### End-to-end (Playwright)
+End-to-end tests run in Chromium against the production build (port 3000;
+a server already listening there, e.g. `npm run dev`, is reused):
 
 ```bash
 npx playwright install chromium   # once, downloads the browser
@@ -129,21 +158,57 @@ npm run test:e2e                  # builds the app and runs e2e/ against it
 npm run test:e2e:ui               # interactive UI mode
 ```
 
-The tests run against the production build (`nuxt build`, port 3000). If a
-server is already listening on 3000 (e.g. `npm run dev`), it is reused
-instead.
+CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit and e2e tests on
+every pull request and push to `main`; when e2e fails, download the
+`playwright-report` artifact and open `index.html` to see traces.
 
-GitHub Actions (`.github/workflows/ci.yml`) runs unit and e2e tests on every
-pull request and push to `main`; on failure, download the `playwright-report`
-artifact and open `index.html` to see traces.
+For correct `hreflang` links in production, set the site's public URL:
+`NUXT_PUBLIC_I18N_BASE_URL=https://example.com`.
+
+## Audio samples
+
+`public/audio/**` is built by `npm run samples`
+(`scripts/generate-samples.mjs`). Each one-shot is trimmed from a free
+recording in `audio-sources/` (CC0, except the University of Iowa guitar)
+when that source is present, and synthesized otherwise — see
+[audio-sources/README.md](audio-sources/README.md) for sources, licenses and
+which Freesound and Iowa files to download. The list of files comes from the
+paths quoted in `app/genres/**`; to change a sound, edit its entry in
+`recordings` in the script and re-run.
+
+The script then encodes every WAV to Opus (`.webm`, about 5× smaller) with
+`scripts/encode-samples.mjs` — that needs ffmpeg with libopus, and runs on its
+own as `npm run samples:encode`. The app downloads the `.webm` and falls back
+to the WAV where the browser can't play Opus. A test fails if a WAV has no
+`.webm` beside it: without it every load starts with a failed request.
+
+## Counting voice
+
+Every genre has a **Voice** track that counts the dance in the page's
+language: a `count` step says the number of the count it falls on (1–8,
+starting over each 8-count block), an `and` step says "and" / «и». The
+**Voice** control switches it between off, "1 2 3…" and "1 & 2 &…"; cells
+can also be edited one by one. Random and Clear leave it alone.
+
+The current recordings are synthesized with espeak-ng
+(`scripts/speak-counts.py`) and sound robotic. For a real voice, record each
+word as a WAV — `1.wav` … `8.wav` and `and.wav` per language — into
+`audio-sources/voice/<locale>/`, replacing the generated files, and run
+`npm run samples`. Leading and trailing silence is trimmed automatically.
+A new UI language needs its words added in `app/genres/voice.ts` and the
+script.
 
 ## Notes
 
-- Audio only initializes client-side and only on user interaction (browsers
-  require a user gesture to start an `AudioContext`) — pages still render
-  fully server-side for SEO.
-- Presets: Salsa verse/montuno in 3-2 son clave, Bachata derecho/majao,
-  plus 16-count chains of each pair. They follow documented references but still need sign-off from a player
-  — see plan sections 7 and 14.
+- Audio only starts client-side, on user interaction (browsers require a user
+  gesture to start an `AudioContext`); pages still render fully server-side.
+- Presets: Salsa verse/montuno in 3-2 and 2-3 son clave, cha-cha-chá (2-3)
+  and rumba guaguancó (3-2 rumba clave); Bachata derecho, majao and mambo over
+  an Am–E loop; plus a verse → montuno/chorus chain. Every preset starts at
+  8 counts. They follow documented references but still need sign-off from a
+  player.
+- What's next: [docs/roadmap.md](docs/roadmap.md). Earlier reviews:
+  [security and performance audit](docs/security-performance-audit.md),
+  [UX plan](docs/ux-plan.md).
 - Patterns are 8, 16, 24 or 32 dance counts long, shown as 8-count blocks.
   Each count is two cells ("1 &"); BPM is counts per minute.

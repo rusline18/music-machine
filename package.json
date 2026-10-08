@@ -3,13 +3,16 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "nuxt build",
     "dev": "nuxt dev",
+    "build": "nuxt build",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "nuxt typecheck",
     "samples": "node scripts/generate-samples.mjs",
     "samples:encode": "node scripts/encode-samples.mjs",
-    "test": "vitest run",
     "postinstall": "nuxt prepare",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
@@ -20,8 +23,14 @@
     "vue-router": "^5.3.1"
   },
   "devDependencies": {
+    "@nuxt/eslint": "^1.17.0",
+    "@nuxtjs/i18n": "^10.6.0",
     "@nuxtjs/tailwindcss": "^6.14.0",
     "@playwright/test": "^1.64.0",
-    "vitest": "^5.0.3"
+    "@types/node": "^22.20.5",
+    "eslint": "^10.12.0",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.3",
+    "vue-tsc": "^3.3.12"
   }
 }

@@ -1,0 +1,214 @@
+{
+  "app": {
+    "name": "Latin Beat Machine",
+    "tagline": "Build. Listen. Remove. Practice. Understand. Dance.",
+    "description": "An interactive Salsa & Bachata rhythm trainer. Build your own beat from real percussion, practice at your own tempo, and train your ear."
+  },
+  "nav": {
+    "back": "← Back",
+    "language": "Language"
+  },
+  "genres": {
+    "salsa": {
+      "name": "Salsa",
+      "title": "Salsa Rhythm Trainer",
+      "description": "Build a Salsa rhythm from clave, congas, bongos, timbales, cowbell, maracas and güiro, then practice it at your own tempo."
+    },
+    "bachata": {
+      "name": "Bachata",
+      "title": "Bachata Rhythm Trainer",
+      "description": "Build a Bachata rhythm from güira, bongos, campana, bass, requinto and segunda, then practice it at your own tempo."
+    }
+  },
+  "controls": {
+    "preset": "Pattern",
+    "play": "▶ Play",
+    "stop": "■ Stop",
+    "bpm": "BPM",
+    "counts": "Counts",
+    "feel": "Feel",
+    "reverb": "Reverb",
+    "voice": "Voice",
+    "counting": {
+      "off": "Off",
+      "counts": "1 2 3…",
+      "ands": "1 & 2 &…"
+    },
+    "random": "Random",
+    "clear": "Clear",
+    "speed": "Speed",
+    "tempo": {
+      "slow": "Slow",
+      "normal": "Normal",
+      "fast": "Fast"
+    },
+    "advancedMode": "Advanced features",
+    "simpleMode": "Back to simple",
+    "count": "Count",
+    "loading": "Loading {percent}%",
+    "downloaded": "Sounds downloaded",
+    "failed": "Sounds that didn't load: {count} · Play to retry",
+    "failedHint": "Check your connection and press Play to retry.",
+    "share": "Share",
+    "linkCopied": "Link copied",
+    "link": "Link to this pattern",
+    "reset": "Reset"
+  },
+  "grid": {
+    "block": "Block {n}",
+    "chords": "Chords",
+    "chordForBar": "Chord for bar {n}",
+    "and": "&",
+    "on": "on",
+    "off": "off",
+    "mute": "Mute {instrument}",
+    "volume": "{instrument} volume",
+    "previous": "Previous bar",
+    "next": "Next bar",
+    "page": "Bar {n} of {total}",
+    "step": "{instrument} step {n}"
+  },
+  "instruments": {
+    "voice": "Voice",
+    "clave": "Clave",
+    "congas": "Congas",
+    "bongos": "Bongos",
+    "timbales": "Timbales",
+    "cowbell": "Cowbell",
+    "maracas": "Maracas",
+    "guiro": "Güiro",
+    "guira": "Güira",
+    "campana": "Campana",
+    "bass": "Bass",
+    "requinto": "Requinto",
+    "segunda": "Segunda"
+  },
+  "steps": {
+    "hit": "hit",
+    "low": "low",
+    "high": "high",
+    "slap": "slap",
+    "open": "open",
+    "rim": "rim",
+    "short": "short",
+    "long": "long",
+    "neck": "neck",
+    "root": "root",
+    "3rd": "3rd",
+    "5th": "5th",
+    "dyad": "dyad",
+    "bass": "bass",
+    "chord": "chord",
+    "mute": "mute",
+    "count": "count",
+    "and": "&"
+  },
+  "presets": {
+    "salsa-verse-3-2": "Verse — the basic groove",
+    "salsa-montuno-3-2": "Montuno — more energy",
+    "salsa-verse-montuno": "Verse → Montuno (16 counts)",
+    "bachata-derecho": "Verse (derecho) — calm",
+    "bachata-majao": "Chorus (majao) — more energy",
+    "bachata-mambo": "Mambo — the instrumental peak",
+    "bachata-derecho-majao": "Verse → Chorus (16 counts)",
+    "salsa-verse-2-3": "Verse in 2-3 clave",
+    "salsa-montuno-2-3": "Montuno in 2-3 clave",
+    "salsa-verse-montuno-2-3": "Verse → Montuno, 2-3 (16 counts)",
+    "salsa-chachacha-2-3": "Cha-cha-chá — slower, \"cha-cha-chá\" on 4 & 1",
+    "salsa-guaguanco-3-2": "Rumba guaguancó — drums and clave",
+    "custom": "Pattern from a link"
+  },
+  "help": {
+    "presets": {
+      "salsa-verse-3-2": "The steady groove under the singing. Clear clave and congas: the best place to start.",
+      "salsa-montuno-3-2": "The hotter part after the verse: the bell comes in and the band pushes forward.",
+      "salsa-verse-montuno": "8 counts of verse, then 8 of montuno, to hear how a song builds up.",
+      "bachata-derecho": "The calm groove of the verse. Good for practising basic steps.",
+      "bachata-majao": "The chorus: the bongos syncopate and the güira digs in harder.",
+      "bachata-mambo": "The climax: the bell rings on every count, the dancers' cue for footwork.",
+      "bachata-derecho-majao": "8 counts of verse, then 8 of chorus, like in a real song.",
+      "salsa-verse-2-3": "The same verse, but the clave starts from its \"2\" side. Compare it with 3-2 to hear where a phrase begins.",
+      "salsa-montuno-2-3": "The montuno with the clave started from its \"2\" side.",
+      "salsa-verse-montuno-2-3": "8 counts of verse, then 8 of montuno, in 2-3 clave.",
+      "salsa-chachacha-2-3": "Around 120 BPM. Listen to the güiro: two short scrapes and a long one are the \"cha-cha-chá\" you step on 4 & 1.",
+      "salsa-guaguanco-3-2": "The street rumba salsa bands quote in \"rumba\" breaks. Rumba clave: the third stroke comes half a beat later than in son clave. Simplified for one conga player.",
+      "custom": "Someone shared this pattern with you. Edit it freely; Reset goes back to the first preset."
+    },
+    "instruments": {
+      "voice": "A voice counting the dance: 1 to 8. Use it to find the 1.",
+      "clave": "Two wooden sticks. Their pattern (3-2) is the backbone the whole salsa band follows.",
+      "congas": "Tall hand drums. The open tones on 4 and 4& are the heartbeat of salsa (the tumbao).",
+      "bongos": "Two small joined drums. Steady eighth notes that keep the band moving.",
+      "timbales": "Two metal drums played with sticks. On the shell they play the cáscara pattern.",
+      "cowbell": "A hand bell. Marks the beat in the louder parts of the song.",
+      "maracas": "Shakers. A soft, even pulse on every eighth note.",
+      "guiro": "A ridged gourd scraped with a stick: long and short scrapes.",
+      "guira": "A metal scraper, the sound you hear through the whole bachata: long on the beat, short in between.",
+      "campana": "A bell the bongo player switches to in the mambo. When you hear it, the mambo has started.",
+      "bass": "Plays the low notes of the chords. Follow it to feel the 1.",
+      "requinto": "The lead guitar: high melodies and runs between the singer's lines.",
+      "segunda": "The rhythm guitar: plays the chords in a steady, rolling pattern."
+    },
+    "controls": {
+      "speed": "How fast the music plays. Normal is the usual tempo for this rhythm; start slow while learning.",
+      "bpm": "Tempo in beats (counts) per minute.",
+      "voice": "A voice counting along: just the numbers, or with “and” between them.",
+      "counts": "How many counts the loop lasts before it repeats. Dancers count in blocks of 8.",
+      "feel": "0% plays exactly on the grid; higher adds small timing, volume and pitch variations, like a live band.",
+      "reverb": "How much room sound is added to the mix.",
+      "chords": "The chord for each bar. The bass and guitars follow it.",
+      "random": "Fills the grid with random hits. Fun for experimenting.",
+      "clear": "Removes every hit, so you can build a rhythm from scratch.",
+      "advancedMode": "Tempo, loop length, feel, reverb, volumes, chords and every sound of each instrument.",
+      "simpleMode": "Hide the extra controls. Your rhythm and settings stay as they are.",
+      "count": "The count the music is on right now. 1 and 5 start each half of the 8 counts: listen for them.",
+      "share": "Copies a link to this exact pattern — tempo, length, mutes and all. Send it to a partner or your students.",
+      "reset": "Throws away your changes and goes back to the preset."
+    },
+    "grid": {
+      "cellSimple": "Click to add or remove a hit",
+      "cellAdvanced": "Click to cycle through: {sounds}"
+    }
+  },
+  "layers": {
+    "start": "Build it layer by layer",
+    "intro": "Start with one instrument and add the others one at a time, to hear what each one plays.",
+    "playing": "Playing:",
+    "add": "Add {instrument}",
+    "addAll": "Add all the rest",
+    "done": "That's the whole band. Try switching one instrument off to hear what goes missing.",
+    "close": "Done"
+  },
+  "footer": {
+    "support": "Support the developer",
+    "supportHint": "Opens the donation page in a new tab. Payment happens there; this app never sees your card details."
+  },
+  "feedback": {
+    "prompt": "Something broken, or something missing?",
+    "open": "Send feedback",
+    "title": "Feedback",
+    "about": "What is it about?",
+    "kinds": {
+      "problem": "Something is broken",
+      "idea": "I have an idea",
+      "missing": "Something is missing"
+    },
+    "more": "Tell us more",
+    "placeholder": "What happened, what you expected, or what you'd like to see",
+    "email": "Email",
+    "emailNote": "(optional, if you'd like a reply)",
+    "privacy": "Along with your message we send the page you're on and your browser version — nothing else.",
+    "cancel": "Cancel",
+    "send": "Send",
+    "sending": "Sending…",
+    "thanks": "Thank you!",
+    "sent": "Your feedback has been sent. It really helps decide what to fix and build next.",
+    "close": "Close",
+    "errors": {
+      "off": "Feedback isn't switched on for this site yet.",
+      "tooMany": "Too much feedback at once — please try again in a few minutes.",
+      "invalid": "Please check the form: {reason}.",
+      "network": "Couldn't send it — please check your connection and try again."
+    }
+  }
+}

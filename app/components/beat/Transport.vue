@@ -29,18 +29,24 @@ const percent = computed(() => Math.round(progress.value * 100))
         :aria-busy="isLoading"
         @click="emit('play')"
       >
-        <span v-if="isLoading" class="tabular-nums">Loading {{ percent }}%</span>
-        <span v-else>▶ Play</span>
+        <span
+          v-if="isLoading"
+          class="tabular-nums"
+        >{{ $t('controls.loading', { percent }) }}</span>
+        <span v-else>{{ $t('controls.play') }}</span>
         <span
           v-if="progress < 1"
           role="progressbar"
-          aria-label="Sounds downloaded"
+          :aria-label="$t('controls.downloaded')"
           :aria-valuenow="percent"
           aria-valuemin="0"
           aria-valuemax="100"
           class="absolute inset-x-0 bottom-0 h-1 bg-neutral-900/20"
         >
-          <span class="block h-full bg-neutral-900/60 transition-[width]" :style="{ width: `${percent}%` }" />
+          <span
+            class="block h-full bg-neutral-900/60 transition-[width]"
+            :style="{ width: `${percent}%` }"
+          />
         </span>
       </button>
       <button
@@ -49,7 +55,7 @@ const percent = computed(() => Math.round(progress.value * 100))
         :disabled="!isPlaying && !isLoading"
         @click="emit('stop')"
       >
-        ■ Stop
+        {{ $t('controls.stop') }}
       </button>
     </div>
     <!-- w-0 min-w-full: as wide as the buttons, so it wraps instead of widening the toolbar. -->
@@ -57,9 +63,9 @@ const percent = computed(() => Math.round(progress.value * 100))
       v-if="failedSamples"
       role="status"
       class="w-0 min-w-full text-xs text-red-400"
-      title="Check your connection and press Play to retry."
+      :title="$t('controls.failedHint')"
     >
-      {{ failedSamples }} {{ failedSamples === 1 ? 'sound' : 'sounds' }} didn't load · Play to retry
+      {{ $t('controls.failed', { count: failedSamples }) }}
     </p>
   </div>
 </template>

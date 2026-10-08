@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useBeatMachine } from '../app/composables/useBeatMachine'
-import { genreConfig } from '../app/data/genres'
+import { ref } from 'vue'
+import { useBeatMachine } from '~/composables/useBeatMachine'
+import { sampleUrls } from '~/core/resolve'
+import { findGenre } from '~/genres'
 
 class FakeNode {
   gain = { value: 1, setTargetAtTime() {} }
@@ -11,7 +13,9 @@ class FakeNode {
   stop() {}
 }
 
-const sampleCount = new Set(Object.values(genreConfig.salsa.samples).flatMap((map) => Object.values(map).flat())).size
+const salsa = findGenre('salsa')!
+const sampleCount = sampleUrls(salsa, 'en').size
+const machineFor = () => useBeatMachine(salsa, ref('en'))
 
 describe('useBeatMachine loading', () => {
   /** Resolves every pending download at once. */
@@ -21,10 +25,10 @@ describe('useBeatMachine loading', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     downloadsFail = false
-    let gate = Promise.withResolvers<void>()
+    let gate = Promise.withResolvers<undefined>()
     release = () => {
-      gate.resolve()
-      gate = Promise.withResolvers<void>()
+      gate.resolve(undefined)
+      gate = Promise.withResolvers<undefined>()
     }
     vi.stubGlobal('fetch', async (url: string) => {
       await gate.promise
@@ -44,6 +48,7 @@ describe('useBeatMachine loading', () => {
       async decodeAudioData(data: string) {
         return { from: data }
       }
+
       close() {}
     })
     vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -56,7 +61,7 @@ describe('useBeatMachine loading', () => {
   })
 
   it('shows progress while Play waits for samples, then plays', async () => {
-    const machine = useBeatMachine('salsa')
+    const machine = machineFor()
     const playing = machine.play()
     expect(machine.isLoading.value).toBe(true)
     expect(machine.loadProgress.value).toBe(0)
@@ -71,7 +76,7 @@ describe('useBeatMachine loading', () => {
   })
 
   it('does not start if Stop is pressed while loading', async () => {
-    const machine = useBeatMachine('salsa')
+    const machine = machineFor()
     const playing = machine.play()
     machine.stop()
     expect(machine.isLoading.value).toBe(false)
@@ -82,7 +87,7 @@ describe('useBeatMachine loading', () => {
   })
 
   it('reports samples that failed and retries them on the next Play', async () => {
-    const machine = useBeatMachine('salsa')
+    const machine = machineFor()
     downloadsFail = true
     const first = machine.play()
     release()

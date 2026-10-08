@@ -83,7 +83,9 @@ describe('deliverFeedback', () => {
   })
 
   it('succeeds when only one of storage and webhook works', async () => {
-    const failingSave = async () => { throw new Error('disk full') }
+    const failingSave = async () => {
+      throw new Error('disk full')
+    }
     const okFetch = async () => new Response(null, { status: 200 })
     const badFetch = async () => new Response(null, { status: 500 })
     expect(await deliverFeedback(entry, { save: failingSave, webhookUrl: 'https://h', fetch: okFetch })).toEqual({ saved: false, forwarded: true })
@@ -91,6 +93,9 @@ describe('deliverFeedback', () => {
   })
 
   it('fails when nothing took the feedback', async () => {
-    await expect(deliverFeedback(entry, { save: async () => { throw new Error('disk full') } })).rejects.toThrow()
+    const failingSave = async () => {
+      throw new Error('disk full')
+    }
+    await expect(deliverFeedback(entry, { save: failingSave })).rejects.toThrow()
   })
 })

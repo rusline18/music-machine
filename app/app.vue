@@ -1,16 +1,20 @@
 <script setup lang="ts">
-import FeedbackDialog from './components/FeedbackDialog.vue'
+const { t } = useI18n()
+const head = useLocaleHead()
 
-const { feedbackEnabled } = useRuntimeConfig().public
+useHead(() => ({
+  htmlAttrs: head.value.htmlAttrs,
+  link: head.value.link,
+  meta: head.value.meta,
+  titleTemplate: (title) => (title && title !== t('app.name') ? `${title} — ${t('app.name')}` : t('app.name')),
+}))
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-neutral-950 text-neutral-100">
+  <div class="relative min-h-screen">
+    <LanguageSwitcher class="absolute right-4 top-4" />
     <NuxtRouteAnnouncer />
     <NuxtPage />
-    <footer v-if="feedbackEnabled" class="border-t border-neutral-900 px-6 py-6 text-center text-sm text-neutral-500">
-      Something broken, or something missing?
-      <FeedbackDialog />
-    </footer>
+    <SiteFooter />
   </div>
 </template>

@@ -12,8 +12,8 @@
  * Afterwards every WAV is also encoded to Opus (.webm) by encode-samples.mjs;
  * that's what the app downloads, with the WAV as fallback.
  *
- * The list of files to write is read from the genre sample maps
- * (app/data/<genre>/samples.ts), and the script fails if a path there has no
+ * The list of files to write is every '/audio/….wav' path quoted in
+ * any .ts file under app/genres/, and the script fails if a path there has no
  * generator below — keeps the two in sync.
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -72,7 +72,10 @@ function bandpass(signal, freq, q) {
   for (let i = 0; i < signal.length; i++) {
     const x = signal[i]
     const y = b0 * x + b2 * x2 - a1 * y1 - a2 * y2
-    x2 = x1; x1 = x; y2 = y1; y1 = y
+    x2 = x1
+    x1 = x
+    y2 = y1
+    y1 = y
     signal[i] = y
   }
   return signal
@@ -228,14 +231,27 @@ const bass = () => {
 }
 
 // Single guitar notes; the app pitch-shifts them, so they must sit exactly
-// on the pitch named in app/data/bachata/samples.ts.
+// on the pitch named in app/genres/bachata/samples.ts.
 const guitarNote = ({ freq, seed }) => () => {
   const out = buffer(1.2)
   pluck(out, { freq, seed, damping: 0.997, brightness: 0.75 })
   return out
 }
 
+// Stand-in for a spoken count when there's no recording: a short beep,
+// higher on "1" and lowest on "and", so the counting still reads by ear.
+const countBeep = (freq) => () => {
+  const out = buffer(0.15)
+  drumTone(out, { startFreq: freq, decay: 0.05 })
+  return out
+}
+const VOICE_LOCALES = ['en', 'ru']
+const VOICE_WORDS = ['1', '2', '3', '4', '5', '6', '7', '8', 'and']
+const voicePaths = (each) => Object.fromEntries(VOICE_LOCALES.flatMap((locale) =>
+  VOICE_WORDS.map((word) => [`/audio/voice/${locale}/${word}.wav`, each(locale, word)])))
+
 const generators = {
+  ...voicePaths((_locale, word) => countBeep(word === '1' ? 1320 : word === 'and' ? 660 : 880)),
   '/audio/salsa/clave/hit.wav': clave,
   '/audio/salsa/congas/low.wav': handDrum({ freq: 165, decay: 0.16, seed: 11 }),
   '/audio/salsa/congas/open.wav': handDrum({ freq: 225, decay: 0.12, seed: 12 }),
@@ -288,6 +304,8 @@ const generators = {
 // `vcsl`: file in audio-sources/vcsl, from the Versilian Community Sample
 //   Library (https://github.com/sgossner/VCSL).
 // `wikimedia`: file in audio-sources/wikimedia (Wikimedia Commons).
+// `voice`: file in audio-sources/voice, one spoken word per file, used
+//   whole (see scripts/speak-counts.py).
 // `uiowa`: file in audio-sources/uiowa, from the University of Iowa Musical
 //   Instrument Samples (free to use without restrictions, not formally CC0).
 // `midi`: for pitched sources, the note to cut out; it's tuned to exactly
@@ -298,6 +316,7 @@ const generators = {
 // `maxLength`: seconds; the tail is also cut once it decays to -45 dB.
 
 const recordings = {
+  ...voicePaths((locale, word) => ({ voice: `${locale}/${word}.wav`, maxLength: 0.5 })),
   '/audio/salsa/clave/hit.wav': { vcsl: 'Claves1_Hit_v2_rr1_Mid.wav', maxLength: 0.4 },
   '/audio/salsa/congas/low.wav': { vcsl: 'Tumba_HitN_v3_rr1_Sum.wav', maxLength: 0.7 },
   '/audio/salsa/congas/open.wav': { vcsl: 'Conga_HitN_v2_rr1_Sum.wav', maxLength: 0.6 },
@@ -350,8 +369,9 @@ const recordings = {
 
 const SOURCES = join(ROOT, 'audio-sources')
 
-function findRecording({ vcsl, wikimedia, uiowa, freesound }) {
+function findRecording({ vcsl, wikimedia, uiowa, voice, freesound }) {
   const named = (vcsl && ['vcsl', vcsl]) || (wikimedia && ['wikimedia', wikimedia]) || (uiowa && ['uiowa', uiowa])
+    || (voice && ['voice', voice])
   if (named) {
     const file = join(SOURCES, ...named)
     return existsSync(file) ? file : null
@@ -528,7 +548,10 @@ function lowpass(signal, freq, rate, q = 0.707) {
   for (let i = 0; i < signal.length; i++) {
     const x = signal[i]
     const y = b0 * x + b1 * x1 + b0 * x2 - a1 * y1 - a2 * y2
-    x2 = x1; x1 = x; y2 = y1; y1 = y
+    x2 = x1
+    x1 = x
+    y2 = y1
+    y1 = y
     signal[i] = y
   }
   return signal
@@ -566,6 +589,19 @@ function sliceNote(file, { midi, maxLength }) {
     out[i] = source[j] + (source[j + 1] - source[j]) * (pos - j)
   }
   return { rate: SAMPLE_RATE, signal: fadeOut(out, 0.08), tuning: midi - note.pitch }
+}
+
+/** A whole spoken word: just the silence around it trimmed off. */
+function sliceWord(file, { maxLength }) {
+  const { rate, mono } = decodeAudio(file)
+  let peak = 0
+  for (const v of mono) peak = Math.max(peak, Math.abs(v))
+  const loud = (v) => Math.abs(v) > peak * 0.01 // -40 dB
+  const first = mono.findIndex(loud)
+  const last = mono.findLastIndex(loud)
+  const start = Math.max(0, first - Math.round(0.005 * rate))
+  const end = Math.min(mono.length, last + Math.round(0.02 * rate), start + Math.round(maxLength * rate))
+  return { rate, signal: fadeOut(mono.slice(start, end), 0.02) }
 }
 
 // --- Output ---
@@ -610,8 +646,10 @@ function encodeWav(signal, rate = SAMPLE_RATE) {
 
 function referencedSamplePaths() {
   const paths = new Set()
-  for (const genre of ['salsa', 'bachata']) {
-    const source = readFileSync(join(ROOT, 'app', 'data', genre, 'samples.ts'), 'utf8')
+  const genresDir = join(ROOT, 'app', 'genres')
+  for (const file of readdirSync(genresDir, { recursive: true })) {
+    if (!file.endsWith('.ts')) continue
+    const source = readFileSync(join(genresDir, file), 'utf8')
     for (const [, path] of source.matchAll(/'(\/audio\/[^']+\.wav)'/g)) paths.add(path)
   }
   return paths
@@ -632,7 +670,8 @@ for (const path of referenced) {
   let wav
   let detail = ''
   if (source) {
-    const { rate, signal, tuning } = recording.midi ? sliceNote(source, recording) : sliceRecording(source, recording)
+    const slice = recording.voice ? sliceWord : recording.midi ? sliceNote : sliceRecording
+    const { rate, signal, tuning } = slice(source, recording)
     wav = encodeWav(finalize(signal), rate)
     if (tuning !== undefined) detail = `  retuned ${tuning >= 0 ? '+' : ''}${Math.round(tuning * 100)} cents`
   } else {

@@ -1,0 +1,10 @@
+{
+  // Tests aren't in any of Nuxt's generated tsconfigs. Reuse the app's
+  // (auto-import types, strict flags) and add Vitest's test files.
+  "extends": "../.nuxt/tsconfig.app.json",
+  "compilerOptions": {
+    // Tests run in Node (fs, url), the app doesn't.
+    "types": ["node"]
+  },
+  "include": ["../.nuxt/nuxt.d.ts", "../app/**/*", "./**/*"]
+}

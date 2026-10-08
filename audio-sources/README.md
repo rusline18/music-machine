@@ -5,7 +5,8 @@ mapping from each app sample to its source lives in `recordings` in
 `scripts/generate-samples.mjs`. Every file here is **CC0** or public domain
 (no attribution required, credits below are a courtesy), except the
 University of Iowa guitar, which is free to use under the university's own
-terms — see [uiowa/](#uiowa).
+terms — see [uiowa/](#uiowa) — and [voice/](#voice), synthesized for this
+project.
 
 Any sample whose source is missing is synthesized instead.
 
@@ -45,6 +46,15 @@ samples` synthesizes the guitar notes instead.
   [Güira.ogg](https://commons.wikimedia.org/wiki/File:G%C3%BCira.ogg) on
   Wikimedia Commons, public domain. Converted from Ogg Vorbis to WAV.
 
+## voice/
+
+Spoken counts for the counting voice, one word per file:
+`<locale>/1.wav` … `8.wav` and `and.wav`. Generated with
+[espeak-ng](https://github.com/espeak-ng/espeak-ng) by
+`scripts/speak-counts.py` (the audio espeak-ng produces is not covered by
+its GPL license). Placeholders — replace them with recordings of a real
+person counting (same file names) for a much better result.
+
 ## freesound/
 
 Download each sound from its page (requires a free freesound.org account)
@@ -59,7 +69,3 @@ sound ID.
 | bachata/bass/a2 | [bass A2](https://freesound.org/people/mat_the_glad/sounds/43938/) | mat_the_glad |
 
 All of these were checked as CC0 on their sound pages (October 2026).
-
-No longer used: `44573__uiop__guiro114bpm4bars` (replaced by the Wikimedia
-güira); `8393__speedy__clean_e1st_str_pick` and `8403__speedy__clean_g_str_pluck`
-(single guitar notes, replaced by the Iowa guitar).
