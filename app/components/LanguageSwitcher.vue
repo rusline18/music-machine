@@ -4,7 +4,10 @@ const switchLocalePath = useSwitchLocalePath()
 </script>
 
 <template>
-  <nav :aria-label="t('nav.language')" class="flex gap-1 text-xs font-semibold uppercase tracking-wide">
+  <nav
+    :aria-label="t('nav.language')"
+    class="flex gap-1 text-xs font-semibold uppercase tracking-wide"
+  >
     <NuxtLink
       v-for="option in locales"
       :key="option.code"

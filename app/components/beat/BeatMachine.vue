@@ -33,14 +33,20 @@ const percent = (value: number) => `${Math.round(value * 100)}%`
   <div>
     <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <NuxtLinkLocale to="/" class="text-sm text-neutral-500 hover:text-neutral-300">
+        <NuxtLinkLocale
+          to="/"
+          class="text-sm text-neutral-500 hover:text-neutral-300"
+        >
           {{ $t('nav.back') }}
         </NuxtLinkLocale>
         <h1 class="text-2xl font-bold text-neutral-50">
           {{ $t(`genres.${genre.id}.name`) }}
         </h1>
       </div>
-      <BeatPresetSelector v-model="selectedPresetId" :preset-ids="presetIds" />
+      <BeatPresetSelector
+        v-model="selectedPresetId"
+        :preset-ids="presetIds"
+      />
     </div>
 
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -50,8 +56,15 @@ const percent = (value: number) => `${Math.round(value * 100)}%`
         :min="genre.bpmRange[0]"
         :max="genre.bpmRange[1]"
       />
-      <BeatCountSelector :model-value="pattern.counts" @update:model-value="setCounts" />
-      <BeatTransport :is-playing="isPlaying" @play="play" @stop="stop" />
+      <BeatCountSelector
+        :model-value="pattern.counts"
+        @update:model-value="setCounts"
+      />
+      <BeatTransport
+        :is-playing="isPlaying"
+        @play="play"
+        @stop="stop"
+      />
     </div>
 
     <div class="mb-6 flex flex-wrap items-center gap-x-6 gap-y-3">

@@ -47,7 +47,10 @@ const stepOptions = computed(() => props.stepNames.map((name) => t(`steps.${name
       >{{ instrumentName }}</span>
     </div>
 
-    <div class="flex flex-1 gap-1" :class="{ 'opacity-50': track.muted }">
+    <div
+      class="flex flex-1 gap-1"
+      :class="{ 'opacity-50': track.muted }"
+    >
       <button
         v-for="(stepIndex, i) in stepIndices"
         :key="stepIndex"
@@ -75,6 +78,9 @@ const stepOptions = computed(() => props.stepNames.map((name) => t(`steps.${name
       class="w-20 shrink-0 accent-amber-500"
       @input="emit('update:volume', Number(($event.target as HTMLInputElement).value))"
     >
-    <span v-else class="w-20 shrink-0" />
+    <span
+      v-else
+      class="w-20 shrink-0"
+    />
   </div>
 </template>

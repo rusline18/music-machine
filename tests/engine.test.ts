@@ -13,6 +13,7 @@ class FakeAudioContext {
   createGain() {
     return new FakeGain()
   }
+
   close() {}
 }
 

@@ -1,16 +1,26 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: '2025-07-15',
-  devtools: { enabled: true },
+  modules: ['@nuxt/eslint', '@nuxtjs/tailwindcss', '@nuxtjs/i18n'],
 
   // Explicit so it doesn't get turned off by accident: pages render on the
   // server for SEO; audio only starts in the browser.
   ssr: true,
+  devtools: { enabled: true },
+  compatibilityDate: '2025-07-15',
 
-  modules: ['@nuxtjs/tailwindcss', '@nuxtjs/i18n'],
+  typescript: {
+    strict: true,
+    // Also errors on unknown components and props in templates.
+    tsConfig: { vueCompilerOptions: { strictTemplates: true } },
+  },
 
-  tailwindcss: {
-    cssPath: '~/assets/css/main.css',
+  // ESLint does both linting and formatting (no Prettier). Style options
+  // match the existing code: `(x) => …`, `} else {`, no semicolons, single
+  // quotes. Extra rules go in eslint.config.mjs.
+  eslint: {
+    config: {
+      stylistic: { arrowParens: true, braceStyle: '1tbs', quoteProps: 'as-needed' },
+    },
   },
 
   // Messages live in i18n/locales/<code>.json. English is served at /,
@@ -30,9 +40,7 @@ export default defineNuxtConfig({
     },
   },
 
-  typescript: {
-    strict: true,
-    // Also errors on unknown components and props in templates.
-    tsConfig: { vueCompilerOptions: { strictTemplates: true } },
+  tailwindcss: {
+    cssPath: '~/assets/css/main.css',
   },
 })

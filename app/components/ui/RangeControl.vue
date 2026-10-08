@@ -18,7 +18,10 @@ const model = defineModel<number>({ required: true })
 </script>
 
 <template>
-  <label class="flex items-center gap-3" :title="hint">
+  <label
+    class="flex items-center gap-3"
+    :title="hint"
+  >
     <span class="text-sm font-medium text-neutral-400">{{ label }}</span>
     <input
       v-model.number="model"

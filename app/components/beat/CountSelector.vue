@@ -5,7 +5,11 @@ const model = defineModel<number>({ required: true })
 </script>
 
 <template>
-  <div class="flex items-center gap-3" role="group" :aria-label="$t('controls.counts')">
+  <div
+    class="flex items-center gap-3"
+    role="group"
+    :aria-label="$t('controls.counts')"
+  >
     <span class="text-sm font-medium text-neutral-400">{{ $t('controls.counts') }}</span>
     <div class="flex overflow-hidden rounded-md border border-neutral-700">
       <button

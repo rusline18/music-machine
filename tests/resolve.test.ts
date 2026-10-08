@@ -16,7 +16,6 @@ describe('sampleResolver', () => {
   })
 })
 
-
 describe('stepNames', () => {
   it('lists sample names for one-shots and articulations for pitched instruments', () => {
     expect(stepNames(bachata, 'campana')).toEqual(['open', 'neck'])

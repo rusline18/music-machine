@@ -13,7 +13,7 @@ const PITCH_CLASS: Record<string, number> = {
 const QUALITIES: Record<string, number[]> = {
   '': [0, 4, 7],
   m: [0, 3, 7],
-  '7': [0, 4, 7, 10],
+  7: [0, 4, 7, 10],
   m7: [0, 3, 7, 10],
 }
 

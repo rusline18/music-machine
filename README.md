@@ -56,6 +56,9 @@ docs/                  Plans
   `tests/i18n.test.ts` fails if a locale is missing a key or one the data needs.
 - **`core/` stays framework-free** so it can be tested without Nuxt. Anything
   that needs Vue reactivity or lifecycle goes in `composables/`.
+- **Code style is enforced by ESLint** (`@nuxt/eslint`, configured under
+  `eslint` in `nuxt.config.ts`) — no Prettier. CI runs lint, typecheck and
+  tests on every pull request.
 - **Components are auto-imported with their folder prefix**: `beat/TrackRow.vue`
   is `<BeatTrackRow>`, `ui/RangeControl.vue` is `<UiRangeControl>`.
   `npm run typecheck` (strict templates) catches a wrong name.
@@ -77,6 +80,7 @@ npm install
 npm run dev        # http://localhost:3000 (Russian at /ru)
 npm test           # unit tests
 npm run typecheck  # TypeScript + Vue templates
+npm run lint       # ESLint: bugs + code style (npm run lint:fix fixes most)
 npm run build && npm run preview
 ```
 

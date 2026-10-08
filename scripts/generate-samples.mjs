@@ -68,7 +68,10 @@ function bandpass(signal, freq, q) {
   for (let i = 0; i < signal.length; i++) {
     const x = signal[i]
     const y = b0 * x + b2 * x2 - a1 * y1 - a2 * y2
-    x2 = x1; x1 = x; y2 = y1; y1 = y
+    x2 = x1
+    x1 = x
+    y2 = y1
+    y1 = y
     signal[i] = y
   }
   return signal
@@ -524,7 +527,10 @@ function lowpass(signal, freq, rate, q = 0.707) {
   for (let i = 0; i < signal.length; i++) {
     const x = signal[i]
     const y = b0 * x + b1 * x1 + b0 * x2 - a1 * y1 - a2 * y2
-    x2 = x1; x1 = x; y2 = y1; y1 = y
+    x2 = x1
+    x1 = x
+    y2 = y1
+    y1 = y
     signal[i] = y
   }
   return signal

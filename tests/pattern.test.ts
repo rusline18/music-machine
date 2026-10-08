@@ -87,7 +87,6 @@ describe('chordAt', () => {
   })
 })
 
-
 describe('definePattern', () => {
   const pattern = definePattern({
     id: 'p',

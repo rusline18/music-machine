@@ -79,7 +79,10 @@ function isActiveCount(block: number, cellIndex: number): boolean {
         <span class="w-20 shrink-0" />
       </div>
 
-      <div v-if="barsIn(block - 1).length" class="flex items-center gap-3 pb-1">
+      <div
+        v-if="barsIn(block - 1).length"
+        class="flex items-center gap-3 pb-1"
+      >
         <span class="w-32 shrink-0 text-xs text-neutral-500">{{ t('grid.chords') }}</span>
         <div class="flex flex-1 gap-1.5">
           <select
@@ -90,7 +93,13 @@ function isActiveCount(block: number, cellIndex: number): boolean {
             class="min-w-0 flex-1 rounded bg-neutral-800 px-2 py-1 text-sm text-neutral-200"
             @change="emit('update:chord', bar, ($event.target as HTMLSelectElement).value)"
           >
-            <option v-for="chord in CHORD_NAMES" :key="chord" :value="chord">{{ chord }}</option>
+            <option
+              v-for="chord in CHORD_NAMES"
+              :key="chord"
+              :value="chord"
+            >
+              {{ chord }}
+            </option>
           </select>
         </div>
         <span class="w-20 shrink-0" />
