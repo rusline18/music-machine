@@ -26,6 +26,8 @@ for (const genre of Object.keys(presets) as Genre[]) {
       '%s: %s exists in public/',
       (_instrument, url) => {
         expect(existsSync(publicDir + url)).toBe(true)
+        // The compressed copy the app actually downloads (npm run samples:encode).
+        expect(existsSync(publicDir + url.replace(/\.wav$/, '.webm'))).toBe(true)
       },
     )
   })
