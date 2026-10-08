@@ -5,6 +5,7 @@ import BpmControl from '../components/beat/BpmControl.vue'
 import PatternSelector from '../components/beat/PatternSelector.vue'
 import CountSelector from '../components/beat/CountSelector.vue'
 import FeelControls from '../components/beat/FeelControls.vue'
+import ShareButton from '../components/beat/ShareButton.vue'
 
 useSeoMeta({
   title: 'Bachata Rhythm Trainer — Latin Beat Machine',
@@ -21,14 +22,18 @@ const machine = useBeatMachine('bachata')
         <NuxtLink to="/" class="text-sm text-neutral-500 hover:text-neutral-300">← Back</NuxtLink>
         <h1 class="text-2xl font-bold text-neutral-50">Bachata</h1>
       </div>
-      <PatternSelector v-model="machine.selectedPatternId.value" :patterns="machine.presets" />
+      <PatternSelector
+        :model-value="machine.selectedPatternId.value"
+        :patterns="machine.patternOptions.value"
+        @update:model-value="machine.selectPreset"
+      />
     </div>
 
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
       <BpmControl
         :model-value="machine.pattern.value.bpm"
-        :min="90"
-        :max="160"
+        :min="machine.config.bpmRange[0]"
+        :max="machine.config.bpmRange[1]"
         @update:model-value="machine.setBpm"
       />
       <CountSelector
@@ -61,7 +66,7 @@ const machine = useBeatMachine('bachata')
       @update:chord="machine.setChord"
     />
 
-    <div class="mt-6 flex gap-3">
+    <div class="mt-6 flex flex-wrap items-center gap-3">
       <button
         type="button"
         class="rounded-md bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700"
@@ -76,6 +81,15 @@ const machine = useBeatMachine('bachata')
       >
         Clear
       </button>
+      <button
+        type="button"
+        class="rounded-md bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700"
+        title="Throw away your changes and go back to the preset"
+        @click="machine.reset"
+      >
+        Reset
+      </button>
+      <ShareButton :code="machine.shareCode.value" />
     </div>
   </main>
 </template>

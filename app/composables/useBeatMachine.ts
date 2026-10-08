@@ -5,9 +5,14 @@ import { salsaPatterns } from '../data/salsa/patterns'
 import { bachataPatterns } from '../data/bachata/patterns'
 import { useAudioEngine } from './useAudioEngine'
 import { useBeatScheduler } from './useBeatScheduler'
+import { decodePattern, encodePattern } from '../data/share'
 
 /** Reverb wet level at the slider's top; beyond this the rhythm smears. */
 const MAX_REVERB_WET = 0.6
+
+/** Query parameter carrying a shared pattern: /salsa?p=… */
+export const SHARE_PARAM = 'p'
+const storageKey = (genre: Genre) => `latin-beat-machine:pattern:${genre}`
 
 const presetsByGenre: Record<Genre, Pattern[]> = {
   salsa: salsaPatterns,
@@ -43,13 +48,67 @@ export function useBeatMachine(genre: Genre) {
     return stepNames(config, instrument)
   }
 
-  watch(selectedPatternId, (id) => {
-    const preset = presets.find((p) => p.id === id)
-    if (!preset) return
+  /** Presets for the picker, plus the current pattern if it came from a link and isn't one of them. */
+  const patternOptions = computed(() =>
+    presets.some((p) => p.id === pattern.value.id) ? presets : [...presets, pattern.value],
+  )
+
+  /** Swap in a new pattern, carrying on playing if we were. */
+  function loadPattern(next: Pattern) {
     const wasPlaying = scheduler.isPlaying.value
     if (wasPlaying) scheduler.stop()
-    pattern.value = clonePattern(preset)
+    pattern.value = next
+    selectedPatternId.value = next.id
     if (wasPlaying) play()
+  }
+
+  function selectPreset(id: string) {
+    const preset = presets.find((p) => p.id === id)
+    if (preset) loadPattern(clonePattern(preset))
+  }
+
+  /** Undo edits: back to the preset this pattern started from (or the first one). */
+  function reset() {
+    selectPreset(presets.some((p) => p.id === pattern.value.id) ? pattern.value.id : presets[0]!.id)
+  }
+
+  /** Code for a link to the current pattern (see data/share.ts). */
+  const shareCode = computed(() => encodePattern(pattern.value, config))
+
+  // A link wins over the last session's pattern. Both are read after
+  // mounting: the server has no localStorage, and rendering the preset
+  // first keeps hydration consistent.
+  const route = useRoute()
+  const router = useRouter()
+  onMounted(() => {
+    const fromLink = route.query[SHARE_PARAM]
+    let restored: Pattern | null = null
+    if (typeof fromLink === 'string') {
+      restored = decodePattern(fromLink, genre, config)
+      // Drop the code from the address bar: edits from here on are the
+      // user's own and get saved locally instead.
+      const { [SHARE_PARAM]: _, ...query } = route.query
+      router.replace({ query })
+    }
+    if (!restored) {
+      try {
+        const saved = localStorage.getItem(storageKey(genre))
+        if (saved) restored = decodePattern(saved, genre, config)
+      }
+      catch { /* storage blocked: start from the preset */ }
+    }
+    if (restored) loadPattern(restored)
+  })
+
+  // Only edits are kept: an untouched preset isn't stored, so it picks up
+  // fixes to the preset data on the next visit.
+  watch(shareCode, (code) => {
+    const preset = presets.find((p) => p.id === pattern.value.id)
+    try {
+      if (preset && encodePattern(preset, config) === code) localStorage.removeItem(storageKey(genre))
+      else localStorage.setItem(storageKey(genre), code)
+    }
+    catch { /* storage full or blocked: nothing to save to */ }
   })
 
   async function ensureSamplesLoaded() {
@@ -162,7 +221,11 @@ export function useBeatMachine(genre: Genre) {
   return {
     config,
     presets,
+    patternOptions,
     selectedPatternId,
+    selectPreset,
+    reset,
+    shareCode,
     pattern,
     isPlaying: scheduler.isPlaying,
     activeStep: scheduler.activeStep,
