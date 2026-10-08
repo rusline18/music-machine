@@ -16,9 +16,10 @@ const presetsByGenre: Record<Genre, Pattern[]> = {
 
 /**
  * Wires pattern state + audio engine + scheduler together for a genre page.
- * The AudioContext is only created lazily on the first `play()` (from a user
- * gesture), so this composable is safe to call during SSR — nothing here
- * touches `window`/`AudioContext` until the component is interactive.
+ * Samples start downloading on mount, but the AudioContext is only created
+ * on the first `play()` (from a user gesture), so this composable is safe to
+ * call during SSR — nothing here touches `window`/`AudioContext` until the
+ * component is mounted.
  */
 export function useBeatMachine(genre: Genre) {
   const config = genreConfig[genre]
@@ -32,6 +33,28 @@ export function useBeatMachine(genre: Genre) {
 
   const samplesLoaded = ref(false)
   const resolveStep = stepResolver(config)
+
+  const sampleUrls = [...new Set(Object.values(config.samples).flatMap((sampleMap) => Object.values(sampleMap).flat()))]
+  /** Samples whose download has finished (or failed), for the progress bar. */
+  const samplesFetched = ref(0)
+  /** 0–1 share of the genre's samples downloaded so far. */
+  const loadProgress = computed(() => samplesFetched.value / sampleUrls.length)
+  /** Play was pressed and is waiting for samples. */
+  const isLoading = ref(false)
+  /** Samples the last load gave up on; they stay silent until the next Play retries them. */
+  const failedSamples = ref(0)
+  let prefetchStarted = false
+
+  /** Download (not decode) every sample; safe before any click, as it needs no AudioContext. */
+  function prefetch() {
+    if (prefetchStarted) return
+    prefetchStarted = true
+    engine.prefetchSamples(sampleUrls, () => {
+      samplesFetched.value++
+    })
+  }
+
+  onMounted(prefetch)
 
   /** 0–1: how loosely the band plays (see humanizeNote). */
   const feel = ref(0.5)
@@ -54,9 +77,10 @@ export function useBeatMachine(genre: Genre) {
 
   async function ensureSamplesLoaded() {
     if (samplesLoaded.value) return
-    const urls = new Set(Object.values(config.samples).flatMap((sampleMap) => Object.values(sampleMap).flat()))
-    await engine.preloadSamples([...urls])
-    samplesLoaded.value = true
+    prefetch()
+    const failed = await engine.preloadSamples(sampleUrls)
+    failedSamples.value = failed.length
+    samplesLoaded.value = failed.length === 0
   }
 
   function syncTrackGains() {
@@ -66,14 +90,32 @@ export function useBeatMachine(genre: Genre) {
     }
   }
 
+  /** Bumped by every play/stop/unmount, so a play still waiting on samples knows it was superseded. */
+  let playRequest = 0
+
   async function play() {
-    await ensureSamplesLoaded()
+    if (isLoading.value) return
+    const request = ++playRequest
+    // Create and unlock the AudioContext inside the click itself: Safari
+    // refuses to start one after a long await on the network.
+    const unlocked = engine.resume()
+    isLoading.value = !samplesLoaded.value
+    try {
+      await ensureSamplesLoaded()
+      await unlocked
+    } finally {
+      if (request === playRequest) isLoading.value = false
+    }
+    // Stopped, or left the page, while loading; or nothing to play at all.
+    if (request !== playRequest || failedSamples.value === sampleUrls.length) return
     syncTrackGains()
     engine.setReverb(reverb.value * MAX_REVERB_WET)
     await scheduler.start(pattern.value, resolveStep)
   }
 
   function stop() {
+    playRequest++
+    isLoading.value = false
     scheduler.stop()
   }
 
@@ -155,7 +197,7 @@ export function useBeatMachine(genre: Genre) {
   }
 
   onUnmounted(() => {
-    scheduler.stop()
+    stop()
     engine.dispose()
   })
 
@@ -165,6 +207,9 @@ export function useBeatMachine(genre: Genre) {
     selectedPatternId,
     pattern,
     isPlaying: scheduler.isPlaying,
+    isLoading,
+    loadProgress,
+    failedSamples,
     activeStep: scheduler.activeStep,
     play,
     stop,

@@ -1,4 +1,4 @@
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 
 // Composables rely on Nuxt auto-imports; plain Vitest doesn't have them.
-Object.assign(globalThis, { computed, onUnmounted, ref, watch })
+Object.assign(globalThis, { computed, onMounted, onUnmounted, ref, watch })

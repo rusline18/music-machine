@@ -32,7 +32,7 @@ function cycleStep(stepIndex: number) {
 
 <template>
   <div class="flex items-center gap-3 border-b border-neutral-800 py-2">
-    <div class="flex w-28 shrink-0 items-center gap-2">
+    <div class="sticky left-0 z-10 flex w-28 shrink-0 items-center gap-2 self-stretch bg-neutral-950">
       <button
         v-if="showControls"
         type="button"
