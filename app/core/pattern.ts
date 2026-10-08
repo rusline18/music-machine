@@ -62,6 +62,14 @@ export function resizeSteps<T>(steps: T[], length: number): (T | null)[] {
   return Array.from({ length }, (_, i) => steps[i % steps.length]!)
 }
 
+/**
+ * A figure started `by` steps later, the skipped part wrapped round to the
+ * end. Half a clave cycle turns a 3-2 figure (clave, cáscara) into its 2-3.
+ */
+export function rotateFigure<T>(figure: readonly T[], by: number): T[] {
+  return figure.map((_, i) => figure[(i + by) % figure.length]!)
+}
+
 export interface TrackSpec {
   instrument: string
   /** A figure (one bar, one block…) repeated to fill the pattern. Leave out for a silent track. */
