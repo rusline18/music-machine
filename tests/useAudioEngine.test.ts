@@ -123,3 +123,73 @@ describe('useAudioEngine sample loading', () => {
     await expect(useAudioEngine().loadSample('/missing.wav')).rejects.toThrow('HTTP 404')
   })
 })
+
+describe('useAudioEngine prefetching', () => {
+  let fetched: string[]
+  let failOnce: Set<string>
+
+  beforeEach(() => {
+    fetched = []
+    failOnce = new Set()
+    vi.stubGlobal('fetch', async (url: string) => {
+      fetched.push(url)
+      if (failOnce.delete(url)) throw new TypeError('network down')
+      return { ok: true, arrayBuffer: async () => url }
+    })
+    vi.stubGlobal('Audio', class {
+      canPlayType = () => 'probably'
+    })
+    vi.stubGlobal('AudioContext', class extends FakeAudioContext {
+      static created = 0
+      constructor() {
+        super()
+        ;(this.constructor as { created: number }).created++
+      }
+      async decodeAudioData(data: string) {
+        return { from: data }
+      }
+    })
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('downloads without creating an AudioContext', async () => {
+    const settled: Array<[string, boolean]> = []
+    await useAudioEngine().prefetchSamples(['/a.wav', '/b.wav'], (url, ok) => settled.push([url, ok]))
+    expect(fetched).toEqual(['/a.webm', '/b.webm'])
+    expect(settled).toEqual([['/a.wav', true], ['/b.wav', true]])
+    expect((globalThis.AudioContext as unknown as { created: number }).created).toBe(0)
+  })
+
+  it('decodes prefetched samples without downloading them again', async () => {
+    const engine = useAudioEngine()
+    await engine.prefetchSamples(['/a.wav'])
+    expect(await engine.loadSample('/a.wav')).toEqual({ from: '/a.webm' })
+    expect(fetched).toEqual(['/a.webm'])
+  })
+
+  it('shares one download between loads that overlap', async () => {
+    const engine = useAudioEngine()
+    const [first, second] = await Promise.all([engine.loadSample('/a.wav'), engine.loadSample('/a.wav'), engine.prefetchSamples(['/a.wav'])])
+    expect(first).toBe(second)
+    expect(fetched).toEqual(['/a.webm'])
+  })
+
+  it('retries a failed download on the next load', async () => {
+    failOnce.add('/a.webm')
+    failOnce.add('/a.wav')
+    const engine = useAudioEngine()
+    const settled: boolean[] = []
+    await engine.prefetchSamples(['/a.wav'], (_url, ok) => settled.push(ok))
+    expect(settled).toEqual([false])
+    expect(await engine.preloadSamples(['/a.wav'])).toEqual([])
+    expect(await engine.loadSample('/a.wav')).toEqual({ from: '/a.webm' })
+  })
+
+  it('reports what failed to load', async () => {
+    failOnce.add('/a.webm')
+    failOnce.add('/a.wav')
+    expect(await useAudioEngine().preloadSamples(['/a.wav', '/b.wav'])).toEqual(['/a.wav'])
+  })
+})

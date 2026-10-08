@@ -128,38 +128,90 @@ export function useAudioEngine() {
     applyInstrumentGain(instrument)
   }
 
-  async function fetchAndDecode(url: string): Promise<AudioBuffer> {
-    const response = await fetch(url)
-    if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`)
-    return getContext().decodeAudioData(await response.arrayBuffer())
-  }
+  /**
+   * Downloaded but not yet decoded bytes, by file URL. Downloading needs no
+   * AudioContext, so samples can be fetched before the first click.
+   */
+  const downloads = new Map<string, Promise<ArrayBuffer>>()
+  /** Samples being decoded, so two callers never load the same one twice. */
+  const decoding = new Map<string, Promise<AudioBuffer>>()
 
   /**
    * Samples are named by their .wav, the lossless master; each has a ~5×
-   * smaller Opus copy beside it (scripts/encode-samples.mjs). Download that
-   * when the browser can play Opus, and the WAV if it can't or decoding fails.
+   * smaller Opus copy beside it (scripts/encode-samples.mjs). That's the file
+   * to download when the browser can play Opus.
    */
+  function fileFor(url: string): string {
+    return url.endsWith('.wav') && canPlayOpus() ? `${url.slice(0, -'.wav'.length)}.webm` : url
+  }
+
+  function download(file: string): Promise<ArrayBuffer> {
+    let bytes = downloads.get(file)
+    if (!bytes) {
+      bytes = fetch(file).then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status} for ${file}`)
+        return response.arrayBuffer()
+      })
+      downloads.set(file, bytes)
+      // A failed download is retried by the next load instead of sticking.
+      bytes.catch(() => downloads.delete(file))
+    }
+    return bytes
+  }
+
+  async function decode(file: string): Promise<AudioBuffer> {
+    const bytes = await download(file)
+    // decodeAudioData takes over (detaches) the bytes; they can't be decoded twice.
+    downloads.delete(file)
+    return getContext().decodeAudioData(bytes)
+  }
+
+  /** The Opus copy where the browser plays Opus, else (or if it won't decode) the WAV. */
+  async function decodeSample(url: string): Promise<AudioBuffer> {
+    const file = fileFor(url)
+    if (file !== url) {
+      try {
+        return await decode(file)
+      } catch (err) {
+        console.warn(`Falling back to WAV for ${url}`, err)
+      }
+    }
+    return decode(url)
+  }
+
   async function loadSample(url: string): Promise<AudioBuffer> {
     const cached = bufferCache.get(url)
     if (cached) return cached
 
-    let audioBuffer: AudioBuffer | undefined
-    if (url.endsWith('.wav') && canPlayOpus()) {
-      const compressed = `${url.slice(0, -'.wav'.length)}.webm`
-      audioBuffer = await fetchAndDecode(compressed).catch((err) => {
-        console.warn(`Falling back to WAV for ${url}`, err)
-        return undefined
-      })
+    let pending = decoding.get(url)
+    if (!pending) {
+      pending = decodeSample(url).finally(() => decoding.delete(url))
+      decoding.set(url, pending)
     }
-    audioBuffer ??= await fetchAndDecode(url)
+    const audioBuffer = await pending
     bufferCache.set(url, audioBuffer)
     return audioBuffer
   }
 
-  async function preloadSamples(urls: string[]): Promise<void> {
+  /**
+   * Start downloading samples without decoding them. Calls `onSettled` once
+   * per sample when its download finishes or fails (loadSample retries those).
+   */
+  function prefetchSamples(urls: string[], onSettled?: (url: string, ok: boolean) => void): Promise<void> {
+    return Promise.all(urls.map((url) => download(fileFor(url)).then(
+      () => onSettled?.(url, true),
+      () => onSettled?.(url, false),
+    ))).then(() => {})
+  }
+
+  /** Download and decode samples; resolves with the URLs that failed to load. */
+  async function preloadSamples(urls: string[]): Promise<string[]> {
+    const failed: string[] = []
     await Promise.all(urls.map((url) => loadSample(url).catch((err) => {
       console.error(`Failed to load sample: ${url}`, err)
+      failed.push(url)
     })))
+    return failed
   }
 
   function fadeOut(voice: RingingVoice, time: number) {
@@ -223,6 +275,8 @@ export function useAudioEngine() {
     instrumentVolumes.clear()
     mutedInstruments.clear()
     bufferCache.clear()
+    downloads.clear()
+    decoding.clear()
     ringing.clear()
     ctx?.close()
     ctx = null
@@ -236,6 +290,7 @@ export function useAudioEngine() {
     setInstrumentVolume,
     setInstrumentMuted,
     loadSample,
+    prefetchSamples,
     preloadSamples,
     playNote,
     setReverb,

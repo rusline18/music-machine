@@ -37,6 +37,9 @@ const machine = useBeatMachine('bachata')
       />
       <Transport
         :is-playing="machine.isPlaying.value"
+        :is-loading="machine.isLoading.value"
+        :load-progress="machine.loadProgress.value"
+        :failed-samples="machine.failedSamples.value"
         @play="machine.play"
         @stop="machine.stop"
       />
