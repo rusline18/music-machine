@@ -1,9 +1,11 @@
 import { createAudioEngine } from '~/core/audio/engine'
 import { createScheduler } from '~/core/audio/scheduler'
 import type { Pattern } from '~/core/pattern'
-import { nextStep, patternLength, resizeSteps, setPatternCounts } from '~/core/pattern'
+import { nextStep, patternLength, resizeSteps, setPatternCounts, switchStep } from '~/core/pattern'
 import type { CountingMode } from '~/core/resolve'
 import { COUNTING_MODES, countingFigure, sampleUrls, stepNames, stepResolver } from '~/core/resolve'
+import type { TempoChoice } from '~/core/tempo'
+import { tempoChoice, tempoFor } from '~/core/tempo'
 import type { Genre } from '~/genres'
 
 /** Reverb wet level at the slider's top; beyond this the rhythm smears. */
@@ -104,6 +106,25 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     if (track) track.steps[stepIndex] = nextStep(track.steps[stepIndex] ?? null, stepNames(genre, instrument))
   }
 
+  /**
+   * Simple mode's click: on with the track's main sound, or off. Adding a
+   * hit to a switched-off track switches it on, so the click is heard.
+   */
+  function switchStepOnOff(instrument: string, stepIndex: number) {
+    const track = findTrack(instrument)
+    if (!track) return
+    track.steps[stepIndex] = switchStep(track.steps[stepIndex] ?? null, track.steps, stepNames(genre, instrument))
+    if (track.steps[stepIndex] && track.muted) setMuted(instrument, false)
+  }
+
+  /** The tempo the selected preset is written at; the tempo buttons are relative to it. */
+  const presetBpm = computed(() => genre.presets.find((p) => p.id === selectedPresetId.value)?.bpm ?? pattern.value.bpm)
+  const tempo = computed(() => tempoChoice(pattern.value.bpm, presetBpm.value, genre.bpmRange))
+
+  function setTempo(choice: TempoChoice) {
+    pattern.value.bpm = tempoFor(choice, presetBpm.value, genre.bpmRange)
+  }
+
   function setVolume(instrument: string, volume: number) {
     const track = findTrack(instrument)
     if (!track) return
@@ -172,6 +193,10 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     setCounts: (counts: number) => setPatternCounts(pattern.value, counts),
     setChord,
     toggleStep,
+    switchStep: switchStepOnOff,
+    /** Slow / normal / fast, or undefined when the slider set some other tempo. */
+    tempo,
+    setTempo,
     setVolume,
     setMuted,
     hasVoice: voiceInstrument !== undefined,

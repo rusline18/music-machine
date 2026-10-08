@@ -8,6 +8,7 @@ import {
   patternLength,
   resizeSteps,
   setPatternCounts,
+  switchStep,
 } from '~/core/pattern'
 import type { Pattern } from '~/core/pattern'
 
@@ -152,5 +153,21 @@ describe('countInBlock', () => {
     expect(countInBlock(3, 2)).toBe(1)
     expect(countInBlock(15, 2)).toBe(7)
     expect(countInBlock(16, 2)).toBe(0)
+  })
+})
+
+describe('switchStep', () => {
+  const names = ['low', 'high', 'slap']
+
+  it('turns a hit off', () => {
+    expect(switchStep('slap', ['slap', 'high'], names)).toBeNull()
+  })
+
+  it('turns an empty cell on with the sound the track plays most', () => {
+    expect(switchStep(null, ['high', 'high', 'low', null], names)).toBe('high')
+  })
+
+  it('uses the first sound on an empty track', () => {
+    expect(switchStep(null, [null, null], names)).toBe('low')
   })
 })

@@ -18,6 +18,7 @@ app/
     harmony.ts           Chords, chord tones, pitch-shifting notes onto recorded zones
     resolve.ts           Turns a step into the notes to play: samples, chord-following
                          notes, or the counting voice
+    tempo.ts             Slow / Normal / Fast, relative to a preset's own tempo
     audio/
       engine.ts          AudioContext, per-instrument gain, sample cache, playback, reverb
       scheduler.ts       Lookahead scheduler — sample-accurate timing, live pattern edits
@@ -32,10 +33,13 @@ app/
       index.ts           The genre definition
   composables/
     useBeatMachine.ts    Vue state for one genre page: wires pattern + engine + scheduler
+    useUiMode.ts         Simple / advanced mode, remembered in the browser
   components/
     beat/                BeatMachine (the whole trainer), BeatGrid, TrackRow,
-                         Transport, CountSelector, PresetSelector
-    ui/RangeControl.vue  Labelled slider
+                         Transport, PresetSelector
+    ui/                  RangeControl, SegmentedControl, ControlLabel (icon + label
+                         + tooltip), Tooltip, Icon
+  icons.ts             Line icons as SVG paths, keyed by instrument id or control
     LanguageSwitcher.vue
   pages/
     index.vue            Home: one link per genre
@@ -50,6 +54,16 @@ scripts/
 tests/                 Vitest
 docs/                  Plans
 ```
+
+### Simple and advanced mode
+
+The trainer opens in simple mode: pattern picker with a short description,
+Slow / Normal / Fast, the counting voice, Play, and a grid where a click turns
+a hit on or off (with the sound that track plays most). **Advanced features**
+adds the BPM slider, loop length, feel, reverb, chords, volumes, the voice
+track and every sound of each instrument. The mode only changes what's shown;
+the pattern stays the same. Every instrument and control has an icon and a
+tooltip (hover, tap or keyboard focus) explaining what it is for.
 
 ### Conventions
 
@@ -71,7 +85,11 @@ docs/                  Plans
 - **A language:** add `i18n/locales/<code>.json` (same keys as `en.json`) and
   an entry in `i18n.locales` in `nuxt.config.ts`.
 - **A preset:** add a `definePattern({...})` to the genre's `patterns.ts`,
-  list it in the genre's presets, and add its name to every locale.
+  list it in the genre's presets, and add its name (`presets.<id>`) and a
+  one-line description for beginners (`help.presets.<id>`) to every locale.
+- **An instrument:** besides its samples, give it a name
+  (`instruments.<id>`), a tooltip (`help.instruments.<id>`) and an icon in
+  `app/icons.ts` — a few strokes on a 24×24 grid. Tests fail if any is missing.
 - **A genre:** add `app/genres/<id>/` like the existing ones, register it in
   `app/genres/index.ts`, and add its texts and an accent colour on the home
   page. The `/<id>` page then exists automatically.

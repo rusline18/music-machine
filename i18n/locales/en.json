@@ -27,17 +27,23 @@
     "bpm": "BPM",
     "counts": "Counts",
     "feel": "Feel",
-    "feelHint": "0% plays exactly on the grid; higher adds small timing, volume and pitch variations, like a live band",
     "reverb": "Reverb",
-    "reverbHint": "How much room sound is added to the mix",
     "voice": "Voice",
     "counting": {
       "off": "Off",
       "counts": "1 2 3…",
       "ands": "1 & 2 &…"
     },
-    "random": "🎲 Random",
-    "clear": "Clear"
+    "random": "Random",
+    "clear": "Clear",
+    "speed": "Speed",
+    "tempo": {
+      "slow": "Slow",
+      "normal": "Normal",
+      "fast": "Fast"
+    },
+    "advancedMode": "Advanced features",
+    "simpleMode": "Back to simple"
   },
   "grid": {
     "block": "Block {n}",
@@ -85,12 +91,55 @@
     "and": "&"
   },
   "presets": {
-    "salsa-verse-3-2": "Verse (3-2 clave, cáscara)",
-    "salsa-montuno-3-2": "Montuno (3-2 clave, bells)",
+    "salsa-verse-3-2": "Verse — the basic groove",
+    "salsa-montuno-3-2": "Montuno — more energy",
     "salsa-verse-montuno": "Verse → Montuno (16 counts)",
-    "bachata-derecho": "Derecho",
-    "bachata-majao": "Majao",
-    "bachata-mambo": "Mambo",
-    "bachata-derecho-majao": "Derecho → Majao (32 counts)"
+    "bachata-derecho": "Verse (derecho) — calm",
+    "bachata-majao": "Chorus (majao) — more energy",
+    "bachata-mambo": "Mambo — the instrumental peak",
+    "bachata-derecho-majao": "Verse → Chorus (32 counts)"
+  },
+  "help": {
+    "presets": {
+      "salsa-verse-3-2": "The steady groove under the singing. Clear clave and congas: the best place to start.",
+      "salsa-montuno-3-2": "The hotter part after the verse: the bell comes in and the band pushes forward.",
+      "salsa-verse-montuno": "8 counts of verse, then 8 of montuno, to hear how a song builds up.",
+      "bachata-derecho": "The calm groove of the verse. Good for practising basic steps.",
+      "bachata-majao": "The chorus: the bongos syncopate and the güira digs in harder.",
+      "bachata-mambo": "The climax: the bell rings on every count, the dancers' cue for footwork.",
+      "bachata-derecho-majao": "16 counts of verse, then 16 of chorus, like in a real song."
+    },
+    "instruments": {
+      "voice": "A voice counting the dance: 1 to 8. Use it to find the 1.",
+      "clave": "Two wooden sticks. Their pattern (3-2) is the backbone the whole salsa band follows.",
+      "congas": "Tall hand drums. The open tones on 4 and 4& are the heartbeat of salsa (the tumbao).",
+      "bongos": "Two small joined drums. Steady eighth notes that keep the band moving.",
+      "timbales": "Two metal drums played with sticks. On the shell they play the cáscara pattern.",
+      "cowbell": "A hand bell. Marks the beat in the louder parts of the song.",
+      "maracas": "Shakers. A soft, even pulse on every eighth note.",
+      "guiro": "A ridged gourd scraped with a stick: long and short scrapes.",
+      "guira": "A metal scraper, the sound you hear through the whole bachata: long on the beat, short in between.",
+      "campana": "A bell the bongo player switches to in the mambo. When you hear it, the mambo has started.",
+      "bass": "Plays the low notes of the chords. Follow it to feel the 1.",
+      "requinto": "The lead guitar: high melodies and runs between the singer's lines.",
+      "segunda": "The rhythm guitar: plays the chords in a steady, rolling pattern."
+    },
+    "controls": {
+      "speed": "How fast the music plays. Normal is the usual tempo for this rhythm; start slow while learning.",
+      "bpm": "Tempo in beats (counts) per minute.",
+      "voice": "A voice counting along: just the numbers, or with “and” between them.",
+      "counts": "How many counts the loop lasts before it repeats. Dancers count in blocks of 8.",
+      "feel": "0% plays exactly on the grid; higher adds small timing, volume and pitch variations, like a live band.",
+      "reverb": "How much room sound is added to the mix.",
+      "chords": "The chord for each bar. The bass and guitars follow it.",
+      "random": "Fills the grid with random hits. Fun for experimenting.",
+      "clear": "Removes every hit, so you can build a rhythm from scratch.",
+      "advancedMode": "Tempo, loop length, feel, reverb, volumes, chords and every sound of each instrument.",
+      "simpleMode": "Hide the extra controls. Your rhythm and settings stay as they are."
+    },
+    "grid": {
+      "cellSimple": "Click to add or remove a hit",
+      "cellAdvanced": "Click to cycle through: {sounds}"
+    }
   }
 }

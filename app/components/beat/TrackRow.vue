@@ -13,6 +13,8 @@ const props = defineProps<{
   stepsPerCount: number
   /** Mute and volume are per track, so only the first block shows them. */
   showControls: boolean
+  /** Advanced mode: volume slider, and clicks cycle through the sounds. */
+  advanced: boolean
 }>()
 
 const emit = defineEmits<{
@@ -25,7 +27,9 @@ const { t } = useI18n()
 
 const stepIndices = computed(() => Array.from({ length: props.length }, (_, i) => props.start + i))
 const instrumentName = computed(() => t(`instruments.${props.track.instrument}`))
-const stepOptions = computed(() => props.stepNames.map((name) => t(`steps.${name}`)).join(', '))
+const cellHint = computed(() => props.advanced
+  ? t('help.grid.cellAdvanced', { sounds: props.stepNames.map((name) => t(`steps.${name}`)).join(', ') })
+  : t('help.grid.cellSimple'))
 
 /** What a cell shows: the step's name, or for a counting voice the number it says. */
 function stepLabel(stepIndex: number): string {
@@ -49,10 +53,19 @@ function stepLabel(stepIndex: number): string {
       >
         {{ track.muted ? t('grid.off') : t('grid.on') }}
       </button>
-      <span
-        class="truncate text-sm"
-        :class="showControls ? 'text-neutral-200' : 'text-neutral-500'"
-      >{{ instrumentName }}</span>
+      <UiControlLabel
+        v-if="showControls"
+        class="min-w-0 text-sm text-neutral-200"
+        :label="instrumentName"
+        :icon="track.instrument"
+        :hint="t(`help.instruments.${track.instrument}`)"
+      />
+      <UiControlLabel
+        v-else
+        class="min-w-0 truncate text-sm text-neutral-500"
+        :label="instrumentName"
+        :icon="track.instrument"
+      />
     </div>
 
     <div
@@ -68,7 +81,7 @@ function stepLabel(stepIndex: number): string {
           track.steps[stepIndex] ? 'bg-amber-500 text-neutral-900' : 'bg-neutral-800 text-neutral-600 hover:bg-neutral-700',
           { 'ring-2 ring-white': activeStep === stepIndex, 'ml-1.5': i % stepsPerCount === 0 && i > 0 },
         ]"
-        :title="stepOptions"
+        :title="cellHint"
         @click="emit('toggle-step', stepIndex)"
       >
         {{ stepLabel(stepIndex) }}
@@ -76,7 +89,7 @@ function stepLabel(stepIndex: number): string {
     </div>
 
     <input
-      v-if="showControls"
+      v-if="advanced && showControls"
       type="range"
       min="0"
       max="1"
@@ -87,7 +100,7 @@ function stepLabel(stepIndex: number): string {
       @input="emit('update:volume', Number(($event.target as HTMLInputElement).value))"
     >
     <span
-      v-else
+      v-else-if="advanced"
       class="w-20 shrink-0"
     />
   </div>

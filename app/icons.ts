@@ -1,0 +1,60 @@
+/**
+ * Line icons on a 24×24 grid, drawn with `currentColor` strokes by
+ * <UiIcon>. Each is a few SVG path strings, so all of them together stay a
+ * few kilobytes: no icon font, no extra requests. Instrument icons are keyed
+ * by instrument id (every genre's instruments need one — see
+ * tests/icons.test.ts); the rest are for controls.
+ */
+export const ICONS: Record<string, readonly string[]> = {
+  // Instruments
+  /** A speech bubble: the counting voice. */
+  voice: ['M4 4h16v11H10l-4 4v-4H4z', 'M9 9.5h.01M12 9.5h.01M15 9.5h.01'],
+  /** Two wooden sticks. */
+  clave: ['M3 14 14 3', 'M10 21 21 10'],
+  /** A tall barrel drum. */
+  congas: ['M7 4a5 1.5 0 0 0 10 0a5 1.5 0 0 0 -10 0', 'M7 4c-1.5 6-1.5 11 1 17h8c2.5-6 2.5-11 1-17'],
+  /** Two small drums joined in the middle. */
+  bongos: [
+    'M2 8a4 1.5 0 0 0 8 0a4 1.5 0 0 0 -8 0', 'M2 8v7c0 1 1.8 2 4 2s4-1 4-2V8',
+    'M14 9a4 1.5 0 0 0 8 0a4 1.5 0 0 0 -8 0', 'M14 9v6c0 1 1.8 2 4 2s4-1 4-2V9', 'M10 12h4',
+  ],
+  /** Two shallow drums on a stand. */
+  timbales: [
+    'M2 7a4.5 1.5 0 0 0 9 0a4.5 1.5 0 0 0 -9 0', 'M2 7v4h9V7',
+    'M13 7a4.5 1.5 0 0 0 9 0a4.5 1.5 0 0 0 -9 0', 'M13 7v4h9V7', 'M12 11v10M8 21h8',
+  ],
+  /** A hand bell, mouth down. */
+  cowbell: ['M8.5 5h7L19 19H5z', 'M10.5 5V2.5h3V5'],
+  /** The bachata bell, with the stick that strikes it. */
+  campana: ['M9.5 3h7l3 13h-13z', 'M11.5 3V1.5h3V3', 'M2 22l7-6'],
+  /** Two shakers. */
+  maracas: ['M4 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0', 'M8 11v10', 'M13 10a3.5 3.5 0 1 0 7 0a3.5 3.5 0 1 0 -7 0', 'M16.5 13.5V21'],
+  /** A ridged gourd. */
+  guiro: ['M2 12c0-3 4.5-5 10-5s10 2 10 5-4.5 5-10 5-10-2-10-5z', 'M8 8v8M11 7.2v9.6M14 7.2v9.6M17 8v8'],
+  /** A metal scraper: a dotted cylinder and the fork that scrapes it. */
+  guira: ['M5 4h9v16H5z', 'M8 8h.01M11 8h.01M8 12h.01M11 12h.01M8 16h.01M11 16h.01', 'M21 3l-4 4M17 7v5'],
+  /** A guitar, with low waves for its deep sound. */
+  bass: ['M3 17a4 4 0 1 0 8 0a4 4 0 1 0 -8 0', 'M7 17h.01', 'M9.8 14.2 20 4', 'M14 20c1.5-2 3 2 4.5 0s3 2 4.5 0'],
+  /** A guitar with a spark: the lead guitar. */
+  requinto: ['M3 17a4 4 0 1 0 8 0a4 4 0 1 0 -8 0', 'M7 17h.01', 'M9.8 14.2 20 4', 'M5 3v5M2.5 5.5h5'],
+  /** A guitar with strum lines: the rhythm guitar. */
+  segunda: ['M3 17a4 4 0 1 0 8 0a4 4 0 1 0 -8 0', 'M7 17h.01', 'M9.8 14.2 20 4', 'M14 15h7M14 18h7M14 21h7'],
+
+  // Controls
+  /** A metronome. */
+  tempo: ['M6 21h12L15 3H9z', 'M12 17l5-9'],
+  /** A loose wave: a band that breathes. */
+  feel: ['M2 12c3-6 5 6 8 0s5 6 8 0 3-3 4-3'],
+  /** Echoes spreading out from a source. */
+  reverb: ['M5 12h.01', 'M9 9a4 4 0 0 1 0 6', 'M13 6a8 8 0 0 1 0 12', 'M17 3a12 12 0 0 1 0 18'],
+  /** A loop arrow: how many counts repeat. */
+  counts: ['M4 12a8 8 0 1 0 2.3-5.7', 'M3 3v4.5h4.5'],
+  /** Sliders. */
+  advanced: ['M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1', 'M15 4v4M9 10v4M17 16v4'],
+  /** A die. */
+  random: ['M4 4h16v16H4z', 'M8.5 8.5h.01M15.5 8.5h.01M12 12h.01M8.5 15.5h.01M15.5 15.5h.01'],
+  /** An eraser. */
+  clear: ['M15 4l5 5-9 9H6l-2-2z', 'M10 9l5 5', 'M11 20h9'],
+  /** Two notes: the chords the guitars and bass follow. */
+  chords: ['M3 17a3 3 0 1 0 6 0a3 3 0 1 0 -6 0', 'M13 15a3 3 0 1 0 6 0a3 3 0 1 0 -6 0', 'M9 17V5l10-2v12'],
+}

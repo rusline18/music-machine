@@ -140,3 +140,22 @@ export function nextStep(current: Step, names: string[]): Step {
   const next = (current === null ? -1 : names.indexOf(current)) + 1
   return names[next] ?? null
 }
+
+/**
+ * The simple-mode click: an empty cell gets the track's main sound (the one
+ * it plays most, or the instrument's first), a filled one goes silent.
+ */
+export function switchStep(current: Step, steps: readonly Step[], names: string[]): Step {
+  if (current !== null) return null
+  const uses = new Map<string, number>()
+  for (const step of steps) if (step && names.includes(step)) uses.set(step, (uses.get(step) ?? 0) + 1)
+  let main = names[0]
+  let most = 0
+  for (const [name, count] of uses) {
+    if (count > most) {
+      main = name
+      most = count
+    }
+  }
+  return main ?? null
+}
