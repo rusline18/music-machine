@@ -58,6 +58,10 @@ export const ICONS: Record<string, readonly string[]> = {
   /** Three stacked layers: build a rhythm one instrument at a time. */
   layers: ['M12 3 3 7.5 12 12l9-4.5z', 'M3 12l9 4.5 9-4.5', 'M3 16.5 12 21l9-4.5'],
   /** A heart: support the developer. */
+  /** Two chain links: a link to the pattern. */
+  share: ['M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1', 'M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1'],
+  /** An arrow turning back: undo the edits. */
+  reset: ['M4 13a8 8 0 1 0 2.5-6.5L4 9', 'M4 4v5h5'],
   heart: ['M12 20s-8-4.7-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.5C20 15.3 12 20 12 20z'],
   /** Two notes: the chords the guitars and bass follow. */
   chords: ['M3 17a3 3 0 1 0 6 0a3 3 0 1 0 -6 0', 'M13 15a3 3 0 1 0 6 0a3 3 0 1 0 -6 0', 'M9 17V5l10-2v12'],

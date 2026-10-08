@@ -4,6 +4,7 @@ import { layerOrder } from '~/core/layers'
 import type { Pattern } from '~/core/pattern'
 import { nextStep, patternLength, resizeSteps, setPatternCounts, switchStep } from '~/core/pattern'
 import type { CountingMode } from '~/core/resolve'
+import { decodePattern, encodePattern } from '~/core/share'
 import { COUNTING_MODES, countingFigure, sampleUrls, stepNames, stepResolver } from '~/core/resolve'
 import type { TempoChoice } from '~/core/tempo'
 import { tempoChoice, tempoFor } from '~/core/tempo'
@@ -13,6 +14,10 @@ import type { Genre } from '~/genres'
 const MAX_REVERB_WET = 0.6
 /** Chance that `randomize` puts a hit on a step. */
 const RANDOM_DENSITY = 0.25
+
+/** Query parameter carrying a shared pattern: /salsa?p=… */
+export const SHARE_PARAM = 'p'
+const storageKey = (genreId: string) => `latin-beat-machine:pattern:${genreId}`
 
 /**
  * Pattern state + audio engine + scheduler for one genre page.
@@ -95,14 +100,61 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     else prefetch()
   })
 
-  watch(selectedPresetId, (id) => {
-    const preset = genre.presets.find((p) => p.id === id)
-    if (!preset) return
+  /** Swap in a new pattern, carrying on playing if we were. */
+  function loadPattern(next: Pattern) {
     layers.value = null
     const wasPlaying = isPlaying.value
     stop()
-    pattern.value = structuredClone(preset)
+    pattern.value = next
+    selectedPresetId.value = next.id
     if (wasPlaying) play()
+  }
+
+  function selectPreset(id: string) {
+    const preset = genre.presets.find((p) => p.id === id)
+    if (preset) loadPattern(structuredClone(preset))
+  }
+
+  /** Undo edits: back to the preset this pattern started from (or the first one). */
+  function reset() {
+    selectPreset(genre.presets.some((p) => p.id === pattern.value.id) ? pattern.value.id : genre.presets[0]!.id)
+  }
+
+  /** Code for a link to the current pattern (see core/share.ts). */
+  const shareCode = computed(() => encodePattern(pattern.value, genre))
+
+  // A link wins over the last visit's pattern. Both are read after
+  // mounting: the server has no localStorage, and rendering the preset
+  // first keeps hydration consistent.
+  const route = useRoute()
+  const router = useRouter()
+  onMounted(() => {
+    const fromLink = route.query[SHARE_PARAM]
+    let restored: Pattern | null = null
+    if (typeof fromLink === 'string') {
+      restored = decodePattern(fromLink, genre)
+      // Drop the code from the address bar: edits from here on are the
+      // user's own and get saved locally instead.
+      const { [SHARE_PARAM]: _, ...query } = route.query
+      router.replace({ query })
+    }
+    if (!restored) {
+      try {
+        const saved = localStorage.getItem(storageKey(genre.id))
+        if (saved) restored = decodePattern(saved, genre)
+      } catch { /* storage blocked: start from the preset */ }
+    }
+    if (restored) loadPattern(restored)
+  })
+
+  // Only edits are kept: an untouched preset isn't stored, so it picks up
+  // fixes to the preset data on the next visit.
+  watch(shareCode, (code) => {
+    const preset = genre.presets.find((p) => p.id === pattern.value.id)
+    try {
+      if (preset && encodePattern(preset, genre) === code) localStorage.removeItem(storageKey(genre.id))
+      else localStorage.setItem(storageKey(genre.id), code)
+    } catch { /* storage full or blocked: nothing to save to */ }
   })
 
   const findTrack = (instrument: string) => pattern.value.tracks.find((t) => t.instrument === instrument)
@@ -272,7 +324,11 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
   return {
     /** Edit freely: the scheduler reads it live, so changes (tempo included) apply while playing. */
     pattern,
-    selectedPresetId,
+    /** The preset the pattern started from, or CUSTOM_PATTERN_ID for one from a link. */
+    selectedPresetId: readonly(selectedPresetId),
+    selectPreset,
+    reset,
+    shareCode,
     isPlaying: readonly(isPlaying),
     isLoading: readonly(isLoading),
     loadProgress,

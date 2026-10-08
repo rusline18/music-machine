@@ -48,7 +48,11 @@
     "loading": "Loading {percent}%",
     "downloaded": "Sounds downloaded",
     "failed": "Sounds that didn't load: {count} · Play to retry",
-    "failedHint": "Check your connection and press Play to retry."
+    "failedHint": "Check your connection and press Play to retry.",
+    "share": "Share",
+    "linkCopied": "Link copied",
+    "link": "Link to this pattern",
+    "reset": "Reset"
   },
   "grid": {
     "block": "Block {n}",
@@ -156,7 +160,9 @@
       "clear": "Removes every hit, so you can build a rhythm from scratch.",
       "advancedMode": "Tempo, loop length, feel, reverb, volumes, chords and every sound of each instrument.",
       "simpleMode": "Hide the extra controls. Your rhythm and settings stay as they are.",
-      "count": "The count the music is on right now. 1 and 5 start each half of the 8 counts: listen for them."
+      "count": "The count the music is on right now. 1 and 5 start each half of the 8 counts: listen for them.",
+      "share": "Copies a link to this exact pattern — tempo, length, mutes and all. Send it to a partner or your students.",
+      "reset": "Throws away your changes and goes back to the preset."
     },
     "grid": {
       "cellSimple": "Click to add or remove a hit",

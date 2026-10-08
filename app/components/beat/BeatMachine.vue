@@ -11,6 +11,9 @@ const props = defineProps<{
 const {
   pattern,
   selectedPresetId,
+  selectPreset,
+  reset,
+  shareCode,
   isPlaying,
   isLoading,
   loadProgress,
@@ -46,7 +49,11 @@ const countOptions = COUNT_OPTIONS.map((counts) => ({ value: counts, label: Stri
 const countingOptions = computed(() => COUNTING_MODES.map((mode) => ({ value: mode, label: t(`controls.counting.${mode}`) })))
 const tempoOptions = computed(() => TEMPO_CHOICES.map((choice) => ({ value: choice, label: t(`controls.tempo.${choice}`) })))
 
-const presetIds = props.genre.presets.map((preset) => preset.id)
+/** The presets, plus the pattern from a link while that's what's loaded. */
+const presetIds = computed(() => {
+  const ids = props.genre.presets.map((preset) => preset.id)
+  return ids.includes(selectedPresetId.value) ? ids : [...ids, selectedPresetId.value]
+})
 /** Simple mode leaves these off the grid: the voice has its own switch above it. */
 const simpleHides = props.genre.instruments.filter((instrument) => props.genre.spoken[instrument])
 const stepNamesFor = (instrument: string) => stepNames(props.genre, instrument)
@@ -75,8 +82,9 @@ function clickStep(instrument: string, stepIndex: number) {
       </div>
       <div class="flex max-w-sm flex-col gap-1.5 sm:items-end">
         <BeatPresetSelector
-          v-model="selectedPresetId"
+          :model-value="selectedPresetId"
           :preset-ids="presetIds"
+          @update:model-value="selectPreset"
         />
         <p class="text-sm text-neutral-400 sm:text-right">
           {{ $t(`help.presets.${selectedPresetId}`) }}
@@ -203,6 +211,19 @@ function clickStep(instrument: string, stepIndex: number) {
     />
 
     <div class="mt-6 flex flex-wrap items-center gap-3">
+      <button
+        type="button"
+        class="inline-flex items-center gap-1.5 rounded-md bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700"
+        :title="$t('help.controls.reset')"
+        @click="reset"
+      >
+        <UiIcon name="reset" />
+        {{ $t('controls.reset') }}
+      </button>
+      <BeatShareButton :code="shareCode" />
+    </div>
+
+    <div class="mt-4 flex flex-wrap items-center gap-3">
       <button
         type="button"
         class="inline-flex items-center gap-2 rounded-md border border-neutral-700 px-4 py-2 text-sm text-neutral-200 transition hover:bg-neutral-800"
