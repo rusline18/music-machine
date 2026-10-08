@@ -77,11 +77,43 @@ for (const genre of Object.keys(presets) as Genre[]) {
 describe('rhythm reference', () => {
   // Eighth-note cells: 2 per count, 16 per 8-count block.
   const SON_CLAVE_3_2 = [0, 3, 6, 10, 12] // 1, 2&, 4 | 6, 7
+  const SON_CLAVE_2_3 = [2, 4, 8, 11, 14] // 2, 3 | 5, 6&, 8
+  const RUMBA_CLAVE_3_2 = [0, 3, 7, 10, 12] // 1, 2&, 4& | 6, 7
+  const CLAVE_BY_PRESET: Record<string, number[]> = {
+    'salsa-verse-3-2': SON_CLAVE_3_2,
+    'salsa-montuno-3-2': SON_CLAVE_3_2,
+    'salsa-verse-montuno': SON_CLAVE_3_2,
+    'salsa-verse-2-3': SON_CLAVE_2_3,
+    'salsa-montuno-2-3': SON_CLAVE_2_3,
+    'salsa-verse-montuno-2-3': SON_CLAVE_2_3,
+    'salsa-chachacha-2-3': SON_CLAVE_2_3,
+    'salsa-guaguanco-3-2': RUMBA_CLAVE_3_2,
+  }
 
-  it.each(salsaPatterns.map((p) => [p.id, p] as const))('%s plays 3-2 son clave in every block', (_id, pattern) => {
+  it.each(salsaPatterns.map((p) => [p.id, p] as const))('%s plays its clave in every block', (id, pattern) => {
+    const clave = CLAVE_BY_PRESET[id]
+    expect(clave, `no reference clave for ${id}`).toBeDefined()
     const blocks = pattern.counts / COUNTS_PER_BLOCK
-    const expected = Array.from({ length: blocks }, (_, b) => SON_CLAVE_3_2.map((i) => i + b * 16)).flat()
+    const expected = Array.from({ length: blocks }, (_, b) => clave!.map((i) => i + b * 16)).flat()
     expect(onsets(pattern, 'clave')).toEqual(expected)
+  })
+
+  it('2-3 presets keep the 3-2 parts, cáscara turned with the clave', () => {
+    const verse32 = salsaPatterns.find((p) => p.id === 'salsa-verse-3-2')!
+    const verse23 = salsaPatterns.find((p) => p.id === 'salsa-verse-2-3')!
+    // Cáscara 2-3 starts on the 2 side: the 3-2 figure's second bar first.
+    expect(onsets(verse23, 'timbales')).toEqual([1, 2, 4, 6, 8, 10, 12, 13, 15])
+    // Tumbao and martillo repeat every bar, so turning them changes nothing.
+    for (const instrument of ['congas', 'bongos']) {
+      expect(onsets(verse23, instrument), instrument).toEqual(onsets(verse32, instrument))
+    }
+  })
+
+  it('cha-cha-chá: güiro long on the beat, two shorts after — the "cha-cha-chá" on 4 & 1', () => {
+    const chachacha = salsaPatterns.find((p) => p.id === 'salsa-chachacha-2-3')!
+    const guiro = chachacha.tracks.find((t) => t.instrument === 'guiro')!.steps
+    expect(guiro.slice(6, 9)).toEqual(['short', 'short', 'long'])
+    expect(chachacha.bpm).toBeLessThan(130)
   })
 
   it.each(bachataPatterns.map((p) => [p.id, p] as const))('%s keeps the bass on 1, 2&, 3, 4 of each bar', (_id, pattern) => {

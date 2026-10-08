@@ -5,6 +5,7 @@ import {
   deserializePattern,
   patternLength,
   resizeSteps,
+  rotatePattern,
   serializePattern,
 } from '../app/composables/usePattern'
 import type { Pattern } from '../app/composables/usePattern'
@@ -89,5 +90,29 @@ describe('serializePattern', () => {
   it('round-trips, including non-ASCII names', () => {
     const pattern = block('cáscara', [['güiro', ['long', null, 'short', 'short']]])
     expect(deserializePattern(serializePattern(pattern))).toEqual(pattern)
+  })
+})
+
+describe('rotatePattern', () => {
+  it('starts later and wraps the skipped part round to the end', () => {
+    const pattern = { ...block('p', [['clave', ['a', null, 'b', null, 'c', null, null, 'd']]]), counts: 4, chords: ['Am'] }
+    const rotated = rotatePattern('r', 'R', pattern, 4)
+    expect(rotated.tracks[0]!.steps).toEqual(pattern.tracks[0]!.steps)
+
+    const eight = { ...pattern, counts: 8, tracks: [{ ...pattern.tracks[0]!, steps: [...'abcdefghijklmnop'] }], chords: ['Am', 'E'] }
+    const half = rotatePattern('h', 'H', eight, 4)
+    expect(half.tracks[0]!.steps.join('')).toBe('ijklmnopabcdefgh')
+    expect(half.chords).toEqual(['E', 'Am'])
+    expect(half).toMatchObject({ id: 'h', name: 'H', counts: 8 })
+  })
+
+  it('does not touch the original', () => {
+    const pattern = block('p', [['clave', ['a', null, null, null]]])
+    rotatePattern('r', 'R', { ...pattern, counts: 2 }, 0)
+    expect(pattern.tracks[0]!.steps).toEqual(['a', null, null, null])
+  })
+
+  it('refuses to split a bar', () => {
+    expect(() => rotatePattern('r', 'R', block('p', [['clave', ['a', null, null, null]]]), 2)).toThrow()
   })
 })

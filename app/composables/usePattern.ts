@@ -115,6 +115,24 @@ export function chainPatterns(id: string, name: string, first: Pattern, ...rest:
   }
 }
 
+/**
+ * Start a pattern `counts` later and wrap the skipped part round to the
+ * end. Rotating an 8-count block by 4 turns 3-2 clave into 2-3, and every
+ * part that follows the clave (cáscara, bells) turns with it.
+ */
+export function rotatePattern(id: string, name: string, pattern: Pattern, counts: number): Pattern {
+  if (counts % COUNTS_PER_BAR !== 0) throw new Error(`Can't rotate ${pattern.id} by ${counts}: not a whole number of bars`)
+  const rotate = <T>(items: T[], by: number) => items.map((_, i) => items[(i + by) % items.length]!)
+  const rotated = clonePattern(pattern)
+  return {
+    ...rotated,
+    id,
+    name,
+    chords: rotated.chords && rotate(rotated.chords, counts / COUNTS_PER_BAR),
+    tracks: rotated.tracks.map((track) => ({ ...track, steps: rotate(track.steps, counts * pattern.stepsPerCount) })),
+  }
+}
+
 export function clonePattern(pattern: Pattern): Pattern {
   return structuredClone(pattern)
 }
