@@ -17,6 +17,33 @@ export default defineNuxtConfig({
     strict: true,
   },
 
+  // Server-only settings, overridable by env vars at runtime.
+  runtimeConfig: {
+    /** NUXT_FEEDBACK_WEBHOOK_URL: also POST each piece of feedback here (Slack, Discord, automation tools). */
+    feedbackWebhookUrl: '',
+    /** NUXT_FEEDBACK_TRUST_PROXY=true when behind a reverse proxy, so rate limits see real client IPs. */
+    feedbackTrustProxy: false,
+    public: {
+      /**
+       * NUXT_PUBLIC_FEEDBACK_ENABLED=true shows the "Send feedback" link and
+       * opens /api/feedback. Off until it's decided where feedback goes.
+       */
+      feedbackEnabled: false,
+    },
+  },
+
+  nitro: {
+    // Where /api/feedback keeps what users send. Files under .data/ (git-ignored)
+    // by default; swap the driver (redis, s3, cloudflare-kv-binding, …) to
+    // keep it elsewhere: https://unstorage.unjs.io/drivers
+    storage: {
+      feedback: { driver: 'fs', base: './.data/feedback' },
+    },
+    devStorage: {
+      feedback: { driver: 'fs', base: './.data/feedback' },
+    },
+  },
+
   // Only in production builds: dev relies on Vite's HMR socket and devtools,
   // and a week of audio caching would hide freshly regenerated samples.
   $production: {

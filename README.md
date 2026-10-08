@@ -27,6 +27,34 @@ needs `ffmpeg` with libopus. The app downloads the `.webm` and falls back to
 the WAV only where the browser can't decode Opus. After touching WAVs some
 other way, run `npm run samples:encode` to refresh the copies.
 
+## Feedback
+
+**Built but switched off** until it's decided where feedback should go. Set
+`NUXT_PUBLIC_FEEDBACK_ENABLED=true` to show a **Send feedback** link in the
+footer of every page (`app/components/FeedbackDialog.vue`); it posts to
+`POST /api/feedback` (`server/api/feedback.post.ts`), which answers 404 while
+the flag is off. Where feedback ends up is configuration, so it can change
+without touching code:
+
+- **Stored** in Nitro's `feedback` storage — by default JSON files under
+  `.data/feedback/<date>/<id>.json` on the server. For hosts without a
+  persistent disk (serverless, several instances) point `nitro.storage.feedback`
+  in `nuxt.config.ts` at another [unstorage driver](https://unstorage.unjs.io/drivers)
+  (Redis, S3, Cloudflare KV, …).
+- **Forwarded** to a webhook if `NUXT_FEEDBACK_WEBHOOK_URL` is set. The JSON
+  body has `text` (Slack), `content` (Discord, with pings disabled) and the
+  full entry under `feedback`, so an incoming webhook or an automation tool
+  (Zapier, Make, n8n → email, Telegram, GitHub issues) can take it as is.
+
+Feedback counts as delivered if either one works. Each entry keeps the kind,
+message, optional email, page path and browser user agent — no IP address.
+The endpoint takes JSON only, at most 16 KB, 5 per client per 10 minutes and
+200 per hour overall, and silently drops bots that fill a hidden honeypot
+field. Behind a reverse proxy set `NUXT_FEEDBACK_TRUST_PROXY=true`, or every
+visitor shares the proxy's rate limit. The API needs the Node server
+(`nuxt build`); on a static `nuxt generate` site the dialog says feedback
+isn't available.
+
 ## Project structure
 
 ```
@@ -41,6 +69,12 @@ app/
     salsa/, bachata/     Instrument sample maps + preset patterns
   pages/
     index.vue, salsa.vue, bachata.vue
+  components/FeedbackDialog.vue  "Send feedback" link + dialog in the footer
+
+server/
+  api/feedback.post.ts   Validates, rate-limits and delivers feedback
+  feedback/              Delivery (storage + webhook) and the rate limiter
+shared/feedback.ts       Feedback kinds, limits and validation (app + server)
 
 public/audio/
   salsa/<instrument>/    One-shot .wav files (built — don't edit by hand)

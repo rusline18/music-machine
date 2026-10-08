@@ -15,7 +15,7 @@ const machine = useBeatMachine('salsa')
 </script>
 
 <template>
-  <main class="mx-auto max-w-4xl px-6 py-10">
+  <main class="mx-auto w-full max-w-4xl flex-1 px-6 py-10">
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
       <div>
         <NuxtLink to="/" class="text-sm text-neutral-500 hover:text-neutral-300">← Back</NuxtLink>
