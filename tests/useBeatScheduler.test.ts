@@ -86,6 +86,16 @@ describe('useBeatScheduler', () => {
     expect(steps[0]).toBe(0)
     scheduler.stop()
   })
+
+  it.each([0, -120, Number.NaN])('stops instead of hanging at bpm %s', async (bpm) => {
+    const { context, engine } = fakeEngine()
+    const scheduler = useBeatScheduler(engine as never)
+    await scheduler.start(pattern(8, bpm), samples)
+    await runUntil(context, 0.1)
+
+    expect(scheduler.isPlaying.value).toBe(false)
+    expect(engine.playNote).not.toHaveBeenCalled()
+  })
 })
 
 describe('sampleResolver', () => {

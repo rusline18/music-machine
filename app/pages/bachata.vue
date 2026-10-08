@@ -27,8 +27,8 @@ const machine = useBeatMachine('bachata')
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
       <BpmControl
         :model-value="machine.pattern.value.bpm"
-        :min="90"
-        :max="160"
+        :min="machine.config.minBpm"
+        :max="machine.config.maxBpm"
         @update:model-value="machine.setBpm"
       />
       <CountSelector

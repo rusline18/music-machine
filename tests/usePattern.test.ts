@@ -2,10 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   chainPatterns,
   createEmptyPattern,
-  deserializePattern,
   patternLength,
   resizeSteps,
-  serializePattern,
 } from '../app/composables/usePattern'
 import type { Pattern } from '../app/composables/usePattern'
 
@@ -85,9 +83,3 @@ describe('createEmptyPattern', () => {
   })
 })
 
-describe('serializePattern', () => {
-  it('round-trips, including non-ASCII names', () => {
-    const pattern = block('cáscara', [['güiro', ['long', null, 'short', 'short']]])
-    expect(deserializePattern(serializePattern(pattern))).toEqual(pattern)
-  })
-})

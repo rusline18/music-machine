@@ -27,8 +27,8 @@ const machine = useBeatMachine('salsa')
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
       <BpmControl
         :model-value="machine.pattern.value.bpm"
-        :min="140"
-        :max="220"
+        :min="machine.config.minBpm"
+        :max="machine.config.maxBpm"
         @update:model-value="machine.setBpm"
       />
       <CountSelector
