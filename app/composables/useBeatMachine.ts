@@ -1,5 +1,6 @@
 import { createAudioEngine } from '~/core/audio/engine'
 import { createScheduler } from '~/core/audio/scheduler'
+import { layerOrder } from '~/core/layers'
 import type { Pattern } from '~/core/pattern'
 import { nextStep, patternLength, resizeSteps, setPatternCounts, switchStep } from '~/core/pattern'
 import type { CountingMode } from '~/core/resolve'
@@ -38,6 +39,12 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
   /** 0–1: room reverb on the mix; 1 maps to MAX_REVERB_WET. */
   const reverb = ref(0.35)
 
+  /**
+   * "Layer by layer": the instruments to bring in, and how many are in so
+   * far. Null when the guide isn't running.
+   */
+  const layers = ref<{ order: string[], added: number } | null>(null)
+
   /** Set once the audio graph exists (after the first play). */
   let started = false
   /** Playhead updates waiting for their step to sound. */
@@ -58,6 +65,7 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
   watch(selectedPresetId, (id) => {
     const preset = genre.presets.find((p) => p.id === id)
     if (!preset) return
+    layers.value = null
     const wasPlaying = isPlaying.value
     stop()
     pattern.value = structuredClone(preset)
@@ -174,6 +182,33 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     }
   }
 
+  /**
+   * Starts "layer by layer": silences the band but the first instrument
+   * (the counting voice is left as it is) and starts playing.
+   */
+  function startLayers() {
+    const order = layerOrder(pattern.value, genre.teachingOrder)
+    if (order.length === 0) return
+    for (const track of pattern.value.tracks) {
+      if (track.instrument !== voiceInstrument) setMuted(track.instrument, track.instrument !== order[0])
+    }
+    layers.value = { order, added: 1 }
+    if (!isPlaying.value) play()
+  }
+
+  function addLayer() {
+    const next = layers.value?.order[layers.value.added]
+    if (!next) return
+    setMuted(next, false)
+    layers.value!.added++
+  }
+
+  /** Ends the guide; with `addRest`, brings in every instrument it hadn't reached. */
+  function endLayers(addRest: boolean) {
+    if (addRest) for (const instrument of layers.value?.order ?? []) setMuted(instrument, false)
+    layers.value = null
+  }
+
   onBeforeUnmount(() => {
     stop()
     engine.dispose()
@@ -204,5 +239,9 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     setCounting,
     randomize,
     clear,
+    layers: readonly(layers),
+    startLayers,
+    addLayer,
+    endLayers,
   }
 }

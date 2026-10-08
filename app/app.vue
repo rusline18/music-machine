@@ -15,5 +15,6 @@ useHead(() => ({
     <LanguageSwitcher class="absolute right-4 top-4" />
     <NuxtRouteAnnouncer />
     <NuxtPage />
+    <SiteFooter />
   </div>
 </template>

@@ -9,6 +9,12 @@ export interface Genre extends InstrumentSet {
   instruments: readonly string[]
   /** Range of the tempo slider, in counts per minute. */
   bpmRange: readonly [min: number, max: number]
+  /**
+   * The order "layer by layer" brings instruments in: the foundation first
+   * (the one the others lock to), then the rest. The counting voice is
+   * left out; it has its own switch.
+   */
+  teachingOrder: readonly string[]
   /** Presets offered in the pattern picker; the first one loads by default. */
   presets: Pattern[]
 }

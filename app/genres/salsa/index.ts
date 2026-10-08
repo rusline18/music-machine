@@ -10,5 +10,7 @@ export const salsa: Genre = {
   pitched: {},
   spoken: { voice: countingVoice },
   bpmRange: [140, 220],
+  // Clave is the key everything locks to; the congas' tumbao is the pulse.
+  teachingOrder: ['clave', 'congas', 'bongos', 'maracas', 'timbales', 'cowbell', 'guiro'],
   presets: salsaPresets,
 }

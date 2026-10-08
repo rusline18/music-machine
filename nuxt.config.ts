@@ -6,6 +6,15 @@ export default defineNuxtConfig({
   // server for SEO; audio only starts in the browser.
   ssr: true,
   devtools: { enabled: true },
+
+  runtimeConfig: {
+    public: {
+      // Link to a donation page (Boosty, Ko-fi…), https only. Empty hides the
+      // button. Set with the NUXT_PUBLIC_DONATE_URL environment variable.
+      donateUrl: '',
+    },
+  },
+
   compatibilityDate: '2025-07-15',
 
   typescript: {

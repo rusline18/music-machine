@@ -43,7 +43,8 @@
       "fast": "Fast"
     },
     "advancedMode": "Advanced features",
-    "simpleMode": "Back to simple"
+    "simpleMode": "Back to simple",
+    "count": "Count"
   },
   "grid": {
     "block": "Block {n}",
@@ -53,7 +54,10 @@
     "on": "on",
     "off": "off",
     "mute": "Mute {instrument}",
-    "volume": "{instrument} volume"
+    "volume": "{instrument} volume",
+    "previous": "Previous bar",
+    "next": "Next bar",
+    "page": "Bar {n} of {total}"
   },
   "instruments": {
     "voice": "Voice",
@@ -135,11 +139,25 @@
       "random": "Fills the grid with random hits. Fun for experimenting.",
       "clear": "Removes every hit, so you can build a rhythm from scratch.",
       "advancedMode": "Tempo, loop length, feel, reverb, volumes, chords and every sound of each instrument.",
-      "simpleMode": "Hide the extra controls. Your rhythm and settings stay as they are."
+      "simpleMode": "Hide the extra controls. Your rhythm and settings stay as they are.",
+      "count": "The count the music is on right now. 1 and 5 start each half of the 8 counts: listen for them."
     },
     "grid": {
       "cellSimple": "Click to add or remove a hit",
       "cellAdvanced": "Click to cycle through: {sounds}"
     }
+  },
+  "layers": {
+    "start": "Build it layer by layer",
+    "intro": "Start with one instrument and add the others one at a time, to hear what each one plays.",
+    "playing": "Playing:",
+    "add": "Add {instrument}",
+    "addAll": "Add all the rest",
+    "done": "That's the whole band. Try switching one instrument off to hear what goes missing.",
+    "close": "Done"
+  },
+  "footer": {
+    "support": "Support the developer",
+    "supportHint": "Opens the donation page in a new tab. Payment happens there; this app never sees your card details."
   }
 }

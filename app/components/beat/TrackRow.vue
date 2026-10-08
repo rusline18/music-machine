@@ -40,8 +40,8 @@ function stepLabel(stepIndex: number): string {
 </script>
 
 <template>
-  <div class="flex items-center gap-3 border-b border-neutral-800 py-2">
-    <div class="flex w-32 shrink-0 items-center gap-2">
+  <div class="flex items-center gap-2 border-b border-neutral-800 py-2 sm:gap-3">
+    <div class="flex w-[4.5rem] shrink-0 items-center gap-2 sm:w-32">
       <button
         v-if="showControls"
         type="button"
@@ -59,12 +59,14 @@ function stepLabel(stepIndex: number): string {
         :label="instrumentName"
         :icon="track.instrument"
         :hint="t(`help.instruments.${track.instrument}`)"
+        compact
       />
       <UiControlLabel
         v-else
         class="min-w-0 truncate text-sm text-neutral-500"
         :label="instrumentName"
         :icon="track.instrument"
+        compact
       />
     </div>
 
@@ -96,12 +98,12 @@ function stepLabel(stepIndex: number): string {
       step="0.05"
       :value="track.volume"
       :aria-label="t('grid.volume', { instrument: instrumentName })"
-      class="w-20 shrink-0 accent-amber-500"
+      class="w-20 shrink-0 accent-amber-500 max-sm:hidden"
       @input="emit('update:volume', Number(($event.target as HTMLInputElement).value))"
     >
     <span
       v-else-if="advanced"
-      class="w-20 shrink-0"
+      class="w-20 shrink-0 max-sm:hidden"
     />
   </div>
 </template>

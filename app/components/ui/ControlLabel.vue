@@ -5,6 +5,8 @@ defineProps<{
   icon?: string
   /** Explanation shown in a tooltip; without one the label is plain text. */
   hint?: string
+  /** On a phone show only the icon (the label stays for screen readers). */
+  compact?: boolean
 }>()
 </script>
 
@@ -17,7 +19,10 @@ defineProps<{
       v-if="icon"
       :name="icon"
     />
-    <span class="border-b border-dotted border-neutral-600">{{ label }}</span>
+    <span
+      class="border-b border-dotted border-neutral-600"
+      :class="{ 'max-sm:sr-only': compact && icon }"
+    >{{ label }}</span>
   </UiTooltip>
   <span
     v-else
@@ -27,6 +32,6 @@ defineProps<{
       v-if="icon"
       :name="icon"
     />
-    {{ label }}
+    <span :class="{ 'max-sm:sr-only': compact && icon }">{{ label }}</span>
   </span>
 </template>

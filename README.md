@@ -19,6 +19,8 @@ app/
     resolve.ts           Turns a step into the notes to play: samples, chord-following
                          notes, or the counting voice
     tempo.ts             Slow / Normal / Fast, relative to a preset's own tempo
+    layers.ts            Order for "layer by layer"
+    links.ts             Checks configured external links (https only)
     audio/
       engine.ts          AudioContext, per-instrument gain, sample cache, playback, reverb
       scheduler.ts       Lookahead scheduler — sample-accurate timing, live pattern edits
@@ -34,9 +36,11 @@ app/
   composables/
     useBeatMachine.ts    Vue state for one genre page: wires pattern + engine + scheduler
     useUiMode.ts         Simple / advanced mode, remembered in the browser
+    useNarrowScreen.ts   Phone-sized screen, for the one-bar-at-a-time grid
   components/
     beat/                BeatMachine (the whole trainer), BeatGrid, TrackRow,
-                         Transport, PresetSelector
+                         CountDisplay, LayerGuide, Transport, PresetSelector
+    SiteFooter.vue       Donation link (hidden until configured)
     ui/                  RangeControl, SegmentedControl, ControlLabel (icon + label
                          + tooltip), Tooltip, Icon
   icons.ts             Line icons as SVG paths, keyed by instrument id or control
@@ -65,6 +69,19 @@ track and every sound of each instrument. The mode only changes what's shown;
 the pattern stays the same. Every instrument and control has an icon and a
 tooltip (hover, tap or keyboard focus) explaining what it is for.
 
+Both modes have **Build it layer by layer** (starts from the genre's
+foundation instrument and adds one at a time, in `teachingOrder` from the
+genre definition) and a large 1–8 count display with 1 and 5 marked. On a
+phone the grid shows one bar (4 counts) at a time and follows the music.
+
+### Donations
+
+A "Support the developer" link in the footer opens a donation page hosted by
+a payment service (Boosty, Ko-fi, …). The app only links there: it has no
+payment code, keys or server, and never sees card details. Set the link with
+the `NUXT_PUBLIC_DONATE_URL` environment variable (https only); while it's
+unset the link is hidden.
+
 ### Conventions
 
 - **Ids, not labels, in data.** Genres, instruments, step names and presets are
@@ -87,7 +104,7 @@ tooltip (hover, tap or keyboard focus) explaining what it is for.
 - **A preset:** add a `definePattern({...})` to the genre's `patterns.ts`,
   list it in the genre's presets, and add its name (`presets.<id>`) and a
   one-line description for beginners (`help.presets.<id>`) to every locale.
-- **An instrument:** besides its samples, give it a name
+- **An instrument:** add it to the genre's `teachingOrder`, and besides its samples, give it a name
   (`instruments.<id>`), a tooltip (`help.instruments.<id>`) and an icon in
   `app/icons.ts` — a few strokes on a 24×24 grid. Tests fail if any is missing.
 - **A genre:** add `app/genres/<id>/` like the existing ones, register it in

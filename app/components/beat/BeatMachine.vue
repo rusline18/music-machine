@@ -30,6 +30,10 @@ const {
   setCounting,
   randomize,
   clear,
+  layers,
+  startLayers,
+  addLayer,
+  endLayers,
 } = useBeatMachine(props.genre, useI18n().locale)
 
 const { advanced, setMode } = useUiMode()
@@ -112,6 +116,14 @@ function clickStep(instrument: string, stepIndex: number) {
       />
     </div>
 
+    <BeatLayerGuide
+      class="mb-6"
+      :layers="layers"
+      @start="startLayers"
+      @add="addLayer"
+      @end="endLayers"
+    />
+
     <div
       v-if="advanced"
       class="mb-6 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-lg border border-neutral-800 p-4"
@@ -165,6 +177,12 @@ function clickStep(instrument: string, stepIndex: number) {
         </button>
       </div>
     </div>
+
+    <BeatCountDisplay
+      class="mb-4"
+      :active-step="activeStep"
+      :steps-per-count="pattern.stepsPerCount"
+    />
 
     <BeatGrid
       :pattern="pattern"
