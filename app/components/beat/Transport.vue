@@ -19,7 +19,7 @@ const percent = computed(() => Math.round(progress.value * 100))
 </script>
 
 <template>
-  <div class="flex flex-col items-end gap-1">
+  <div class="flex flex-col gap-1">
     <div class="flex items-center gap-2">
       <button
         type="button"
@@ -52,8 +52,14 @@ const percent = computed(() => Math.round(progress.value * 100))
         ■ Stop
       </button>
     </div>
-    <p v-if="failedSamples" role="status" class="text-xs text-red-400">
-      {{ failedSamples }} {{ failedSamples === 1 ? 'sound' : 'sounds' }} didn't load — check your connection and press Play to retry.
+    <!-- w-0 min-w-full: as wide as the buttons, so it wraps instead of widening the toolbar. -->
+    <p
+      v-if="failedSamples"
+      role="status"
+      class="w-0 min-w-full text-xs text-red-400"
+      title="Check your connection and press Play to retry."
+    >
+      {{ failedSamples }} {{ failedSamples === 1 ? 'sound' : 'sounds' }} didn't load · Play to retry
     </p>
   </div>
 </template>
