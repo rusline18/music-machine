@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { clonePattern } from '../app/composables/usePattern'
+import { chainPatterns, clonePattern } from '../app/composables/usePattern'
 import { genreConfig, stepNames } from '../app/data/genres'
 import { decodePattern, encodePattern } from '../app/data/share'
 import { salsaPatterns } from '../app/data/salsa/patterns'
@@ -24,12 +24,15 @@ describe('pattern links', () => {
     pattern.name = 'Домашка: derecho'
     pattern.tracks[0]!.muted = true
     pattern.tracks[1]!.volume = 0.35
-    pattern.chords = ['C', 'G7', 'Am', 'F']
+    pattern.chords = ['C', 'G7']
     expect(decodePattern(encodePattern(pattern, bachata), 'bachata', bachata)).toEqual(pattern)
   })
 
   it('is URL-safe and short', () => {
-    const longest = bachataPatterns.find((p) => p.counts === 48)!
+    // The longest the app offers: 48 counts of bachata, six derecho blocks.
+    const derecho = bachataPatterns.find((p) => p.id === 'bachata-derecho')!
+    const longest = chainPatterns('long', 'Long', derecho, derecho, derecho, derecho, derecho, derecho)
+    expect(longest.counts).toBe(48)
     const code = encodePattern(longest, bachata)
     expect(code).toMatch(/^[\w-]+$/)
     expect(code.length).toBeLessThan(2000)

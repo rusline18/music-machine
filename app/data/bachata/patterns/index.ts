@@ -9,7 +9,7 @@ export const bachataPatterns = [
   bachataMamboPattern,
   chainPatterns(
     'bachata-derecho-majao-mambo',
-    'Derecho → Majao → Mambo (48 counts)',
+    'Derecho → Majao → Mambo (24 counts)',
     bachataDerechoPattern,
     bachataMajaoPattern,
     bachataMamboPattern,

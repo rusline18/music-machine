@@ -1,8 +1,12 @@
 import type { Pattern } from '../../../composables/usePattern'
 import { resizeSteps } from '../../../composables/usePattern'
 
-/** The minor-key i–iv–V–i turnaround, one chord per bar, used by both bachata presets. */
-export const BACHATA_PROGRESSION = ['Am', 'Dm', 'E', 'Am']
+/**
+ * i–V in A minor, one chord per bar: the two-bar loop that fits an 8-count
+ * block. Stretching to 16 counts repeats it; the chord picker can then turn
+ * it into the longer i–iv–V–i (Am Dm E Am).
+ */
+export const BACHATA_PROGRESSION = ['Am', 'E']
 
 /** One bar of segunda: alternating bass, treble arpeggios, a muted chuck on 4. */
 export const SEGUNDA_BAR = ['bass', 'chord', 'chord', 'chord', '5th', 'chord', 'mute', 'chord']
@@ -19,8 +23,9 @@ const REQUINTO_DERECHO_BLOCK = [
 ]
 
 /**
- * Two 8-count blocks (four bars, one chord each) in eighth notes: cells
- * 0–7 = counts 1–4, cells 8–15 = counts 5–8, and so on.
+ * One 8-count block (two bars, one chord each) in eighth notes: cells
+ * 0–7 = counts 1–4, cells 8–15 = counts 5–8. Every part repeats each block,
+ * so the Counts selector can stretch it without losing anything.
  *
  * Derecho (verse): bongos martillo and güira on every eighth, segunda on
  * every eighth, bass on 1, &2, 3, 4 of each bar, requinto pickups at the
@@ -31,7 +36,7 @@ export const bachataDerechoPattern: Pattern = {
   id: 'bachata-derecho',
   name: 'Derecho',
   genre: 'bachata',
-  counts: 16,
+  counts: 8,
   stepsPerCount: 2,
   bpm: 130,
   chords: BACHATA_PROGRESSION,
@@ -39,7 +44,7 @@ export const bachataDerechoPattern: Pattern = {
     {
       // Long scrape on the beat, short on the &
       instrument: 'guira',
-      steps: Array.from({ length: 32 }, (_, i) => (i % 2 === 0 ? 'long' : 'short')),
+      steps: Array.from({ length: 16 }, (_, i) => (i % 2 === 0 ? 'long' : 'short')),
       volume: 0.8,
       muted: false,
     },
@@ -48,32 +53,32 @@ export const bachataDerechoPattern: Pattern = {
       instrument: 'bongos',
       steps: resizeSteps([
         'high', 'high', 'high', 'high', 'high', 'high', 'low', 'high',
-      ], 32),
+      ], 16),
       volume: 1,
       muted: false,
     },
     {
       // The bell only comes in for the mambo.
       instrument: 'campana',
-      steps: Array(32).fill(null),
+      steps: Array(16).fill(null),
       volume: 0.8,
       muted: true,
     },
     {
       instrument: 'bass',
-      steps: resizeSteps(BASS_BAR, 32),
+      steps: resizeSteps(BASS_BAR, 16),
       volume: 1,
       muted: false,
     },
     {
       instrument: 'requinto',
-      steps: resizeSteps(REQUINTO_DERECHO_BLOCK, 32),
+      steps: resizeSteps(REQUINTO_DERECHO_BLOCK, 16),
       volume: 0.8,
       muted: false,
     },
     {
       instrument: 'segunda',
-      steps: resizeSteps(SEGUNDA_BAR, 32),
+      steps: resizeSteps(SEGUNDA_BAR, 16),
       volume: 0.6,
       muted: false,
     },
