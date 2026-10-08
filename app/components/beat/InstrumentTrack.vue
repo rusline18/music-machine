@@ -37,6 +37,7 @@ function cycleStep(stepIndex: number) {
         v-if="showControls"
         type="button"
         class="rounded px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide transition"
+        :aria-label="`${track.muted ? 'Unmute' : 'Mute'} ${track.instrument}`"
         :class="track.muted ? 'bg-neutral-700 text-neutral-400' : 'bg-amber-500/20 text-amber-400'"
         @click="emit('update:muted', !track.muted)"
       >
@@ -60,6 +61,7 @@ function cycleStep(stepIndex: number) {
           i % stepsPerCount === 0 && i > 0 ? 'ml-1.5' : '',
         ]"
         :title="sampleNames.join(', ')"
+        :aria-label="`${track.instrument} step ${stepIndex + 1}`"
         @click="cycleStep(stepIndex)"
       >
         {{ stepLabel(stepIndex) }}

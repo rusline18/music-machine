@@ -46,6 +46,7 @@ scripts/
   generate-samples.mjs   Builds public/audio from recordings, synth fallback
 
 tests/                   Vitest: presets, pattern helpers, engine, scheduler
+e2e/                     Playwright: pages, grid editing, transport in a real browser
 ```
 
 ## Setup
@@ -78,6 +79,18 @@ npm test
 Vitest covers preset integrity (lengths, sample names, files on disk), the
 clave/bass reference rhythms, pattern helpers, volume/mute, and scheduler
 timing. Audio output itself is checked by ear.
+
+### End-to-end (Playwright)
+
+```bash
+npx playwright install chromium   # once, downloads the browser
+npm run test:e2e                  # builds the app and runs e2e/ against it
+npm run test:e2e:ui               # interactive UI mode
+```
+
+The tests run against the production build (`nuxt build`, port 3000). If a
+server is already listening on 3000 (e.g. `npm run dev`), it is reused
+instead.
 
 ## Notes
 
