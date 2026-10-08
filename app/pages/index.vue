@@ -16,7 +16,7 @@ const ACCENTS: Record<string, string> = {
 </script>
 
 <template>
-  <main class="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center gap-10 px-6 text-center">
+  <main class="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-10 px-6 text-center">
     <div>
       <h1 class="text-4xl font-bold tracking-tight text-neutral-50 sm:text-5xl">
         {{ t('app.name') }}

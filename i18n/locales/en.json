@@ -163,5 +163,33 @@
   "footer": {
     "support": "Support the developer",
     "supportHint": "Opens the donation page in a new tab. Payment happens there; this app never sees your card details."
+  },
+  "feedback": {
+    "prompt": "Something broken, or something missing?",
+    "open": "Send feedback",
+    "title": "Feedback",
+    "about": "What is it about?",
+    "kinds": {
+      "problem": "Something is broken",
+      "idea": "I have an idea",
+      "missing": "Something is missing"
+    },
+    "more": "Tell us more",
+    "placeholder": "What happened, what you expected, or what you'd like to see",
+    "email": "Email",
+    "emailNote": "(optional, if you'd like a reply)",
+    "privacy": "Along with your message we send the page you're on and your browser version — nothing else.",
+    "cancel": "Cancel",
+    "send": "Send",
+    "sending": "Sending…",
+    "thanks": "Thank you!",
+    "sent": "Your feedback has been sent. It really helps decide what to fix and build next.",
+    "close": "Close",
+    "errors": {
+      "off": "Feedback isn't switched on for this site yet.",
+      "tooMany": "Too much feedback at once — please try again in a few minutes.",
+      "invalid": "Please check the form: {reason}.",
+      "network": "Couldn't send it — please check your connection and try again."
+    }
   }
 }
