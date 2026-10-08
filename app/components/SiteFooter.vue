@@ -14,10 +14,12 @@ const donateUrl = safeExternalUrl(configuredDonateUrl)
     v-if="donateUrl || feedbackEnabled"
     class="flex flex-col items-center gap-2 px-6 pb-8 text-sm text-neutral-500"
   >
-    <p v-if="feedbackEnabled">
+    <!-- A div, not a p: the dialog inside isn't phrasing content, and the
+         browser would close a <p> early, breaking hydration. -->
+    <div v-if="feedbackEnabled">
       {{ $t('feedback.prompt') }}
       <FeedbackDialog />
-    </p>
+    </div>
     <a
       v-if="donateUrl"
       :href="donateUrl"
