@@ -44,7 +44,11 @@
     },
     "advancedMode": "Advanced features",
     "simpleMode": "Back to simple",
-    "count": "Count"
+    "count": "Count",
+    "loading": "Loading {percent}%",
+    "downloaded": "Sounds downloaded",
+    "failed": "Sounds that didn't load: {count} · Play to retry",
+    "failedHint": "Check your connection and press Play to retry."
   },
   "grid": {
     "block": "Block {n}",

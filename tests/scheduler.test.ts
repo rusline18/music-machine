@@ -109,4 +109,14 @@ describe('scheduler', () => {
     scheduler.stop()
     expect(scheduler.isPlaying).toBe(false)
   })
+
+  it.each([0, -120, Number.NaN])('stops instead of hanging at bpm %s', async (bpm) => {
+    const { context, engine } = fakeEngine()
+    const scheduler = createScheduler(engine)
+    await scheduler.start(pattern(8, bpm), samples)
+    await runUntil(context, 0.1)
+
+    expect(scheduler.isPlaying).toBe(false)
+    expect(engine.playNote).not.toHaveBeenCalled()
+  })
 })

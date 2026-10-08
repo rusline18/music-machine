@@ -12,6 +12,9 @@ const {
   pattern,
   selectedPresetId,
   isPlaying,
+  isLoading,
+  loadProgress,
+  failedSamples,
   activeStep,
   feel,
   reverb,
@@ -111,6 +114,9 @@ function clickStep(instrument: string, stepIndex: number) {
       />
       <BeatTransport
         :is-playing="isPlaying"
+        :is-loading="isLoading"
+        :load-progress="loadProgress"
+        :failed-samples="failedSamples"
         @play="play"
         @stop="stop"
       />

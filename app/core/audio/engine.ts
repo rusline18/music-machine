@@ -15,6 +15,11 @@ export interface Note {
   group?: string
 }
 
+/** Whether this browser plays Opus in WebM; older Safari doesn't. */
+function canPlayOpus(): boolean {
+  return typeof Audio !== 'undefined' && new Audio().canPlayType('audio/webm; codecs="opus"') !== ''
+}
+
 interface RingingVoice {
   source: AudioBufferSourceNode
   gain: GainNode
@@ -122,17 +127,91 @@ export function createAudioEngine() {
     applyInstrumentGain(instrument)
   }
 
-  async function loadSample(url: string): Promise<void> {
-    if (bufferCache.has(url)) return
-    const response = await fetch(url)
-    const audioBuffer = await getContext().decodeAudioData(await response.arrayBuffer())
-    bufferCache.set(url, audioBuffer)
+  /**
+   * Downloaded but not yet decoded bytes, by file URL. Downloading needs no
+   * AudioContext, so samples can be fetched before the first click.
+   */
+  const downloads = new Map<string, Promise<ArrayBuffer>>()
+  /** Samples being decoded, so two callers never load the same one twice. */
+  const decoding = new Map<string, Promise<AudioBuffer>>()
+
+  /**
+   * Samples are named by their .wav, the lossless master; each has a ~5×
+   * smaller Opus copy beside it (scripts/encode-samples.mjs). That's the file
+   * to download when the browser can play Opus.
+   */
+  function fileFor(url: string): string {
+    return url.endsWith('.wav') && canPlayOpus() ? `${url.slice(0, -'.wav'.length)}.webm` : url
   }
 
-  async function preloadSamples(urls: Iterable<string>): Promise<void> {
+  function download(file: string): Promise<ArrayBuffer> {
+    let bytes = downloads.get(file)
+    if (!bytes) {
+      bytes = fetch(file).then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status} for ${file}`)
+        return response.arrayBuffer()
+      })
+      downloads.set(file, bytes)
+      // A failed download is retried by the next load instead of sticking.
+      bytes.catch(() => downloads.delete(file))
+    }
+    return bytes
+  }
+
+  async function decode(file: string): Promise<AudioBuffer> {
+    const bytes = await download(file)
+    // decodeAudioData takes over (detaches) the bytes; they can't be decoded twice.
+    downloads.delete(file)
+    return getContext().decodeAudioData(bytes)
+  }
+
+  /** The Opus copy where the browser plays Opus, else (or if it won't decode) the WAV. */
+  async function decodeSample(url: string): Promise<AudioBuffer> {
+    const file = fileFor(url)
+    if (file !== url) {
+      try {
+        return await decode(file)
+      } catch (err) {
+        console.warn(`Falling back to WAV for ${url}`, err)
+      }
+    }
+    return decode(url)
+  }
+
+  async function loadSample(url: string): Promise<AudioBuffer> {
+    const cached = bufferCache.get(url)
+    if (cached) return cached
+
+    let pending = decoding.get(url)
+    if (!pending) {
+      pending = decodeSample(url).finally(() => decoding.delete(url))
+      decoding.set(url, pending)
+    }
+    const audioBuffer = await pending
+    bufferCache.set(url, audioBuffer)
+    return audioBuffer
+  }
+
+  /**
+   * Start downloading samples without decoding them; ones already decoded
+   * count as done. Calls `onSettled` once per sample when its download
+   * finishes or fails (loadSample retries those).
+   */
+  function prefetchSamples(urls: string[], onSettled?: (url: string, ok: boolean) => void): Promise<void> {
+    return Promise.all(urls.map((url) => (bufferCache.has(url) ? Promise.resolve() : download(fileFor(url))).then(
+      () => onSettled?.(url, true),
+      () => onSettled?.(url, false),
+    ))).then(() => {})
+  }
+
+  /** Download and decode samples; resolves with the URLs that failed to load. */
+  async function preloadSamples(urls: Iterable<string>): Promise<string[]> {
+    const failed: string[] = []
     await Promise.all([...urls].map((url) => loadSample(url).catch((err) => {
       console.error(`Failed to load sample: ${url}`, err)
+      failed.push(url)
     })))
+    return failed
   }
 
   function fadeOut(voice: RingingVoice, time: number) {
@@ -197,6 +276,8 @@ export function createAudioEngine() {
     instrumentVolumes.clear()
     mutedInstruments.clear()
     bufferCache.clear()
+    downloads.clear()
+    decoding.clear()
     ringing.clear()
     ctx?.close()
     ctx = null
@@ -208,6 +289,8 @@ export function createAudioEngine() {
     resume,
     setInstrumentVolume,
     setInstrumentMuted,
+    prefetchSamples,
+    loadSample,
     preloadSamples,
     playNote,
     setReverb,

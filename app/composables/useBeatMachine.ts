@@ -16,8 +16,9 @@ const RANDOM_DENSITY = 0.25
 
 /**
  * Pattern state + audio engine + scheduler for one genre page.
- * The AudioContext is only created on the first `play()` (from a user
- * gesture), so this is safe to call during SSR.
+ * Samples start downloading on mount, but the AudioContext is only created
+ * on the first `play()` (from a user gesture), so this is safe to call
+ * during SSR.
  *
  * `locale` is the language the counting voice speaks; it can change while
  * playing.
@@ -47,6 +48,36 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
 
   /** Set once the audio graph exists (after the first play). */
   let started = false
+
+  const urls = () => [...sampleUrls(genre, locale.value)]
+  /** Samples whose download has finished (or failed), for the progress bar. */
+  const samplesFetched = ref(0)
+  const sampleCount = ref(urls().length)
+  /** 0–1 share of the samples downloaded so far. */
+  const loadProgress = computed(() => Math.min(1, samplesFetched.value / sampleCount.value))
+  /** Play was pressed and is waiting for samples. */
+  const isLoading = ref(false)
+  /** Samples the last load gave up on; they stay silent until the next Play retries them. */
+  const failedSamples = ref(0)
+  /** Set once every sample of the current language is decoded. */
+  let samplesLoaded = false
+
+  /** The language whose samples are downloading, so each set is fetched once. */
+  let prefetchedLocale: string | undefined
+
+  /** Download (not decode) the samples; needs no AudioContext, so it can run before any click. */
+  function prefetch() {
+    if (prefetchedLocale === locale.value) return
+    prefetchedLocale = locale.value
+    const list = urls()
+    sampleCount.value = list.length
+    samplesFetched.value = 0
+    engine.prefetchSamples(list, () => {
+      samplesFetched.value++
+    })
+  }
+
+  onMounted(prefetch)
   /** Playhead updates waiting for their step to sound. */
   const playheadTimers = new Set<ReturnType<typeof setTimeout>>()
 
@@ -59,7 +90,9 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
   // The voice's words in the new language load in the background; until
   // they arrive the voice is skipped, the band keeps playing.
   watch(locale, () => {
-    if (started) engine.preloadSamples(sampleUrls(genre, locale.value))
+    samplesLoaded = false
+    if (started) engine.preloadSamples(urls())
+    else prefetch()
   })
 
   watch(selectedPresetId, (id) => {
@@ -83,9 +116,29 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     playheadTimers.add(timer)
   }
 
+  /** Bumped by every play/stop/unmount, so a play still waiting on samples knows it was superseded. */
+  let playRequest = 0
+
   async function play() {
-    // Already-loaded samples come from the engine's cache.
-    await engine.preloadSamples(sampleUrls(genre, locale.value))
+    if (isLoading.value) return
+    const request = ++playRequest
+    // Create and unlock the AudioContext inside the click itself: Safari
+    // refuses to start one after a long await on the network.
+    const unlocked = engine.resume()
+    isLoading.value = !samplesLoaded
+    prefetch()
+    const list = urls()
+    try {
+      // Already-loaded samples come from the engine's cache.
+      const failed = await engine.preloadSamples(list)
+      failedSamples.value = failed.length
+      samplesLoaded = failed.length === 0
+      await unlocked
+    } finally {
+      if (request === playRequest) isLoading.value = false
+    }
+    // Stopped, or left the page, while loading; or nothing to play at all.
+    if (request !== playRequest || failedSamples.value === list.length) return
     started = true
     for (const track of pattern.value.tracks) {
       engine.setInstrumentVolume(track.instrument, track.volume)
@@ -97,6 +150,8 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
   }
 
   function stop() {
+    playRequest++
+    isLoading.value = false
     scheduler.stop()
     for (const timer of playheadTimers) clearTimeout(timer)
     playheadTimers.clear()
@@ -219,6 +274,9 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     pattern,
     selectedPresetId,
     isPlaying: readonly(isPlaying),
+    isLoading: readonly(isLoading),
+    loadProgress,
+    failedSamples: readonly(failedSamples),
     activeStep: readonly(activeStep),
     feel,
     reverb,
