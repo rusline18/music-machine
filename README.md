@@ -21,8 +21,10 @@ app/
     tempo.ts             Slow / Normal / Fast, relative to a preset's own tempo
     layers.ts            Order for "layer by layer"
     links.ts             Checks configured external links (https only)
+    share.ts             Pattern ⇄ short link code; incoming links are checked and rebuilt
     audio/
-      engine.ts          AudioContext, per-instrument gain, sample cache, playback, reverb
+      engine.ts          AudioContext, per-instrument gain, sample loading (Opus with
+                         WAV fallback, prefetch before the first click), playback, reverb
       scheduler.ts       Lookahead scheduler — sample-accurate timing, live pattern edits
       humanize.ts        "Feel": small timing/volume/pitch variations
   genres/              Data: one folder per genre, plus the registry
@@ -40,7 +42,8 @@ app/
   components/
     beat/                BeatMachine (the whole trainer), BeatGrid, TrackRow,
                          CountDisplay, LayerGuide, Transport, PresetSelector
-    SiteFooter.vue       Donation link (hidden until configured)
+    SiteFooter.vue       Feedback and donation links (hidden until configured)
+    FeedbackDialog.vue   The feedback form
     ui/                  RangeControl, SegmentedControl, ControlLabel (icon + label
                          + tooltip), Tooltip, Icon
   icons.ts             Line icons as SVG paths, keyed by instrument id or control
@@ -49,11 +52,14 @@ app/
     index.vue            Home: one link per genre
     [genre].vue          Trainer page for any genre in the registry (404 otherwise)
 
+server/                POST /api/feedback (rate-limited, off by default)
+shared/feedback.ts     Feedback limits and validation, used by the form and the server
 i18n/locales/          en.json, ru.json — every user-visible string
 public/audio/          Built one-shots (don't edit by hand — see below)
 audio-sources/         Raw recordings + credits
 scripts/
   generate-samples.mjs Builds public/audio from audio-sources, synth fallback
+  encode-samples.mjs   Adds an Opus (.webm) copy of every WAV
   speak-counts.py      Speaks the counts with espeak-ng into audio-sources/voice
 tests/                 Vitest
 docs/                  Plans
@@ -73,6 +79,26 @@ Both modes have **Build it layer by layer** (starts from the genre's
 foundation instrument and adds one at a time, in `teachingOrder` from the
 genre definition) and a large 1–8 count display with 1 and 5 marked. On a
 phone the grid shows one bar (4 counts) at a time and follows the music.
+
+### Sharing and saving
+
+**Share** copies a link like `/salsa?p=…` to the exact pattern: tempo, length,
+mutes, volumes, chords and the voice. Each step is one letter, so a 32-count
+pattern stays well under 2 KB. Opening a link loads the pattern and drops the
+code from the address bar; anything decoded is checked against the genre and
+rebuilt (`app/core/share.ts`). Edits are kept in the browser per genre
+(an untouched preset isn't, so preset fixes reach everyone); **Reset** goes
+back to the preset.
+
+### Feedback
+
+A "Send feedback" link in the footer opens a form that posts to
+`/api/feedback`. It's off until `NUXT_PUBLIC_FEEDBACK_ENABLED=true`. Feedback
+is stored with Nitro storage (`.data/feedback` by default) and, if
+`NUXT_FEEDBACK_WEBHOOK_URL` is set, also posted there; behind a reverse proxy
+set `NUXT_FEEDBACK_TRUST_PROXY=true` so rate limits see real client IPs.
+Production builds also send security headers (CSP and friends) and cache
+`/audio/**` for a week — see `nuxt.config.ts`.
 
 ### Donations
 
@@ -136,6 +162,12 @@ which Freesound and Iowa files to download. The list of files comes from the
 paths quoted in `app/genres/**`; to change a sound, edit its entry in
 `recordings` in the script and re-run.
 
+The script then encodes every WAV to Opus (`.webm`, about 5× smaller) with
+`scripts/encode-samples.mjs` — that needs ffmpeg with libopus, and runs on its
+own as `npm run samples:encode`. The app downloads the `.webm` and falls back
+to the WAV where the browser can't play Opus. A test fails if a WAV has no
+`.webm` beside it: without it every load starts with a failed request.
+
 ## Counting voice
 
 Every genre has a **Voice** track that counts the dance in the page's
@@ -156,8 +188,13 @@ script.
 
 - Audio only starts client-side, on user interaction (browsers require a user
   gesture to start an `AudioContext`); pages still render fully server-side.
-- Presets: Salsa verse/montuno in 3-2 son clave; Bachata derecho, majao and
-  mambo; plus a chain of the first two of each. They follow documented
-  references but still need sign-off from a player.
+- Presets: Salsa verse/montuno in 3-2 and 2-3 son clave, cha-cha-chá (2-3)
+  and rumba guaguancó (3-2 rumba clave); Bachata derecho, majao and mambo over
+  an Am–E loop; plus a verse → montuno/chorus chain. Every preset starts at
+  8 counts. They follow documented references but still need sign-off from a
+  player.
+- What's next: [docs/roadmap.md](docs/roadmap.md). Earlier reviews:
+  [security and performance audit](docs/security-performance-audit.md),
+  [UX plan](docs/ux-plan.md).
 - Patterns are 8, 16, 24 or 32 dance counts long, shown as 8-count blocks.
   Each count is two cells ("1 &"); BPM is counts per minute.
