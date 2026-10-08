@@ -77,7 +77,12 @@ npm run preview
 
 ```bash
 npm test
+npm run typecheck
 ```
+
+`typecheck` runs vue-tsc over the app, `.vue` files and the tests (strict,
+with `noUncheckedIndexedAccess`). Vite strips types without checking them,
+so a type error only shows up here.
 
 Vitest covers share links (round-trip, tampered codes), preset integrity
 (lengths, sample names, files on disk), the clave (son/rumba, 3-2/2-3) and
