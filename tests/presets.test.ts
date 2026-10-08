@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { parseChord } from '~/core/harmony'
@@ -16,6 +16,16 @@ function onsets(pattern: Pattern, instrument: string): number[] {
   const track = pattern.tracks.find((t) => t.instrument === instrument)!
   return track.steps.flatMap((step, i) => (step ? [i] : []))
 }
+
+describe('public/audio', () => {
+  // The engine asks for the .webm first (core/audio/engine fileFor) and only
+  // then the .wav, so a missing Opus copy is a failed request on every load.
+  const wavs = (readdirSync(`${publicDir}/audio`, { recursive: true }) as string[]).filter((f) => f.endsWith('.wav'))
+
+  it.each(wavs)('%s has an Opus copy (npm run samples:encode)', (wav) => {
+    expect(existsSync(`${publicDir}/audio/${wav.replace(/\.wav$/, '.webm')}`)).toBe(true)
+  })
+})
 
 describe.each(genres.map((genre) => [genre.id, genre] as const))('%s', (_id, genre) => {
   it.each([...sampleUrls(genre, 'en'), ...sampleUrls(genre, 'ru')])('%s exists in public/', (url) => {
