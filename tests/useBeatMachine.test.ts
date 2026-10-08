@@ -25,10 +25,10 @@ describe('useBeatMachine loading', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     downloadsFail = false
-    let gate = Promise.withResolvers<void>()
+    let gate = Promise.withResolvers<undefined>()
     release = () => {
-      gate.resolve()
-      gate = Promise.withResolvers<void>()
+      gate.resolve(undefined)
+      gate = Promise.withResolvers<undefined>()
     }
     vi.stubGlobal('fetch', async (url: string) => {
       await gate.promise
