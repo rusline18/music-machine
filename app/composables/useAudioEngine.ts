@@ -15,6 +15,11 @@ export interface Note {
   group?: string
 }
 
+/** Whether this browser plays Opus in WebM; older Safari doesn't. */
+function canPlayOpus(): boolean {
+  return typeof Audio !== 'undefined' && new Audio().canPlayType('audio/webm; codecs="opus"') !== ''
+}
+
 interface RingingVoice {
   source: AudioBufferSourceNode
   gain: GainNode
@@ -123,14 +128,30 @@ export function useAudioEngine() {
     applyInstrumentGain(instrument)
   }
 
+  async function fetchAndDecode(url: string): Promise<AudioBuffer> {
+    const response = await fetch(url)
+    if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`)
+    return getContext().decodeAudioData(await response.arrayBuffer())
+  }
+
+  /**
+   * Samples are named by their .wav, the lossless master; each has a ~5×
+   * smaller Opus copy beside it (scripts/encode-samples.mjs). Download that
+   * when the browser can play Opus, and the WAV if it can't or decoding fails.
+   */
   async function loadSample(url: string): Promise<AudioBuffer> {
     const cached = bufferCache.get(url)
     if (cached) return cached
 
-    const context = getContext()
-    const response = await fetch(url)
-    const arrayBuffer = await response.arrayBuffer()
-    const audioBuffer = await context.decodeAudioData(arrayBuffer)
+    let audioBuffer: AudioBuffer | undefined
+    if (url.endsWith('.wav') && canPlayOpus()) {
+      const compressed = `${url.slice(0, -'.wav'.length)}.webm`
+      audioBuffer = await fetchAndDecode(compressed).catch((err) => {
+        console.warn(`Falling back to WAV for ${url}`, err)
+        return undefined
+      })
+    }
+    audioBuffer ??= await fetchAndDecode(url)
     bufferCache.set(url, audioBuffer)
     return audioBuffer
   }

@@ -21,6 +21,12 @@ which Freesound and Iowa files to download. To change a sound, edit its
 entry in `recordings` and re-run; don't hand-edit `public/audio`, since the
 script overwrites it.
 
+Each WAV also gets an Opus copy (`.webm`, 128 kbps, ~5× smaller) from
+`scripts/encode-samples.mjs`, which `npm run samples` runs at the end; it
+needs `ffmpeg` with libopus. The app downloads the `.webm` and falls back to
+the WAV only where the browser can't decode Opus. After touching WAVs some
+other way, run `npm run samples:encode` to refresh the copies.
+
 ## Project structure
 
 ```
@@ -44,6 +50,7 @@ audio-sources/           Raw recordings (VCSL, Freesound, Wikimedia, Iowa) + cre
 
 scripts/
   generate-samples.mjs   Builds public/audio from recordings, synth fallback
+  encode-samples.mjs     Opus (.webm) copies of the WAVs, what the app downloads
 
 tests/                   Vitest: presets, pattern helpers, engine, scheduler
 ```

@@ -8,6 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "samples": "node scripts/generate-samples.mjs",
+    "samples:encode": "node scripts/encode-samples.mjs",
     "test": "vitest run",
     "postinstall": "nuxt prepare"
   },

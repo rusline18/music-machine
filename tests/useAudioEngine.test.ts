@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useAudioEngine } from '../app/composables/useAudioEngine'
 
 class FakeGain {
@@ -55,5 +55,71 @@ describe('useAudioEngine volume and mute', () => {
     expect(instrumentGain()).toBe(0)
     engine.setInstrumentMuted('clave', false)
     expect(instrumentGain()).toBe(0.7)
+  })
+})
+
+describe('useAudioEngine sample loading', () => {
+  /** URLs that decode; anything else fails like an unsupported codec. */
+  let decodable: Set<string>
+  let fetched: string[]
+
+  beforeEach(() => {
+    fetched = []
+    decodable = new Set(['/a.webm', '/a.wav'])
+    vi.stubGlobal('fetch', async (url: string) => {
+      fetched.push(url)
+      if (url.startsWith('/missing')) return { ok: false, status: 404 }
+      return { ok: true, arrayBuffer: async () => url }
+    })
+    vi.stubGlobal('AudioContext', class extends FakeAudioContext {
+      async decodeAudioData(data: string) {
+        if (!decodable.has(data)) throw new Error(`can't decode ${data}`)
+        return { from: data }
+      }
+    })
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+
+  afterEach(() => vi.unstubAllGlobals())
+
+  function playsOpus(answer: string) {
+    vi.stubGlobal('Audio', class {
+      canPlayType = () => answer
+    })
+  }
+
+  it('downloads the Opus copy when the browser plays Opus', async () => {
+    playsOpus('probably')
+    const buffer = await useAudioEngine().loadSample('/a.wav')
+    expect(buffer).toEqual({ from: '/a.webm' })
+    expect(fetched).toEqual(['/a.webm'])
+  })
+
+  it('downloads only the WAV when the browser does not play Opus', async () => {
+    playsOpus('')
+    const buffer = await useAudioEngine().loadSample('/a.wav')
+    expect(buffer).toEqual({ from: '/a.wav' })
+    expect(fetched).toEqual(['/a.wav'])
+  })
+
+  it('falls back to the WAV when the Opus copy fails to decode', async () => {
+    playsOpus('maybe')
+    decodable.delete('/a.webm')
+    const buffer = await useAudioEngine().loadSample('/a.wav')
+    expect(buffer).toEqual({ from: '/a.wav' })
+    expect(fetched).toEqual(['/a.webm', '/a.wav'])
+  })
+
+  it('caches by the WAV name', async () => {
+    playsOpus('probably')
+    const engine = useAudioEngine()
+    await engine.loadSample('/a.wav')
+    await engine.loadSample('/a.wav')
+    expect(fetched).toEqual(['/a.webm'])
+  })
+
+  it('reports a missing file instead of decoding the error page', async () => {
+    playsOpus('')
+    await expect(useAudioEngine().loadSample('/missing.wav')).rejects.toThrow('HTTP 404')
   })
 })
