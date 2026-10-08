@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   chainPatterns,
   chordAt,
+  countInBlock,
   definePattern,
   nextStep,
   patternLength,
@@ -142,5 +143,14 @@ describe('nextStep', () => {
 
   it('starts over from an unknown name', () => {
     expect(nextStep('gone', ['low', 'high'])).toBe('low')
+  })
+})
+
+describe('countInBlock', () => {
+  it('numbers counts 0–7 within each 8-count block', () => {
+    expect(countInBlock(0, 2)).toBe(0)
+    expect(countInBlock(3, 2)).toBe(1)
+    expect(countInBlock(15, 2)).toBe(7)
+    expect(countInBlock(16, 2)).toBe(0)
   })
 })

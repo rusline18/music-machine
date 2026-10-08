@@ -16,13 +16,15 @@ app/
   core/                Framework-free logic: no Vue, no Nuxt, unit-tested
     pattern.ts           Pattern model, preset builder (definePattern), chaining, resizing
     harmony.ts           Chords, chord tones, pitch-shifting notes onto recorded zones
-    resolve.ts           Turns a step into the notes to play (samples or chord-following)
+    resolve.ts           Turns a step into the notes to play: samples, chord-following
+                         notes, or the counting voice
     audio/
       engine.ts          AudioContext, per-instrument gain, sample cache, playback, reverb
       scheduler.ts       Lookahead scheduler — sample-accurate timing, live pattern edits
       humanize.ts        "Feel": small timing/volume/pitch variations
   genres/              Data: one folder per genre, plus the registry
     index.ts             `genres` list and `findGenre(id)`
+    voice.ts             The counting voice shared by all genres (per language)
     types.ts             The `Genre` shape: instruments, samples, pitched, bpmRange, presets
     salsa/, bachata/
       samples.ts         Sample paths (read by `npm run samples`) and pitched instruments
@@ -44,6 +46,7 @@ public/audio/          Built one-shots (don't edit by hand — see below)
 audio-sources/         Raw recordings + credits
 scripts/
   generate-samples.mjs Builds public/audio from audio-sources, synth fallback
+  speak-counts.py      Speaks the counts with espeak-ng into audio-sources/voice
 tests/                 Vitest
 docs/                  Plans
 ```
@@ -95,8 +98,24 @@ recording in `audio-sources/` (CC0, except the University of Iowa guitar)
 when that source is present, and synthesized otherwise — see
 [audio-sources/README.md](audio-sources/README.md) for sources, licenses and
 which Freesound and Iowa files to download. The list of files comes from the
-paths in `app/genres/*/samples.ts`; to change a sound, edit its entry in
+paths quoted in `app/genres/**`; to change a sound, edit its entry in
 `recordings` in the script and re-run.
+
+## Counting voice
+
+Every genre has a **Voice** track that counts the dance in the page's
+language: a `count` step says the number of the count it falls on (1–8,
+starting over each 8-count block), an `and` step says "and" / «и». The
+**Voice** control switches it between off, "1 2 3…" and "1 & 2 &…"; cells
+can also be edited one by one. Random and Clear leave it alone.
+
+The current recordings are synthesized with espeak-ng
+(`scripts/speak-counts.py`) and sound robotic. For a real voice, record each
+word as a WAV — `1.wav` … `8.wav` and `and.wav` per language — into
+`audio-sources/voice/<locale>/`, replacing the generated files, and run
+`npm run samples`. Leading and trailing silence is trimmed automatically.
+A new UI language needs its words added in `app/genres/voice.ts` and the
+script.
 
 ## Notes
 

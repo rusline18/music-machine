@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { stepNames } from '~/core/resolve'
+import { COUNTING_MODES, stepNames } from '~/core/resolve'
 import { genres } from '~/genres'
+import { countingVoice } from '~/genres/voice'
 import en from '../i18n/locales/en.json'
 import ru from '../i18n/locales/ru.json'
 
@@ -26,11 +27,16 @@ const dataKeys = genres.flatMap((genre) => [
   ...genre.instruments.map((instrument) => ['instruments', instrument]),
   ...genre.instruments.flatMap((instrument) => stepNames(genre, instrument).map((step) => ['steps', step])),
   ...genre.presets.map((preset) => ['presets', preset.id]),
+  ...COUNTING_MODES.map((mode) => ['controls', 'counting', mode]),
 ])
 
-describe.each([['en', en], ['ru', ru]] as const)('%s messages', (_locale, messages) => {
+describe.each([['en', en], ['ru', ru]] as const)('%s messages', (locale, messages) => {
   it('has the same keys as English', () => {
     expect(keys(messages).sort()).toEqual(keys(en).sort())
+  })
+
+  it('has a counting voice', () => {
+    expect(countingVoice[locale]?.counts).toHaveLength(8)
   })
 
   it.each(dataKeys.map((path) => [path.join('.'), path]))('translates %s', (_key, path) => {

@@ -40,6 +40,11 @@ export function patternLength(pattern: Pick<Pattern, 'counts' | 'stepsPerCount'>
   return pattern.counts * pattern.stepsPerCount
 }
 
+/** Which count of its 8-count block a step falls on, 0–7 (0 = "1"). */
+export function countInBlock(stepIndex: number, stepsPerCount: number): number {
+  return Math.floor(stepIndex / stepsPerCount) % COUNTS_PER_BLOCK
+}
+
 /** The chord in force at a step, or undefined if the pattern has none. */
 export function chordAt(pattern: Pick<Pattern, 'chords' | 'stepsPerCount'>, stepIndex: number): string | undefined {
   if (!pattern.chords?.length) return undefined

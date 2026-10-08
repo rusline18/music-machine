@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { CHORD_NAMES } from '~/core/harmony'
 import type { Pattern } from '~/core/pattern'
-import { sampleResolver, sampleUrls, stepNames, stepResolver } from '~/core/resolve'
+import { countingFigure, sampleResolver, sampleUrls, stepNames, stepResolver } from '~/core/resolve'
 import { bachata } from '~/genres/bachata'
 
 const pattern: Pattern = { id: 't', counts: 2, stepsPerCount: 2, bpm: 120, tracks: [] }
@@ -26,16 +26,63 @@ describe('stepNames', () => {
 
 describe('sampleUrls', () => {
   it('includes every take and every pitched zone, once', () => {
-    const urls = sampleUrls(bachata)
+    const urls = sampleUrls(bachata, 'en')
     expect(urls).toContain('/audio/bachata/guira/long-3.wav')
     expect(urls).toContain('/audio/bachata/bass/a2.wav')
     expect(urls).toContain('/audio/bachata/guitar/e5.wav')
     expect([...urls].filter((url) => url.includes('/guitar/'))).toHaveLength(13)
   })
+
+  it('includes only the counting voice of the given language', () => {
+    expect(sampleUrls(bachata, 'ru')).toContain('/audio/voice/ru/and.wav')
+    expect([...sampleUrls(bachata, 'ru')].some((url) => url.startsWith('/audio/voice/en/'))).toBe(false)
+  })
+})
+
+describe('counting voice', () => {
+  let locale = 'en'
+  const resolve = stepResolver(bachata, () => locale)
+
+  /** What the voice says at each step of a 16-count pattern with these steps. */
+  function says(steps: (string | null)[]) {
+    const pattern: Pattern = { id: 't', counts: 16, stepsPerCount: 2, bpm: 130, tracks: [{ instrument: 'voice', steps, volume: 1, muted: false }] }
+    return steps.map((_, i) => resolve(pattern, pattern.tracks[0]!, i)[0]?.url.replace(/^\/audio\/voice\//, '') ?? null)
+  }
+
+  it('says the number of the count the step is on, starting over every 8 counts', () => {
+    const steps = Array.from({ length: 32 }, (_, i) => (i % 2 === 0 ? 'count' : null))
+    expect(says(steps).filter(Boolean)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8].map((n) => `en/${n}.wav`))
+  })
+
+  it('says "and" off the beat', () => {
+    expect(says(['count', 'and', 'count', 'and'])).toEqual(['en/1.wav', 'en/and.wav', 'en/2.wav', 'en/and.wav'])
+  })
+
+  it('speaks the current language, falling back to the first one', () => {
+    locale = 'ru'
+    expect(says(['count'])).toEqual(['ru/1.wav'])
+    locale = 'de'
+    expect(says(['count'])).toEqual(['en/1.wav'])
+    locale = 'en'
+  })
+
+  it('cuts off its previous word', () => {
+    const pattern: Pattern = { id: 't', counts: 8, stepsPerCount: 2, bpm: 130, tracks: [{ instrument: 'voice', steps: ['count'], volume: 1, muted: false }] }
+    expect(resolve(pattern, pattern.tracks[0]!, 0)[0]!.group).toBe('voice')
+  })
+})
+
+describe('countingFigure', () => {
+  it('builds one count of voice steps per mode', () => {
+    expect(countingFigure('off', 2)).toEqual([null, null])
+    expect(countingFigure('counts', 2)).toEqual(['count', null])
+    expect(countingFigure('ands', 2)).toEqual(['count', 'and'])
+    expect(countingFigure('ands', 4)).toEqual(['count', null, 'and', null])
+  })
 })
 
 describe('bachata pitched tracks', () => {
-  const resolve = stepResolver(bachata)
+  const resolve = stepResolver(bachata, () => 'en')
   // Semitones a played note may sit from its recording: guitars have a zone
   // every 3 semitones, the bass a single recorded A2.
   const MAX_SHIFT: Record<string, number> = { bass: 7, requinto: 2, segunda: 2 }

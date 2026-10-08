@@ -1,5 +1,6 @@
 import type { Step, TrackSpec } from '~/core/pattern'
 import { chainPatterns, definePattern } from '~/core/pattern'
+import { voiceTrack } from '../voice'
 
 // Figures are eighth notes: a bar is 8 cells (counts 1–4), an 8-count block
 // 16. Each section is two blocks — four bars of the minor-key i–iv–V–i
@@ -32,6 +33,7 @@ function bachataSection(spec: SectionSpec) {
     bpm: 130,
     chords: PROGRESSION,
     tracks: [
+      voiceTrack,
       spec.guira,
       spec.bongos ?? { instrument: 'bongos' },
       spec.campana ?? { instrument: 'campana', volume: 0.8 },

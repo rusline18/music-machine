@@ -30,6 +30,12 @@
     "feelHint": "0% plays exactly on the grid; higher adds small timing, volume and pitch variations, like a live band",
     "reverb": "Reverb",
     "reverbHint": "How much room sound is added to the mix",
+    "voice": "Voice",
+    "counting": {
+      "off": "Off",
+      "counts": "1 2 3…",
+      "ands": "1 & 2 &…"
+    },
     "random": "🎲 Random",
     "clear": "Clear"
   },
@@ -44,6 +50,7 @@
     "volume": "{instrument} volume"
   },
   "instruments": {
+    "voice": "Voice",
     "clave": "Clave",
     "congas": "Congas",
     "bongos": "Bongos",
@@ -73,7 +80,9 @@
     "dyad": "dyad",
     "bass": "bass",
     "chord": "chord",
-    "mute": "mute"
+    "mute": "mute",
+    "count": "count",
+    "and": "&"
   },
   "presets": {
     "salsa-verse-3-2": "Verse (3-2 clave, cáscara)",

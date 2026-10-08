@@ -1,5 +1,6 @@
 import type { Step } from '~/core/pattern'
 import { chainPatterns, definePattern } from '~/core/pattern'
+import { voiceTrack } from '../voice'
 
 // Figures are eighth notes; one 8-count block = one two-bar clave cycle
 // (cells 0–7 = counts 1–4, cells 8–15 = counts 5–8). Built from documented
@@ -28,6 +29,7 @@ export const salsaVerse = definePattern({
   counts: 8,
   bpm: 180,
   tracks: [
+    voiceTrack,
     { instrument: 'clave', figure: CLAVE_3_2 },
     { instrument: 'congas', figure: TUMBAO },
     { instrument: 'bongos', figure: MARTILLO, volume: 0.8 },
@@ -48,6 +50,7 @@ export const salsaMontuno = definePattern({
   counts: 8,
   bpm: 190,
   tracks: [
+    voiceTrack,
     { instrument: 'clave', figure: CLAVE_3_2 },
     { instrument: 'congas', figure: TUMBAO },
     { instrument: 'bongos', volume: 0.8 },

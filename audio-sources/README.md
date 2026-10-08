@@ -5,7 +5,8 @@ mapping from each app sample to its source lives in `recordings` in
 `scripts/generate-samples.mjs`. Every file here is **CC0** or public domain
 (no attribution required, credits below are a courtesy), except the
 University of Iowa guitar, which is free to use under the university's own
-terms — see [uiowa/](#uiowa).
+terms — see [uiowa/](#uiowa) — and [voice/](#voice), synthesized for this
+project.
 
 Any sample whose source is missing is synthesized instead.
 
@@ -44,6 +45,15 @@ samples` synthesizes the guitar notes instead.
 - `Guira_Tim_Ross.wav` (bachata/guira/short, long): metal güira by Tim Ross,
   [Güira.ogg](https://commons.wikimedia.org/wiki/File:G%C3%BCira.ogg) on
   Wikimedia Commons, public domain. Converted from Ogg Vorbis to WAV.
+
+## voice/
+
+Spoken counts for the counting voice, one word per file:
+`<locale>/1.wav` … `8.wav` and `and.wav`. Generated with
+[espeak-ng](https://github.com/espeak-ng/espeak-ng) by
+`scripts/speak-counts.py` (the audio espeak-ng produces is not covered by
+its GPL license). Placeholders — replace them with recordings of a real
+person counting (same file names) for a much better result.
 
 ## freesound/
 

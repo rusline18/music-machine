@@ -18,7 +18,7 @@ function onsets(pattern: Pattern, instrument: string): number[] {
 }
 
 describe.each(genres.map((genre) => [genre.id, genre] as const))('%s', (_id, genre) => {
-  it.each([...sampleUrls(genre)])('%s exists in public/', (url) => {
+  it.each([...sampleUrls(genre, 'en'), ...sampleUrls(genre, 'ru')])('%s exists in public/', (url) => {
     expect(existsSync(publicDir + url)).toBe(true)
   })
 

@@ -1,8 +1,9 @@
 import { createAudioEngine } from '~/core/audio/engine'
 import { createScheduler } from '~/core/audio/scheduler'
 import type { Pattern } from '~/core/pattern'
-import { nextStep, setPatternCounts } from '~/core/pattern'
-import { sampleUrls, stepNames, stepResolver } from '~/core/resolve'
+import { nextStep, patternLength, resizeSteps, setPatternCounts } from '~/core/pattern'
+import type { CountingMode } from '~/core/resolve'
+import { COUNTING_MODES, countingFigure, sampleUrls, stepNames, stepResolver } from '~/core/resolve'
 import type { Genre } from '~/genres'
 
 /** Reverb wet level at the slider's top; beyond this the rhythm smears. */
@@ -14,11 +15,16 @@ const RANDOM_DENSITY = 0.25
  * Pattern state + audio engine + scheduler for one genre page.
  * The AudioContext is only created on the first `play()` (from a user
  * gesture), so this is safe to call during SSR.
+ *
+ * `locale` is the language the counting voice speaks; it can change while
+ * playing.
  */
-export function useBeatMachine(genre: Genre) {
+export function useBeatMachine(genre: Genre, locale: Ref<string>) {
   const engine = createAudioEngine()
   const scheduler = createScheduler(engine)
-  const resolveStep = stepResolver(genre)
+  const resolveStep = stepResolver(genre, () => locale.value)
+  /** The genre's counting voice track, if it has one. */
+  const voiceInstrument = genre.instruments.find((instrument) => genre.spoken[instrument])
 
   const selectedPresetId = ref(genre.presets[0]!.id)
   const pattern = ref<Pattern>(structuredClone(genre.presets[0]!))
@@ -30,14 +36,21 @@ export function useBeatMachine(genre: Genre) {
   /** 0–1: room reverb on the mix; 1 maps to MAX_REVERB_WET. */
   const reverb = ref(0.35)
 
-  let samplesLoaded = false
+  /** Set once the audio graph exists (after the first play). */
+  let started = false
   /** Playhead updates waiting for their step to sound. */
   const playheadTimers = new Set<ReturnType<typeof setTimeout>>()
 
   watch(feel, scheduler.setFeel, { immediate: true })
   watch(reverb, (amount) => {
     // Before the first play there's no audio graph yet; play() applies it.
-    if (samplesLoaded) engine.setReverb(amount * MAX_REVERB_WET)
+    if (started) engine.setReverb(amount * MAX_REVERB_WET)
+  })
+
+  // The voice's words in the new language load in the background; until
+  // they arrive the voice is skipped, the band keeps playing.
+  watch(locale, () => {
+    if (started) engine.preloadSamples(sampleUrls(genre, locale.value))
   })
 
   watch(selectedPresetId, (id) => {
@@ -61,10 +74,9 @@ export function useBeatMachine(genre: Genre) {
   }
 
   async function play() {
-    if (!samplesLoaded) {
-      await engine.preloadSamples(sampleUrls(genre))
-      samplesLoaded = true
-    }
+    // Already-loaded samples come from the engine's cache.
+    await engine.preloadSamples(sampleUrls(genre, locale.value))
+    started = true
     for (const track of pattern.value.tracks) {
       engine.setInstrumentVolume(track.instrument, track.volume)
       engine.setInstrumentMuted(track.instrument, track.muted)
@@ -106,16 +118,39 @@ export function useBeatMachine(genre: Genre) {
     engine.setInstrumentMuted(instrument, muted)
   }
 
+  /** Which counting preset the voice track matches, if any (it can also be edited cell by cell). */
+  const countingMode = computed((): CountingMode | undefined => {
+    const track = voiceInstrument && findTrack(voiceInstrument)
+    if (!track) return undefined
+    if (track.muted) return 'off'
+    const length = patternLength(pattern.value)
+    return COUNTING_MODES.find((mode) => {
+      const steps = resizeSteps(countingFigure(mode, pattern.value.stepsPerCount), length)
+      return steps.every((step, i) => step === track.steps[i])
+    })
+  })
+
+  function setCounting(mode: CountingMode) {
+    const track = voiceInstrument && findTrack(voiceInstrument)
+    if (!track) return
+    track.steps = resizeSteps(countingFigure(mode, pattern.value.stepsPerCount), patternLength(pattern.value))
+    setMuted(track.instrument, mode === 'off')
+  }
+
   function randomize() {
     for (const track of pattern.value.tracks) {
       const names = stepNames(genre, track.instrument)
-      if (track.muted || names.length === 0) continue
+      // The voice is a guide, not part of the groove: leave it alone.
+      if (track.muted || names.length === 0 || track.instrument === voiceInstrument) continue
       track.steps = track.steps.map(() => (Math.random() < RANDOM_DENSITY ? names[Math.floor(Math.random() * names.length)]! : null))
     }
   }
 
+  /** Silences every instrument but the counting voice (use the voice control for that). */
   function clear() {
-    for (const track of pattern.value.tracks) track.steps = track.steps.map(() => null)
+    for (const track of pattern.value.tracks) {
+      if (track.instrument !== voiceInstrument) track.steps = track.steps.map(() => null)
+    }
   }
 
   onBeforeUnmount(() => {
@@ -139,6 +174,9 @@ export function useBeatMachine(genre: Genre) {
     toggleStep,
     setVolume,
     setMuted,
+    hasVoice: voiceInstrument !== undefined,
+    countingMode,
+    setCounting,
     randomize,
     clear,
   }

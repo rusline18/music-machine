@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Track } from '~/core/pattern'
+import { countInBlock } from '~/core/pattern'
 
 const props = defineProps<{
   track: Track
@@ -25,6 +26,13 @@ const { t } = useI18n()
 const stepIndices = computed(() => Array.from({ length: props.length }, (_, i) => props.start + i))
 const instrumentName = computed(() => t(`instruments.${props.track.instrument}`))
 const stepOptions = computed(() => props.stepNames.map((name) => t(`steps.${name}`)).join(', '))
+
+/** What a cell shows: the step's name, or for a counting voice the number it says. */
+function stepLabel(stepIndex: number): string {
+  const name = props.track.steps[stepIndex]
+  if (!name) return ''
+  return name === 'count' ? String(countInBlock(stepIndex, props.stepsPerCount) + 1) : t(`steps.${name}`)
+}
 </script>
 
 <template>
@@ -63,7 +71,7 @@ const stepOptions = computed(() => props.stepNames.map((name) => t(`steps.${name
         :title="stepOptions"
         @click="emit('toggle-step', stepIndex)"
       >
-        {{ track.steps[stepIndex] ? t(`steps.${track.steps[stepIndex]}`) : '' }}
+        {{ stepLabel(stepIndex) }}
       </button>
     </div>
 

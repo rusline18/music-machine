@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { stepNames } from '~/core/resolve'
+import { COUNT_OPTIONS } from '~/core/pattern'
+import { COUNTING_MODES, stepNames } from '~/core/resolve'
 import type { Genre } from '~/genres'
 
 const props = defineProps<{
@@ -20,9 +21,16 @@ const {
   toggleStep,
   setVolume,
   setMuted,
+  hasVoice,
+  countingMode,
+  setCounting,
   randomize,
   clear,
-} = useBeatMachine(props.genre)
+} = useBeatMachine(props.genre, useI18n().locale)
+
+const { t } = useI18n()
+const countOptions = COUNT_OPTIONS.map((counts) => ({ value: counts, label: String(counts) }))
+const countingOptions = computed(() => COUNTING_MODES.map((mode) => ({ value: mode, label: t(`controls.counting.${mode}`) })))
 
 const presetIds = props.genre.presets.map((preset) => preset.id)
 const stepNamesFor = (instrument: string) => stepNames(props.genre, instrument)
@@ -56,9 +64,11 @@ const percent = (value: number) => `${Math.round(value * 100)}%`
         :min="genre.bpmRange[0]"
         :max="genre.bpmRange[1]"
       />
-      <BeatCountSelector
+      <UiSegmentedControl
+        :label="$t('controls.counts')"
+        :options="countOptions"
         :model-value="pattern.counts"
-        @update:model-value="setCounts"
+        @update:model-value="(counts) => counts && setCounts(counts)"
       />
       <BeatTransport
         :is-playing="isPlaying"
@@ -85,6 +95,13 @@ const percent = (value: number) => `${Math.round(value * 100)}%`
         :max="1"
         :step="0.05"
         :format="percent"
+      />
+      <UiSegmentedControl
+        v-if="hasVoice"
+        :label="$t('controls.voice')"
+        :options="countingOptions"
+        :model-value="countingMode"
+        @update:model-value="(mode) => mode && setCounting(mode)"
       />
     </div>
 
