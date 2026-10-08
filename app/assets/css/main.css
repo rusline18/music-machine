@@ -5,4 +5,5 @@
 html,
 body {
   background-color: theme('colors.neutral.950');
+  color: theme('colors.neutral.100');
 }

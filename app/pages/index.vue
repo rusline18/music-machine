@@ -1,34 +1,41 @@
 <script setup lang="ts">
+import { genres } from '~/genres'
+
+const { t } = useI18n()
+
 useSeoMeta({
-  title: 'Latin Beat Machine — Build Salsa & Bachata rhythms',
-  description: 'An interactive Salsa & Bachata rhythm trainer. Build your own beat from real percussion, practice at your own tempo, and train your ear.',
+  title: () => t('app.name'),
+  description: () => t('app.description'),
 })
+
+/** Accent per genre; spelled out in full so Tailwind keeps the classes. */
+const ACCENTS: Record<string, string> = {
+  salsa: 'border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20',
+  bachata: 'border-sky-500/40 bg-sky-500/10 text-sky-400 hover:bg-sky-500/20',
+}
 </script>
 
 <template>
   <main class="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-10 px-6 text-center">
     <div>
       <h1 class="text-4xl font-bold tracking-tight text-neutral-50 sm:text-5xl">
-        Latin Beat Machine
+        {{ t('app.name') }}
       </h1>
       <p class="mt-4 text-neutral-400">
-        Build. Listen. Remove. Practice. Understand. Dance.
+        {{ t('app.tagline') }}
       </p>
     </div>
 
     <div class="flex flex-col gap-4 sm:flex-row">
-      <NuxtLink
-        to="/salsa"
-        class="rounded-lg border border-amber-500/40 bg-amber-500/10 px-8 py-4 text-lg font-semibold text-amber-400 transition hover:bg-amber-500/20"
+      <NuxtLinkLocale
+        v-for="genre in genres"
+        :key="genre.id"
+        :to="`/${genre.id}`"
+        class="rounded-lg border px-8 py-4 text-lg font-semibold transition"
+        :class="ACCENTS[genre.id]"
       >
-        Salsa
-      </NuxtLink>
-      <NuxtLink
-        to="/bachata"
-        class="rounded-lg border border-sky-500/40 bg-sky-500/10 px-8 py-4 text-lg font-semibold text-sky-400 transition hover:bg-sky-500/20"
-      >
-        Bachata
-      </NuxtLink>
+        {{ t(`genres.${genre.id}.name`) }}
+      </NuxtLinkLocale>
     </div>
   </main>
 </template>

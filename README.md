@@ -1,91 +1,105 @@
 # Latin Beat Machine
 
 Interactive Salsa & Bachata rhythm trainer — build a beat from real percussion
-one-shots, practice it at your own tempo, and train your ear. See the project
-plan for the full concept, sourcing, and roadmap.
+one-shots, practice it at your own tempo, and train your ear. Available in
+English and Russian.
 
-**Stack:** Nuxt 4 (SSR on) + Vue 3 + TypeScript + Tailwind CSS + Web Audio API.
+**Stack:** Nuxt 4 (SSR) + Vue 3 + TypeScript + Tailwind CSS + Web Audio API +
+`@nuxtjs/i18n`.
 
-## Status
+## Architecture
 
-This is the Phase 1 foundation: project scaffold, pattern data model, a
-Web Audio engine + lookahead scheduler, and Salsa/Bachata pages wired to a
-shared beat-machine composable.
+Three layers, each depending only on the ones below it:
+
+```
+app/
+  core/                Framework-free logic: no Vue, no Nuxt, unit-tested
+    pattern.ts           Pattern model, preset builder (definePattern), chaining, resizing
+    harmony.ts           Chords, chord tones, pitch-shifting notes onto recorded zones
+    resolve.ts           Turns a step into the notes to play (samples or chord-following)
+    audio/
+      engine.ts          AudioContext, per-instrument gain, sample cache, playback, reverb
+      scheduler.ts       Lookahead scheduler — sample-accurate timing, live pattern edits
+      humanize.ts        "Feel": small timing/volume/pitch variations
+  genres/              Data: one folder per genre, plus the registry
+    index.ts             `genres` list and `findGenre(id)`
+    types.ts             The `Genre` shape: instruments, samples, pitched, bpmRange, presets
+    salsa/, bachata/
+      samples.ts         Sample paths (read by `npm run samples`) and pitched instruments
+      patterns.ts        Presets, written as repeating figures
+      index.ts           The genre definition
+  composables/
+    useBeatMachine.ts    Vue state for one genre page: wires pattern + engine + scheduler
+  components/
+    beat/                BeatMachine (the whole trainer), BeatGrid, TrackRow,
+                         Transport, CountSelector, PresetSelector
+    ui/RangeControl.vue  Labelled slider
+    LanguageSwitcher.vue
+  pages/
+    index.vue            Home: one link per genre
+    [genre].vue          Trainer page for any genre in the registry (404 otherwise)
+
+i18n/locales/          en.json, ru.json — every user-visible string
+public/audio/          Built one-shots (don't edit by hand — see below)
+audio-sources/         Raw recordings + credits
+scripts/
+  generate-samples.mjs Builds public/audio from audio-sources, synth fallback
+tests/                 Vitest
+docs/                  Plans
+```
+
+### Conventions
+
+- **Ids, not labels, in data.** Genres, instruments, step names and presets are
+  identified by ids; their display text lives in `i18n/locales/*.json` under
+  `genres.<id>`, `instruments.<id>`, `steps.<name>` and `presets.<id>`.
+  `tests/i18n.test.ts` fails if a locale is missing a key or one the data needs.
+- **`core/` stays framework-free** so it can be tested without Nuxt. Anything
+  that needs Vue reactivity or lifecycle goes in `composables/`.
+- **Components are auto-imported with their folder prefix**: `beat/TrackRow.vue`
+  is `<BeatTrackRow>`, `ui/RangeControl.vue` is `<UiRangeControl>`.
+  `npm run typecheck` (strict templates) catches a wrong name.
+
+### Adding things
+
+- **A language:** add `i18n/locales/<code>.json` (same keys as `en.json`) and
+  an entry in `i18n.locales` in `nuxt.config.ts`.
+- **A preset:** add a `definePattern({...})` to the genre's `patterns.ts`,
+  list it in the genre's presets, and add its name to every locale.
+- **A genre:** add `app/genres/<id>/` like the existing ones, register it in
+  `app/genres/index.ts`, and add its texts and an accent colour on the home
+  page. The `/<id>` page then exists automatically.
+
+## Setup
+
+```bash
+npm install
+npm run dev        # http://localhost:3000 (Russian at /ru)
+npm test           # unit tests
+npm run typecheck  # TypeScript + Vue templates
+npm run build && npm run preview
+```
+
+For correct `hreflang` links in production, set the site's public URL:
+`NUXT_PUBLIC_I18N_BASE_URL=https://example.com`.
+
+## Audio samples
 
 `public/audio/**` is built by `npm run samples`
 (`scripts/generate-samples.mjs`). Each one-shot is trimmed from a free
 recording in `audio-sources/` (CC0, except the University of Iowa guitar)
 when that source is present, and synthesized otherwise — see
 [audio-sources/README.md](audio-sources/README.md) for sources, licenses and
-which Freesound and Iowa files to download. To change a sound, edit its
-entry in `recordings` and re-run; don't hand-edit `public/audio`, since the
-script overwrites it.
-
-## Project structure
-
-```
-app/
-  components/beat/     UI: BeatGrid, InstrumentTrack, Transport, BpmControl, CountSelector, PatternSelector
-  composables/
-    useAudioEngine.ts    AudioContext, gain nodes, sample loading/playback
-    useBeatScheduler.ts  Lookahead scheduler — keeps BPM/timing sample-accurate
-    usePattern.ts        Pattern/track data model + (de)serialization
-    useBeatMachine.ts     Ties pattern + engine + scheduler together per genre
-  data/
-    salsa/, bachata/     Instrument sample maps + preset patterns
-  pages/
-    index.vue, salsa.vue, bachata.vue
-
-public/audio/
-  salsa/<instrument>/    One-shot .wav files (built — don't edit by hand)
-  bachata/<instrument>/
-
-audio-sources/           Raw recordings (VCSL, Freesound, Wikimedia, Iowa) + credits
-
-scripts/
-  generate-samples.mjs   Builds public/audio from recordings, synth fallback
-
-tests/                   Vitest: presets, pattern helpers, engine, scheduler
-```
-
-## Setup
-
-```bash
-npm install
-```
-
-## Development
-
-```bash
-npm run dev
-```
-
-Open `http://localhost:3000`.
-
-## Production
-
-```bash
-npm run build
-npm run preview
-```
-
-## Tests
-
-```bash
-npm test
-```
-
-Vitest covers preset integrity (lengths, sample names, files on disk), the
-clave/bass reference rhythms, pattern helpers, volume/mute, and scheduler
-timing. Audio output itself is checked by ear.
+which Freesound and Iowa files to download. The list of files comes from the
+paths in `app/genres/*/samples.ts`; to change a sound, edit its entry in
+`recordings` in the script and re-run.
 
 ## Notes
 
-- Audio only initializes client-side and only on user interaction (browsers
-  require a user gesture to start an `AudioContext`) — pages still render
-  fully server-side for SEO.
-- Presets: Salsa verse/montuno in 3-2 son clave, Bachata derecho/majao,
-  plus 16-count chains of each pair. They follow documented references but still need sign-off from a player
-  — see plan sections 7 and 14.
+- Audio only starts client-side, on user interaction (browsers require a user
+  gesture to start an `AudioContext`); pages still render fully server-side.
+- Presets: Salsa verse/montuno in 3-2 son clave; Bachata derecho, majao and
+  mambo; plus a chain of the first two of each. They follow documented
+  references but still need sign-off from a player.
 - Patterns are 8, 16, 24 or 32 dance counts long, shown as 8-count blocks.
   Each count is two cells ("1 &"); BPM is counts per minute.

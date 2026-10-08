@@ -1,0 +1,87 @@
+{
+  "app": {
+    "name": "Latin Beat Machine",
+    "tagline": "Build. Listen. Remove. Practice. Understand. Dance.",
+    "description": "An interactive Salsa & Bachata rhythm trainer. Build your own beat from real percussion, practice at your own tempo, and train your ear."
+  },
+  "nav": {
+    "back": "← Back",
+    "language": "Language"
+  },
+  "genres": {
+    "salsa": {
+      "name": "Salsa",
+      "title": "Salsa Rhythm Trainer",
+      "description": "Build a Salsa rhythm from clave, congas, bongos, timbales, cowbell, maracas and güiro, then practice it at your own tempo."
+    },
+    "bachata": {
+      "name": "Bachata",
+      "title": "Bachata Rhythm Trainer",
+      "description": "Build a Bachata rhythm from güira, bongos, campana, bass, requinto and segunda, then practice it at your own tempo."
+    }
+  },
+  "controls": {
+    "preset": "Pattern",
+    "play": "▶ Play",
+    "stop": "■ Stop",
+    "bpm": "BPM",
+    "counts": "Counts",
+    "feel": "Feel",
+    "feelHint": "0% plays exactly on the grid; higher adds small timing, volume and pitch variations, like a live band",
+    "reverb": "Reverb",
+    "reverbHint": "How much room sound is added to the mix",
+    "random": "🎲 Random",
+    "clear": "Clear"
+  },
+  "grid": {
+    "block": "Block {n}",
+    "chords": "Chords",
+    "chordForBar": "Chord for bar {n}",
+    "and": "&",
+    "on": "on",
+    "off": "off",
+    "mute": "Mute {instrument}",
+    "volume": "{instrument} volume"
+  },
+  "instruments": {
+    "clave": "Clave",
+    "congas": "Congas",
+    "bongos": "Bongos",
+    "timbales": "Timbales",
+    "cowbell": "Cowbell",
+    "maracas": "Maracas",
+    "guiro": "Güiro",
+    "guira": "Güira",
+    "campana": "Campana",
+    "bass": "Bass",
+    "requinto": "Requinto",
+    "segunda": "Segunda"
+  },
+  "steps": {
+    "hit": "hit",
+    "low": "low",
+    "high": "high",
+    "slap": "slap",
+    "open": "open",
+    "rim": "rim",
+    "short": "short",
+    "long": "long",
+    "neck": "neck",
+    "root": "root",
+    "3rd": "3rd",
+    "5th": "5th",
+    "dyad": "dyad",
+    "bass": "bass",
+    "chord": "chord",
+    "mute": "mute"
+  },
+  "presets": {
+    "salsa-verse-3-2": "Verse (3-2 clave, cáscara)",
+    "salsa-montuno-3-2": "Montuno (3-2 clave, bells)",
+    "salsa-verse-montuno": "Verse → Montuno (16 counts)",
+    "bachata-derecho": "Derecho",
+    "bachata-majao": "Majao",
+    "bachata-mambo": "Mambo",
+    "bachata-derecho-majao": "Derecho → Majao (32 counts)"
+  }
+}

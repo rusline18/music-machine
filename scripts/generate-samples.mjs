@@ -10,7 +10,7 @@
  * Usage: npm run samples
  *
  * The list of files to write is read from the genre sample maps
- * (app/data/<genre>/samples.ts), and the script fails if a path there has no
+ * (app/genres/<genre>/samples.ts), and the script fails if a path there has no
  * generator below — keeps the two in sync.
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -224,7 +224,7 @@ const bass = () => {
 }
 
 // Single guitar notes; the app pitch-shifts them, so they must sit exactly
-// on the pitch named in app/data/bachata/samples.ts.
+// on the pitch named in app/genres/bachata/samples.ts.
 const guitarNote = ({ freq, seed }) => () => {
   const out = buffer(1.2)
   pluck(out, { freq, seed, damping: 0.997, brightness: 0.75 })
@@ -606,8 +606,11 @@ function encodeWav(signal, rate = SAMPLE_RATE) {
 
 function referencedSamplePaths() {
   const paths = new Set()
-  for (const genre of ['salsa', 'bachata']) {
-    const source = readFileSync(join(ROOT, 'app', 'data', genre, 'samples.ts'), 'utf8')
+  const genresDir = join(ROOT, 'app', 'genres')
+  for (const genre of readdirSync(genresDir)) {
+    const file = join(genresDir, genre, 'samples.ts')
+    if (!existsSync(file)) continue
+    const source = readFileSync(file, 'utf8')
     for (const [, path] of source.matchAll(/'(\/audio\/[^']+\.wav)'/g)) paths.add(path)
   }
   return paths

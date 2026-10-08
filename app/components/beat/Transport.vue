@@ -17,7 +17,7 @@ const emit = defineEmits<{
       :disabled="isPlaying"
       @click="emit('play')"
     >
-      ▶ Play
+      {{ $t('controls.play') }}
     </button>
     <button
       type="button"
@@ -25,7 +25,7 @@ const emit = defineEmits<{
       :disabled="!isPlaying"
       @click="emit('stop')"
     >
-      ■ Stop
+      {{ $t('controls.stop') }}
     </button>
   </div>
 </template>

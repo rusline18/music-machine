@@ -1,139 +1,106 @@
-import type { Genre, Pattern } from './usePattern'
-import { clonePattern, COUNTS_PER_BAR, resizeSteps } from './usePattern'
-import { genreConfig, stepNames, stepResolver } from '../data/genres'
-import { salsaPatterns } from '../data/salsa/patterns'
-import { bachataPatterns } from '../data/bachata/patterns'
-import { useAudioEngine } from './useAudioEngine'
-import { useBeatScheduler } from './useBeatScheduler'
+import { createAudioEngine } from '~/core/audio/engine'
+import { createScheduler } from '~/core/audio/scheduler'
+import type { Pattern } from '~/core/pattern'
+import { nextStep, setPatternCounts } from '~/core/pattern'
+import { sampleUrls, stepNames, stepResolver } from '~/core/resolve'
+import type { Genre } from '~/genres'
 
 /** Reverb wet level at the slider's top; beyond this the rhythm smears. */
 const MAX_REVERB_WET = 0.6
-
-const presetsByGenre: Record<Genre, Pattern[]> = {
-  salsa: salsaPatterns,
-  bachata: bachataPatterns,
-}
+/** Chance that `randomize` puts a hit on a step. */
+const RANDOM_DENSITY = 0.25
 
 /**
- * Wires pattern state + audio engine + scheduler together for a genre page.
- * The AudioContext is only created lazily on the first `play()` (from a user
- * gesture), so this composable is safe to call during SSR — nothing here
- * touches `window`/`AudioContext` until the component is interactive.
+ * Pattern state + audio engine + scheduler for one genre page.
+ * The AudioContext is only created on the first `play()` (from a user
+ * gesture), so this is safe to call during SSR.
  */
 export function useBeatMachine(genre: Genre) {
-  const config = genreConfig[genre]
-  const presets = presetsByGenre[genre]
+  const engine = createAudioEngine()
+  const scheduler = createScheduler(engine)
+  const resolveStep = stepResolver(genre)
 
-  const selectedPatternId = ref(presets[0]!.id)
-  const pattern = ref<Pattern>(clonePattern(presets[0]!))
-
-  const engine = useAudioEngine()
-  const scheduler = useBeatScheduler(engine)
-
-  const samplesLoaded = ref(false)
-  const resolveStep = stepResolver(config)
-
+  const selectedPresetId = ref(genre.presets[0]!.id)
+  const pattern = ref<Pattern>(structuredClone(genre.presets[0]!))
+  const isPlaying = ref(false)
+  /** The step currently sounding, for the playhead; -1 when stopped. */
+  const activeStep = ref(-1)
   /** 0–1: how loosely the band plays (see humanizeNote). */
   const feel = ref(0.5)
   /** 0–1: room reverb on the mix; 1 maps to MAX_REVERB_WET. */
   const reverb = ref(0.35)
-  scheduler.setFeel(feel.value)
 
-  function stepNamesFor(instrument: string): string[] {
-    return stepNames(config, instrument)
-  }
+  let samplesLoaded = false
+  /** Playhead updates waiting for their step to sound. */
+  const playheadTimers = new Set<ReturnType<typeof setTimeout>>()
 
-  watch(selectedPatternId, (id) => {
-    const preset = presets.find((p) => p.id === id)
+  watch(feel, scheduler.setFeel, { immediate: true })
+  watch(reverb, (amount) => {
+    // Before the first play there's no audio graph yet; play() applies it.
+    if (samplesLoaded) engine.setReverb(amount * MAX_REVERB_WET)
+  })
+
+  watch(selectedPresetId, (id) => {
+    const preset = genre.presets.find((p) => p.id === id)
     if (!preset) return
-    const wasPlaying = scheduler.isPlaying.value
-    if (wasPlaying) scheduler.stop()
-    pattern.value = clonePattern(preset)
+    const wasPlaying = isPlaying.value
+    stop()
+    pattern.value = structuredClone(preset)
     if (wasPlaying) play()
   })
 
-  async function ensureSamplesLoaded() {
-    if (samplesLoaded.value) return
-    const urls = new Set(Object.values(config.samples).flatMap((sampleMap) => Object.values(sampleMap).flat()))
-    await engine.preloadSamples([...urls])
-    samplesLoaded.value = true
+  const findTrack = (instrument: string) => pattern.value.tracks.find((t) => t.instrument === instrument)
+
+  /** Moves the playhead when a scheduled step actually sounds, not when it's queued. */
+  function showStep(stepIndex: number, time: number) {
+    const timer = setTimeout(() => {
+      playheadTimers.delete(timer)
+      activeStep.value = stepIndex
+    }, Math.max(0, (time - engine.now()) * 1000))
+    playheadTimers.add(timer)
   }
 
-  function syncTrackGains() {
+  async function play() {
+    if (!samplesLoaded) {
+      await engine.preloadSamples(sampleUrls(genre))
+      samplesLoaded = true
+    }
     for (const track of pattern.value.tracks) {
       engine.setInstrumentVolume(track.instrument, track.volume)
       engine.setInstrumentMuted(track.instrument, track.muted)
     }
-  }
-
-  async function play() {
-    await ensureSamplesLoaded()
-    syncTrackGains()
     engine.setReverb(reverb.value * MAX_REVERB_WET)
-    await scheduler.start(pattern.value, resolveStep)
+    await scheduler.start(pattern.value, resolveStep, showStep)
+    isPlaying.value = true
   }
 
   function stop() {
     scheduler.stop()
-  }
-
-  function setFeel(amount: number) {
-    feel.value = amount
-    scheduler.setFeel(amount)
-  }
-
-  function setReverb(amount: number) {
-    reverb.value = amount
-    // Before the first play there's no audio graph yet; play() applies it.
-    if (samplesLoaded.value) engine.setReverb(amount * MAX_REVERB_WET)
-  }
-
-  function setBpm(bpm: number) {
-    pattern.value.bpm = bpm
-    scheduler.setBpm(bpm)
-  }
-
-  /**
-   * Change the loop length in counts. Mutates the pattern in place so a
-   * running scheduler picks it up on its next tick without restarting.
-   */
-  function setCounts(counts: number) {
-    const length = counts * pattern.value.stepsPerCount
-    for (const track of pattern.value.tracks) {
-      track.steps = resizeSteps(track.steps, length)
-    }
-    const { chords } = pattern.value
-    if (chords?.length) {
-      pattern.value.chords = resizeSteps(chords, counts / COUNTS_PER_BAR).map((chord) => chord ?? chords[0]!)
-    }
-    pattern.value.counts = counts
+    for (const timer of playheadTimers) clearTimeout(timer)
+    playheadTimers.clear()
+    isPlaying.value = false
+    activeStep.value = -1
   }
 
   function setChord(bar: number, chord: string) {
-    const chords = pattern.value.chords
+    const { chords } = pattern.value
     if (chords && bar < chords.length) chords[bar] = chord
   }
 
   function toggleStep(instrument: string, stepIndex: number) {
-    const track = pattern.value.tracks.find((t) => t.instrument === instrument)
-    if (!track) return
-    const sampleNames = stepNamesFor(instrument)
-    if (sampleNames.length === 0) return
-    const current = track.steps[stepIndex]
-    const currentIndex = current ? sampleNames.indexOf(current) : -1
-    const nextIndex = currentIndex + 1
-    track.steps[stepIndex] = nextIndex >= sampleNames.length ? null : sampleNames[nextIndex]!
+    const track = findTrack(instrument)
+    if (track) track.steps[stepIndex] = nextStep(track.steps[stepIndex] ?? null, stepNames(genre, instrument))
   }
 
-  function updateVolume(instrument: string, volume: number) {
-    const track = pattern.value.tracks.find((t) => t.instrument === instrument)
+  function setVolume(instrument: string, volume: number) {
+    const track = findTrack(instrument)
     if (!track) return
     track.volume = volume
     engine.setInstrumentVolume(instrument, volume)
   }
 
-  function updateMuted(instrument: string, muted: boolean) {
-    const track = pattern.value.tracks.find((t) => t.instrument === instrument)
+  function setMuted(instrument: string, muted: boolean) {
+    const track = findTrack(instrument)
     if (!track) return
     track.muted = muted
     engine.setInstrumentMuted(instrument, muted)
@@ -141,44 +108,37 @@ export function useBeatMachine(genre: Genre) {
 
   function randomize() {
     for (const track of pattern.value.tracks) {
-      if (track.muted) continue
-      const sampleNames = stepNamesFor(track.instrument)
-      if (sampleNames.length === 0) continue
-      track.steps = track.steps.map(() => (Math.random() > 0.75 ? sampleNames[Math.floor(Math.random() * sampleNames.length)]! : null))
+      const names = stepNames(genre, track.instrument)
+      if (track.muted || names.length === 0) continue
+      track.steps = track.steps.map(() => (Math.random() < RANDOM_DENSITY ? names[Math.floor(Math.random() * names.length)]! : null))
     }
   }
 
   function clear() {
-    for (const track of pattern.value.tracks) {
-      track.steps = track.steps.map(() => null)
-    }
+    for (const track of pattern.value.tracks) track.steps = track.steps.map(() => null)
   }
 
-  onUnmounted(() => {
-    scheduler.stop()
+  onBeforeUnmount(() => {
+    stop()
     engine.dispose()
   })
 
   return {
-    config,
-    presets,
-    selectedPatternId,
+    /** Edit freely: the scheduler reads it live, so changes (tempo included) apply while playing. */
     pattern,
-    isPlaying: scheduler.isPlaying,
-    activeStep: scheduler.activeStep,
+    selectedPresetId,
+    isPlaying: readonly(isPlaying),
+    activeStep: readonly(activeStep),
+    feel,
+    reverb,
     play,
     stop,
-    setBpm,
-    setCounts,
+    /** In place, so a running loop picks the new length up on its next tick. */
+    setCounts: (counts: number) => setPatternCounts(pattern.value, counts),
     setChord,
-    feel,
-    setFeel,
-    reverb,
-    setReverb,
-    stepNamesFor,
     toggleStep,
-    updateVolume,
-    updateMuted,
+    setVolume,
+    setMuted,
     randomize,
     clear,
   }

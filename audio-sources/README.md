@@ -59,7 +59,3 @@ sound ID.
 | bachata/bass/a2 | [bass A2](https://freesound.org/people/mat_the_glad/sounds/43938/) | mat_the_glad |
 
 All of these were checked as CC0 on their sound pages (October 2026).
-
-No longer used: `44573__uiop__guiro114bpm4bars` (replaced by the Wikimedia
-güira); `8393__speedy__clean_e1st_str_pick` and `8403__speedy__clean_g_str_pluck`
-(single guitar notes, replaced by the Iowa guitar).
