@@ -16,7 +16,7 @@ const machine = useBeatMachine('bachata')
 
 <template>
   <main class="mx-auto max-w-4xl px-6 py-10">
-    <div class="mb-6 flex items-center justify-between">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
       <div>
         <NuxtLink to="/" class="text-sm text-neutral-500 hover:text-neutral-300">← Back</NuxtLink>
         <h1 class="text-2xl font-bold text-neutral-50">Bachata</h1>
