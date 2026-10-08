@@ -28,3 +28,9 @@ audio-sources/uiowa/
 
 # Real songs for analysis (docs/track-analysis-plan.md); never committed
 audio-sources/tracks/
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
