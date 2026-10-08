@@ -65,7 +65,8 @@
     "volume": "Громкость: {instrument}",
     "previous": "Предыдущий такт",
     "next": "Следующий такт",
-    "page": "Такт {n} из {total}"
+    "page": "Такт {n} из {total}",
+    "step": "{instrument}, шаг {n}"
   },
   "instruments": {
     "voice": "Голос",

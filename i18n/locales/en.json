@@ -65,7 +65,8 @@
     "volume": "{instrument} volume",
     "previous": "Previous bar",
     "next": "Next bar",
-    "page": "Bar {n} of {total}"
+    "page": "Bar {n} of {total}",
+    "step": "{instrument} step {n}"
   },
   "instruments": {
     "voice": "Voice",

@@ -61,7 +61,8 @@ scripts/
   generate-samples.mjs Builds public/audio from audio-sources, synth fallback
   encode-samples.mjs   Adds an Opus (.webm) copy of every WAV
   speak-counts.py      Speaks the counts with espeak-ng into audio-sources/voice
-tests/                 Vitest
+tests/                 Vitest unit tests
+e2e/                   Playwright: pages, grid editing, transport, sharing in a real browser
 docs/                  Plans
 ```
 
@@ -147,6 +148,19 @@ npm run typecheck  # TypeScript + Vue templates
 npm run lint       # ESLint: bugs + code style (npm run lint:fix fixes most)
 npm run build && npm run preview
 ```
+
+End-to-end tests run in Chromium against the production build (port 3000;
+a server already listening there, e.g. `npm run dev`, is reused):
+
+```bash
+npx playwright install chromium   # once, downloads the browser
+npm run test:e2e                  # builds the app and runs e2e/ against it
+npm run test:e2e:ui               # interactive UI mode
+```
+
+CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit and e2e tests on
+every pull request and push to `main`; when e2e fails, download the
+`playwright-report` artifact and open `index.html` to see traces.
 
 For correct `hreflang` links in production, set the site's public URL:
 `NUXT_PUBLIC_I18N_BASE_URL=https://example.com`.

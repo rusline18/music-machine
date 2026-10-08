@@ -31,3 +31,9 @@ audio-sources/tracks/
 
 # TypeScript build cache (npm run typecheck)
 *.tsbuildinfo
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/

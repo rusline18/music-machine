@@ -84,6 +84,7 @@ function stepLabel(stepIndex: number): string {
           { 'ring-2 ring-white': activeStep === stepIndex, 'ml-1.5': i % stepsPerCount === 0 && i > 0 },
         ]"
         :title="cellHint"
+        :aria-label="t('grid.step', { instrument: instrumentName, n: stepIndex + 1 })"
         @click="emit('toggle-step', stepIndex)"
       >
         {{ stepLabel(stepIndex) }}
