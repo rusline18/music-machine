@@ -16,8 +16,8 @@ const machine = useBeatMachine('bachata')
 </script>
 
 <template>
-  <main class="mx-auto max-w-4xl px-6 py-10">
-    <div class="mb-6 flex items-center justify-between">
+  <main class="mx-auto w-full max-w-4xl flex-1 px-6 py-10">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
       <div>
         <NuxtLink to="/" class="text-sm text-neutral-500 hover:text-neutral-300">← Back</NuxtLink>
         <h1 class="text-2xl font-bold text-neutral-50">Bachata</h1>
@@ -32,8 +32,8 @@ const machine = useBeatMachine('bachata')
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
       <BpmControl
         :model-value="machine.pattern.value.bpm"
-        :min="machine.config.bpmRange[0]"
-        :max="machine.config.bpmRange[1]"
+        :min="machine.config.minBpm"
+        :max="machine.config.maxBpm"
         @update:model-value="machine.setBpm"
       />
       <CountSelector
@@ -42,6 +42,9 @@ const machine = useBeatMachine('bachata')
       />
       <Transport
         :is-playing="machine.isPlaying.value"
+        :is-loading="machine.isLoading.value"
+        :load-progress="machine.loadProgress.value"
+        :failed-samples="machine.failedSamples.value"
         @play="machine.play"
         @stop="machine.stop"
       />

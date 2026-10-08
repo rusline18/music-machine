@@ -137,10 +137,7 @@ export function clonePattern(pattern: Pattern): Pattern {
   return structuredClone(pattern)
 }
 
+/** Encode for a share link; decode with deserializePattern in data/sharedPattern.ts, which validates it. */
 export function serializePattern(pattern: Pattern): string {
   return btoa(encodeURIComponent(JSON.stringify(pattern)))
-}
-
-export function deserializePattern(encoded: string): Pattern {
-  return JSON.parse(decodeURIComponent(atob(encoded)))
 }

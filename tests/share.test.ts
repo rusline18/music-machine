@@ -52,7 +52,7 @@ describe('pattern links', () => {
       v: 1, g: 'salsa', i: 'x', n: '', c: 8, s: 2, b: 9999,
       t: [['clave', 'a-z-', 7, 0], ['theremin', 'aaaa', 1, 0]],
     }), 'salsa', salsa)!
-    expect(decoded.bpm).toBe(salsa.bpmRange[1])
+    expect(decoded.bpm).toBe(salsa.maxBpm)
     expect(decoded.name).toBe('Shared pattern')
     expect(decoded.tracks.map((t) => t.instrument)).toEqual([...salsa.instruments])
     const clave = decoded.tracks[0]!

@@ -14,8 +14,9 @@ export interface GenreConfig {
   /** Tracks that follow the chords instead of playing one sample per step name. */
   pitched: Record<string, PitchedInstrument>
   defaultBpm: number
-  /** BPM slider limits; wide enough for every preset in the genre. */
-  bpmRange: readonly [min: number, max: number]
+  /** Tempo range offered by the BPM slider; shared patterns must fall inside it. */
+  minBpm: number
+  maxBpm: number
 }
 
 export const genreConfig: Record<Genre, GenreConfig> = {
@@ -25,14 +26,16 @@ export const genreConfig: Record<Genre, GenreConfig> = {
     pitched: {},
     defaultBpm: 180,
     // Cha-cha-chá sits around 120, fast salsa past 200.
-    bpmRange: [100, 230],
+    minBpm: 100,
+    maxBpm: 230,
   },
   bachata: {
     instruments: BACHATA_INSTRUMENTS,
     samples: bachataSamples,
     pitched: bachataPitched as Record<string, PitchedInstrument>,
     defaultBpm: 130,
-    bpmRange: [90, 160],
+    minBpm: 90,
+    maxBpm: 160,
   },
 }
 

@@ -105,7 +105,7 @@ export function decodePattern(code: string, genre: Genre, config: GenreConfig): 
     genre,
     counts: counts!,
     stepsPerCount: stepsPerCount!,
-    bpm: Math.round(clamp(shared.b, ...config.bpmRange)),
+    bpm: Math.round(clamp(shared.b, config.minBpm, config.maxBpm)),
     tracks,
   }
 

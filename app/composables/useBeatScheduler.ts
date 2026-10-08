@@ -98,6 +98,13 @@ export function useBeatScheduler(engine: ReturnType<typeof useAudioEngine>) {
 
   function tick() {
     if (!pattern) return
+    // A negative step would never advance nextStepTime and hang the tab;
+    // bpm 0 makes it Infinity and the loop silently stalls.
+    const step = stepDuration()
+    if (!(Number.isFinite(step) && step > 0 && patternLength(pattern) > 0)) {
+      stop()
+      return
+    }
     const context = engine.getContext()
     while (nextStepTime < context.currentTime + SCHEDULE_AHEAD_S) {
       // The pattern can be shortened mid-play; wrap instead of running off the end.
