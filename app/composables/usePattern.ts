@@ -136,8 +136,3 @@ export function rotatePattern(id: string, name: string, pattern: Pattern, counts
 export function clonePattern(pattern: Pattern): Pattern {
   return structuredClone(pattern)
 }
-
-/** Encode for a share link; decode with deserializePattern in data/sharedPattern.ts, which validates it. */
-export function serializePattern(pattern: Pattern): string {
-  return btoa(encodeURIComponent(JSON.stringify(pattern)))
-}

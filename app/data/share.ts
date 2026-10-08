@@ -17,6 +17,8 @@ const SILENCE = '-'
 const SYMBOLS = 'abcdefghijklmnopqrstuvwxyz'
 const STEPS_PER_COUNT = [2, 4]
 const MAX_NAME_LENGTH = 60
+/** A 48-count pattern is ~2 KB; anything far past that isn't ours, so don't decode it. */
+const MAX_CODE_LENGTH = 20_000
 
 interface SharedPattern {
   v: number
@@ -68,6 +70,7 @@ const isNumber = (value: unknown): value is number => typeof value === 'number' 
 
 /** The pattern a code describes, or null if it's broken or for another genre. */
 export function decodePattern(code: string, genre: Genre, config: GenreConfig): Pattern | null {
+  if (code.length > MAX_CODE_LENGTH) return null
   let shared: Partial<SharedPattern>
   try {
     shared = JSON.parse(fromBase64Url(code))

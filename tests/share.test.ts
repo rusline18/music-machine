@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { clonePattern } from '../app/composables/usePattern'
-import { genreConfig } from '../app/data/genres'
+import { genreConfig, stepNames } from '../app/data/genres'
 import { decodePattern, encodePattern } from '../app/data/share'
 import { salsaPatterns } from '../app/data/salsa/patterns'
 import { bachataPatterns } from '../app/data/bachata/patterns'
@@ -62,6 +62,46 @@ describe('pattern links', () => {
     // Instruments missing from the link come back silent and muted.
     expect(decoded.tracks[1]).toMatchObject({ instrument: 'congas', muted: true })
     expect(decoded.tracks[1]!.steps.every((s) => s === null)).toBe(true)
+  })
+
+  it.each<[string, (p: Record<string, any>) => void]>([
+    ['zero tempo', (p) => { p.b = 0 }],
+    ['negative tempo', (p) => { p.b = -180 }],
+    ['tempo as a string', (p) => { p.b = '180' }],
+    ['huge counts', (p) => { p.c = 1e9 }],
+    ['zero stepsPerCount', (p) => { p.s = 0 }],
+    ['a prototype key as instrument', (p) => { p.t[0][0] = 'constructor' }],
+    ['a duplicated instrument', (p) => { p.t.push(p.t[0]) }],
+    ['strokes outside the alphabet', (p) => { p.t[0][1] = '{}?!'.repeat(4) }],
+    ['steps of the wrong length', (p) => { p.t[0][1] = p.t[0][1].slice(1) }],
+    ['volume above 1', (p) => { p.t[0][2] = 5 }],
+    ['muted as a string', (p) => { p.t[0][3] = 'no' }],
+    ['a very long name', (p) => { p.n = 'x'.repeat(1000) }],
+    ['extra fields', (p) => { p.extra = 'x'; p.t[0].push('y') }],
+  ])('turns a link with %s into a safe pattern or nothing', (_case, change) => {
+    const payload = JSON.parse(atob(encodePattern(salsaPatterns[0]!, salsa).replace(/-/g, '+').replace(/_/g, '/')))
+    change(payload)
+    const decoded = decodePattern(codeFor(payload), 'salsa', salsa)
+    if (decoded === null) return
+    // Exactly what the scheduler and grid rely on, nothing else.
+    expect(Object.keys(decoded).sort()).toEqual(['bpm', 'counts', 'genre', 'id', 'name', 'stepsPerCount', 'tracks'])
+    expect(decoded.bpm).toBeGreaterThanOrEqual(salsa.minBpm)
+    expect(decoded.bpm).toBeLessThanOrEqual(salsa.maxBpm)
+    expect(decoded.name.length).toBeLessThanOrEqual(60)
+    expect(decoded.tracks.map((t) => t.instrument)).toEqual([...salsa.instruments])
+    for (const track of decoded.tracks) {
+      expect(Object.keys(track).sort()).toEqual(['instrument', 'muted', 'steps', 'volume'])
+      expect(track.steps).toHaveLength(decoded.counts * decoded.stepsPerCount)
+      const known = stepNames(salsa, track.instrument)
+      for (const step of track.steps) if (step !== null) expect(known).toContain(step)
+      expect(track.volume).toBeGreaterThanOrEqual(0)
+      expect(track.volume).toBeLessThanOrEqual(1)
+      expect(typeof track.muted).toBe('boolean')
+    }
+  })
+
+  it('does not decode oversized codes', () => {
+    expect(decodePattern('A'.repeat(200_000), 'salsa', salsa)).toBeNull()
   })
 
   it('gives bachata a chord per bar even if the link has bad or missing chords', () => {
