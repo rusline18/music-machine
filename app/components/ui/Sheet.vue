@@ -27,7 +27,7 @@ function onClick(event: MouseEvent) {
 <template>
   <dialog
     ref="dialog"
-    class="sheet m-auto w-[calc(100%-2rem)] max-w-sm rounded-xl border border-neutral-700 bg-neutral-900 p-0 text-neutral-100 shadow-2xl backdrop:bg-black/60 max-sm:bottom-0 max-sm:top-auto max-sm:m-0 max-sm:w-full max-sm:max-w-none max-sm:rounded-b-none max-sm:border-x-0 max-sm:border-b-0"
+    class="sheet m-auto w-[calc(100%-2rem)] max-w-sm rounded-3xl border border-neutral-800 bg-neutral-900 p-0 text-neutral-100 shadow-2xl backdrop:bg-black/60 max-sm:bottom-0 max-sm:top-auto max-sm:m-0 max-sm:w-full max-sm:max-w-none max-sm:rounded-t-[1.75rem] max-sm:rounded-b-none max-sm:border-x-0 max-sm:border-b-0"
     :aria-label="title"
     @close="emit('close')"
     @click="onClick"

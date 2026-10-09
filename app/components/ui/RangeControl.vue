@@ -23,7 +23,7 @@ const model = defineModel<number>({ required: true })
 <template>
   <div class="flex items-center gap-3">
     <UiControlLabel
-      class="text-sm font-medium text-neutral-400"
+      class="text-xs font-semibold uppercase tracking-[0.08em] text-neutral-400"
       :label="label"
       :icon="icon"
       :hint="hint"

@@ -2,42 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Accent colors as RGB channels (see tailwind.config.ts): amber, and sky
-   on bachata pages. */
+/* The "Noche" theme (tailwind.config.ts). Accent colors as RGB channels:
+   Fuego, and Caribe on bachata pages. */
 :root {
-  --accent-300: 252 211 77;
-  --accent-400: 251 191 36;
-  --accent-500: 245 158 11;
+  --accent-300: 255 176 140;
+  --accent-400: 255 138 92;
+  --accent-500: 255 106 61;
 }
 
 :root[data-genre='bachata'] {
-  --accent-300: 125 211 252;
-  --accent-400: 56 189 248;
-  --accent-500: 14 165 233;
+  --accent-300: 166 237 228;
+  --accent-400: 94 221 208;
+  --accent-500: 47 198 180;
 }
 
 html,
 body {
   background-color: theme('colors.neutral.950');
   color: theme('colors.neutral.100');
+  font-family: theme('fontFamily.sans');
 }
 
-/* The playhead: classes toggled by useBeatEffects, not by Vue. */
+/* The playhead: classes toggled by useBeatEffects, not by Vue. Gold in
+   every genre: it marks the count, not the instrument. */
 @layer components {
   .step-cell.is-now {
-    @apply ring-2 ring-white;
+    @apply ring-2 ring-inset ring-gold-400;
   }
 
   .count-label.is-now {
-    @apply text-accent-400;
+    @apply text-gold-400;
   }
 
   .count-box.is-now {
-    @apply bg-accent-500/50 text-neutral-950;
+    @apply bg-gold-400/50 text-neutral-950;
   }
 
   .count-box.is-now.is-on-beat {
-    @apply bg-accent-400;
+    @apply bg-gold-400 shadow-[0_0_24px_rgb(244_197_82/0.35)];
   }
 }
 

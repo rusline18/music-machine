@@ -27,36 +27,79 @@ const silentModeHint = useSilentModeHint(() => props.isPlaying)
 
 <template>
   <div class="flex flex-col gap-1">
-    <div class="flex items-center gap-2">
-      <!-- One big button that flips between Play and Stop, so it's always
-           in the same place under the thumb. -->
+    <div class="flex items-center gap-4">
+      <!-- One big round button that flips between Play and Stop, so it's
+           always in the same place under the thumb. The only loud button on
+           the page: the halo says it's playing. -->
       <button
         type="button"
-        class="play-button relative min-h-11 flex-1 overflow-hidden rounded-md px-5 py-2 font-semibold transition sm:flex-none"
-        :class="running ? 'bg-neutral-700 text-neutral-100 hover:bg-neutral-600' : 'bg-accent-500 text-neutral-900 hover:bg-accent-400'"
+        class="play-button relative flex size-16 shrink-0 items-center justify-center rounded-full bg-accent-500 text-neutral-950 transition hover:bg-accent-400 active:scale-95"
         :aria-busy="isLoading"
         @click="running ? emit('stop') : emit('play')"
       >
+        <!-- The halo: a ring in the genre's color, pulsed on every count by
+             useBeatEffects (brighter on 1 and 5). -->
+        <span
+          class="play-halo pointer-events-none absolute -inset-1.5 rounded-full opacity-0 ring-[6px] ring-accent-500/40"
+          aria-hidden="true"
+        />
+        <span class="sr-only">{{ isLoading ? $t('controls.loading', { percent }) : isPlaying ? $t('controls.stop') : $t('controls.play') }}</span>
         <span
           v-if="isLoading"
-          class="tabular-nums"
-        >{{ $t('controls.loading', { percent }) }}</span>
-        <span v-else-if="isPlaying">{{ $t('controls.stop') }}</span>
-        <span v-else>{{ $t('controls.play') }}</span>
-        <span
+          class="font-mono text-sm font-bold tabular-nums"
+          aria-hidden="true"
+        >{{ percent }}%</span>
+        <svg
+          v-else
+          class="size-6"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <rect
+            v-if="isPlaying"
+            x="5"
+            y="5"
+            width="14"
+            height="14"
+            rx="2.5"
+          />
+          <path
+            v-else
+            d="M7 4.5v15l13-7.5z"
+          />
+        </svg>
+        <!-- Download progress, drawn as a ring around the button. -->
+        <svg
           v-if="progress < 1"
           role="progressbar"
           :aria-label="$t('controls.downloaded')"
           :aria-valuenow="percent"
           aria-valuemin="0"
           aria-valuemax="100"
-          class="absolute inset-x-0 bottom-0 h-1 bg-neutral-900/20"
+          class="absolute -inset-1.5 -rotate-90"
+          viewBox="0 0 76 76"
         >
-          <span
-            class="block h-full bg-neutral-900/60 transition-[width]"
-            :style="{ width: `${percent}%` }"
+          <circle
+            cx="38"
+            cy="38"
+            r="36"
+            fill="none"
+            stroke-width="3"
+            class="stroke-neutral-800"
           />
-        </span>
+          <circle
+            cx="38"
+            cy="38"
+            r="36"
+            fill="none"
+            stroke-width="3"
+            stroke-linecap="round"
+            pathLength="100"
+            :stroke-dasharray="`${percent} 100`"
+            class="stroke-accent-400 transition-[stroke-dasharray]"
+          />
+        </svg>
       </button>
       <BeatTempoStepper
         :bpm="bpm"

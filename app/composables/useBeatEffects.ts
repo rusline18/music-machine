@@ -26,7 +26,8 @@ export interface BeatEffectsOptions {
  * - `data-count="N"`: the label of count N (from the pattern's start);
  * - `data-count-box="N"`: the big 1–8 display, N = 0–7 within the block;
  * - `.instrument-icon[data-instrument]`: moves when that instrument plays;
- * - `.play-button`: breathes on every count.
+ * - `.play-button`: breathes on every count;
+ * - `.play-halo`: flashes on every count, brightest on 1 and 5.
  *
  * Animations use the Web Animations API on transform and opacity only, and
  * run on the same animation frame the playhead does, so they land with the
@@ -78,6 +79,10 @@ export function useBeatEffects(
     // A slow swell over the whole count: the tempo, felt rather than read.
     for (const button of all('.play-button')) {
       button.animate([{ transform: 'scale(1.04)' }, { transform: 'none' }], { duration: stepMs * options.stepsPerCount(), easing: 'ease-in-out' })
+    }
+    const anchor = count === 0 || count === 4
+    for (const halo of all('.play-halo')) {
+      halo.animate([{ opacity: anchor ? 1 : 0.55, transform: 'scale(1.12)' }, { opacity: 0, transform: 'none' }], { duration: Math.min(420, stepMs * options.stepsPerCount()), easing: 'ease-out' })
     }
   }
 

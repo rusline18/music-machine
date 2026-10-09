@@ -94,7 +94,7 @@ async function submit() {
       <div class="flex justify-end">
         <button
           type="button"
-          class="rounded-md bg-accent-500 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-accent-400"
+          class="rounded-xl bg-accent-500 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-accent-400"
           @click="close"
         >
           {{ $t('feedback.close') }}
@@ -144,7 +144,7 @@ async function submit() {
           :minlength="FEEDBACK_LIMITS.messageMin"
           :maxlength="FEEDBACK_LIMITS.messageMax"
           :placeholder="$t('feedback.placeholder')"
-          class="block w-full resize-y rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-600"
+          class="block w-full resize-y rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-600"
         />
         <span class="block text-right text-xs text-neutral-600">{{ message.length }} / {{ FEEDBACK_LIMITS.messageMax }}</span>
       </label>
@@ -156,7 +156,7 @@ async function submit() {
           type="email"
           autocomplete="email"
           :maxlength="FEEDBACK_LIMITS.emailMax"
-          class="block w-full rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-neutral-100"
+          class="block w-full rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-neutral-100"
         >
       </label>
 
@@ -189,14 +189,14 @@ async function submit() {
       <div class="flex justify-end gap-2">
         <button
           type="button"
-          class="rounded-md bg-neutral-700 px-4 py-2 text-sm font-semibold text-neutral-200 hover:bg-neutral-600"
+          class="rounded-xl bg-neutral-700 px-4 py-2 text-sm font-semibold text-neutral-200 hover:bg-neutral-600"
           @click="close"
         >
           {{ $t('feedback.cancel') }}
         </button>
         <button
           type="submit"
-          class="rounded-md bg-accent-500 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-accent-400 disabled:opacity-50"
+          class="rounded-xl bg-accent-500 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-accent-400 disabled:opacity-50"
           :disabled="status.state === 'sending'"
         >
           {{ status.state === 'sending' ? $t('feedback.sending') : $t('feedback.send') }}

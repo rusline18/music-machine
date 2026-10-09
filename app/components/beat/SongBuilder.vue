@@ -48,14 +48,14 @@ const fill = computed(() => props.genre.transitionFill?.instrument)
 </script>
 
 <template>
-  <div class="rounded-lg border border-neutral-800 p-4">
+  <div class="rounded-3xl border border-neutral-800 bg-neutral-900 p-5">
     <div
       v-if="!song"
       class="flex flex-wrap items-center gap-3"
     >
       <button
         type="button"
-        class="inline-flex items-center gap-2 rounded-md bg-neutral-800 px-4 py-2 text-sm font-semibold text-neutral-100 hover:bg-neutral-700"
+        class="inline-flex items-center gap-2 rounded-xl bg-neutral-800 px-4 py-2 text-sm font-semibold text-neutral-100 hover:bg-neutral-700"
         @click="emit('start')"
       >
         <UiIcon name="song" />
@@ -107,7 +107,7 @@ const fill = computed(() => props.genre.transitionFill?.instrument)
         v-model="picked"
         :aria-label="$t('song.add')"
         :disabled="full"
-        class="max-w-full rounded-md border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 disabled:opacity-50"
+        class="max-w-full rounded-xl border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 disabled:opacity-50"
         @change="add"
       >
         <option

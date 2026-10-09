@@ -18,7 +18,7 @@ export const MAX_SONG_COUNTS = Math.max(...COUNT_OPTIONS)
 
 /**
  * How far apart (in BPM) the tempos the sections are written at may be.
- * Verse 180, montuno 190 and mambo 195 sound right at one tempo; a
+ * Verse 165, montuno 170 and mambo 175 sound right at one tempo; a
  * cha-cha-chá at 120 would be dragged to salsa speed.
  */
 export const TEMPO_SPREAD = 20
