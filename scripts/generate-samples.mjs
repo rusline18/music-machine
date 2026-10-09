@@ -397,9 +397,10 @@ const recordings = {
   '/audio/bachata/bongos/low-2.wav': { vcsl: 'BongoL_Hit1_v2_rr1_Mid.wav', maxLength: 0.5 },
   '/audio/bachata/bongos/high-2.wav': { vcsl: 'BongoH_Hit1_v2_rr1_Mid.wav', maxLength: 0.45 },
   '/audio/bachata/bongos/slap-2.wav': { vcsl: 'BongoH_HitMuted1_v3_rr1_Mid.wav', maxLength: 0.3 },
-  // Same VCSL cowbell as salsa; the neck stroke is the hit choked after 80 ms.
+  // Same VCSL cowbell as salsa's bongo bell, neck stroke included: a real
+  // muted stroke, softer take (v2).
   '/audio/bachata/campana/open.wav': { vcsl: 'Cowbell1_Hit_v3_rr1_Mid.wav', maxLength: 0.5 },
-  '/audio/bachata/campana/neck.wav': { vcsl: 'Cowbell1_Hit_v3_rr1_Mid.wav', maxLength: 0.08 },
+  '/audio/bachata/campana/neck.wav': { vcsl: 'Cowbell1_Muted_v2_rr1_Mid.wav', maxLength: 0.15 },
   '/audio/bachata/bass/a2.wav': { freesound: 43938, maxLength: 0.9 },
   // Each Iowa file is a chromatic run up one string; `midi` picks the note.
   '/audio/bachata/guitar/e2.wav': { uiowa: 'Guitar.mf.sulE.E2B2.mono.aif', midi: 40, maxLength: 1.2 },
