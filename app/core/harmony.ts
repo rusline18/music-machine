@@ -69,8 +69,12 @@ export interface Zone {
 
 export interface PitchedInstrument {
   zones: Zone[]
-  /** Step name → the notes it plays over the current chord. */
-  articulations: Record<string, (chord: Chord) => Voice[]>
+  /**
+   * Step name → the notes it plays over the current chord. `next` is the
+   * next bar's chord, for anticipations: salsa's bass and piano play the
+   * coming chord ahead of the bar line.
+   */
+  articulations: Record<string, (chord: Chord, next: Chord) => Voice[]>
 }
 
 /**

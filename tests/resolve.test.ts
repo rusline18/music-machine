@@ -3,6 +3,7 @@ import { CHORD_NAMES } from '~/core/harmony'
 import type { Pattern } from '~/core/pattern'
 import { countingFigure, sampleResolver, sampleUrls, stepNames, stepResolver } from '~/core/resolve'
 import { bachata } from '~/genres/bachata'
+import { salsa } from '~/genres/salsa'
 
 const pattern: Pattern = { id: 't', counts: 2, stepsPerCount: 2, bpm: 120, tracks: [] }
 
@@ -13,6 +14,16 @@ describe('sampleResolver', () => {
   it('rotates through the takes of a stroke', () => {
     const urls = [0, 1, 2, 3].map((i) => resolve(pattern, track, i)[0]?.url)
     expect(urls).toEqual(['/h1.wav', '/h2.wav', '/h1.wav', '/l.wav'])
+  })
+
+  it('plays a soft stroke at its own level, and only that stroke', () => {
+    const soft = sampleResolver({ congas: { heel: [{ url: '/heel.wav', gain: 0.35 }, { url: '/heel-2.wav', gain: 0.35 }], open: '/open.wav' } })
+    const congas = { instrument: 'congas', steps: ['heel', 'heel', 'open'], volume: 1, muted: false }
+    expect([0, 1, 2].map((i) => soft(pattern, congas, i))).toEqual([
+      [{ url: '/heel.wav', gain: 0.35 }],
+      [{ url: '/heel-2.wav', gain: 0.35 }],
+      [{ url: '/open.wav' }],
+    ])
   })
 })
 
@@ -30,6 +41,8 @@ describe('sampleUrls', () => {
     expect(urls).toContain('/audio/bachata/guira/long-3.wav')
     expect(urls).toContain('/audio/bachata/bass/a2.wav')
     expect(urls).toContain('/audio/bachata/guitar/e5.wav')
+    // Soft strokes are listed by URL, like any other sample.
+    expect(sampleUrls(salsa, 'en')).toContain('/audio/salsa/congas/heel-2.wav')
     expect([...urls].filter((url) => url.includes('/guitar/'))).toHaveLength(13)
   })
 
@@ -127,6 +140,63 @@ describe('bachata pitched tracks', () => {
         for (const note of notes(instrument, step, chord)) {
           const semitones = Math.abs(12 * Math.log2(note.rate!))
           expect(semitones, `${instrument} ${step} over ${chord}`).toBeLessThanOrEqual(MAX_SHIFT[instrument]! + 1e-9)
+        }
+      }
+    }
+  })
+})
+
+describe('salsa pitched tracks', () => {
+  const resolve = stepResolver(salsa, () => 'en')
+  // The bass has a single recorded A2; piano zones are 3–4 semitones apart.
+  const MAX_SHIFT: Record<string, number> = { bass: 7, piano: 2 }
+
+  /** Notes for `step` on count 4 of the first bar, over `chords` (a chord per bar). */
+  function notesOn4(instrument: string, step: string, chords: string[]) {
+    const steps = Array<string | null>(16).fill(null)
+    steps[6] = step
+    const pattern: Pattern = {
+      id: 't', counts: 8, stepsPerCount: 2, bpm: 180, chords,
+      tracks: [{ instrument, steps, volume: 1, muted: false }],
+    }
+    return resolve(pattern, pattern.tracks[0]!, 6)
+  }
+  const pitchOf = (note: { url: string, rate?: number }) => {
+    const zone = [...salsa.pitched.bass!.zones, ...salsa.pitched.piano!.zones].find((z) => z.url === note.url)!
+    return Math.round(zone.midi + 12 * Math.log2(note.rate ?? 1))
+  }
+
+  it('pushes the next bar’s chord: the bass anticipates the 1', () => {
+    // C2 = 36, so the root of C in D2–D3 is C3 (48); G is G2 (43).
+    expect(notesOn4('bass', 'root', ['C', 'G7']).map(pitchOf)).toEqual([48])
+    expect(notesOn4('bass', 'push', ['C', 'G7']).map(pitchOf)).toEqual([43])
+  })
+
+  it('wraps round: the last bar pushes the first chord', () => {
+    const steps = Array<string | null>(16).fill(null)
+    steps[14] = 'push'
+    const pattern: Pattern = {
+      id: 't', counts: 8, stepsPerCount: 2, bpm: 180, chords: ['C', 'G7'],
+      tracks: [{ instrument: 'bass', steps, volume: 1, muted: false }],
+    }
+    expect(resolve(pattern, pattern.tracks[0]!, 14).map(pitchOf)).toEqual([48])
+  })
+
+  it('plays the piano push as the next chord’s root in octaves over its chord', () => {
+    const pitches = notesOn4('piano', 'push', ['C', 'F']).map(pitchOf)
+    // F4 and F5, then A4 C5 F5's stab tones from E4 up
+    expect(pitches.slice(0, 2)).toEqual([65, 77])
+    expect(pitches.slice(2).map((p) => p % 12).sort()).toEqual([0, 5, 9])
+  })
+
+  it.each(['bass', 'piano'])('%s stays close to a recorded note for every chord', (instrument) => {
+    for (const chord of CHORD_NAMES) {
+      for (const next of ['C', 'F#m7', 'B7']) {
+        for (const step of stepNames(salsa, instrument)) {
+          for (const note of notesOn4(instrument, step, [chord, next])) {
+            const semitones = Math.abs(12 * Math.log2(note.rate!))
+            expect(semitones, `${instrument} ${step} over ${chord}`).toBeLessThanOrEqual(MAX_SHIFT[instrument]! + 1e-9)
+          }
         }
       }
     }

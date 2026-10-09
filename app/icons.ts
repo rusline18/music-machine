@@ -25,6 +25,8 @@ export const ICONS: Record<string, readonly string[]> = {
   ],
   /** A hand bell, mouth down. */
   cowbell: ['M8.5 5h7L19 19H5z', 'M10.5 5V2.5h3V5'],
+  /** A smaller bell on a stand: the bell mounted on the timbales. */
+  timbalebell: ['M9 3h6l2.5 10h-11z', 'M12 13v8M8 21h8'],
   /** The bachata bell, with the stick that strikes it. */
   campana: ['M9.5 3h7l3 13h-13z', 'M11.5 3V1.5h3V3', 'M2 22l7-6'],
   /** Two shakers. */
@@ -35,6 +37,8 @@ export const ICONS: Record<string, readonly string[]> = {
   guira: ['M5 4h9v16H5z', 'M8 8h.01M11 8h.01M8 12h.01M11 12h.01M8 16h.01M11 16h.01', 'M21 3l-4 4M17 7v5'],
   /** A guitar, with low waves for its deep sound. */
   bass: ['M3 17a4 4 0 1 0 8 0a4 4 0 1 0 -8 0', 'M7 17h.01', 'M9.8 14.2 20 4', 'M14 20c1.5-2 3 2 4.5 0s3 2 4.5 0'],
+  /** Piano keys. */
+  piano: ['M3 5h18v14H3z', 'M7.5 13v6M12 13v6M16.5 13v6', 'M6 5h3v8H6zM10.5 5h3v8h-3zM15 5h3v8h-3z'],
   /** A guitar with a spark: the lead guitar. */
   requinto: ['M3 17a4 4 0 1 0 8 0a4 4 0 1 0 -8 0', 'M7 17h.01', 'M9.8 14.2 20 4', 'M5 3v5M2.5 5.5h5'],
   /** A guitar with strum lines: the rhythm guitar. */
