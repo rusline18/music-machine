@@ -81,7 +81,12 @@ const stepNamesFor = (instrument: string) => namesByInstrument.get(instrument) ?
 const percent = (value: number) => `${Math.round(value * 100)}%`
 
 const root = useTemplateRef('root')
-useBeatEffects(root, onBeat, () => pattern.value.stepsPerCount)
+const motion = useMotion()
+useBeatEffects(root, onBeat, {
+  stepsPerCount: () => pattern.value.stepsPerCount,
+  bpm: () => pattern.value.bpm,
+  animate: () => motion.enabled.value,
+})
 /** Changes once a bar rather than every step, so the grid isn't re-rendered while playing. */
 const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(activeStep.value / (COUNTS_PER_BAR * pattern.value.stepsPerCount))))
 </script>
@@ -277,6 +282,21 @@ const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(active
       </button>
       <p class="text-sm text-neutral-500">
         {{ advanced ? $t('help.controls.simpleMode') : $t('help.controls.advancedMode') }}
+      </p>
+    </div>
+
+    <div class="mt-4 flex flex-wrap items-center gap-3 max-sm:order-1 max-sm:mb-6">
+      <button
+        type="button"
+        role="switch"
+        class="inline-flex min-h-11 items-center gap-2 rounded-md border border-neutral-700 px-4 py-2 text-sm text-neutral-200 transition hover:bg-neutral-800 sm:min-h-0"
+        :aria-checked="!motion.switchedOff.value"
+        @click="motion.setSwitchedOff(!motion.switchedOff.value)"
+      >
+        {{ motion.switchedOff.value ? $t('controls.animationOff') : $t('controls.animationOn') }}
+      </button>
+      <p class="text-sm text-neutral-500">
+        {{ $t('help.controls.animation') }}
       </p>
     </div>
 

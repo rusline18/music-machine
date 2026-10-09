@@ -127,7 +127,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
       <button
         type="button"
         class="min-h-11 rounded-md border px-3 text-sm transition"
-        :class="follow ? 'border-amber-500/40 text-amber-400' : 'border-neutral-700 text-neutral-400'"
+        :class="follow ? 'border-accent-500/40 text-accent-400' : 'border-neutral-700 text-neutral-400'"
         :aria-pressed="follow"
         @click="follow = !follow"
       >
@@ -242,7 +242,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
           type="button"
           role="menuitemradio"
           class="min-h-11 rounded-md px-3 py-2 font-mono text-sm transition"
-          :class="menuTrack.steps[menu.stepIndex] === name ? 'bg-amber-500 text-neutral-900' : 'bg-neutral-800 text-neutral-200 hover:bg-neutral-700'"
+          :class="menuTrack.steps[menu.stepIndex] === name ? 'bg-accent-500 text-neutral-900' : 'bg-neutral-800 text-neutral-200 hover:bg-neutral-700'"
           :aria-checked="menuTrack.steps[menu.stepIndex] === name"
           @click="pick(name)"
         >
@@ -282,7 +282,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
           {{ t('grid.playing') }}
           <span
             class="relative h-6 w-10 shrink-0 rounded-full transition-colors"
-            :class="sheetTrack.muted ? 'bg-neutral-700' : 'bg-amber-500'"
+            :class="sheetTrack.muted ? 'bg-neutral-700' : 'bg-accent-500'"
             aria-hidden="true"
           >
             <span
@@ -299,7 +299,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
             max="1"
             step="0.05"
             :value="sheetTrack.volume"
-            class="h-11 flex-1 accent-amber-500"
+            class="h-11 flex-1 accent-accent-500"
             @input="emit('update:volume', sheetTrack.instrument, Number(($event.target as HTMLInputElement).value))"
           >
         </label>

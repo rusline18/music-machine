@@ -66,7 +66,7 @@ async function submit() {
 <template>
   <button
     type="button"
-    class="text-amber-400 underline-offset-4 hover:underline"
+    class="text-accent-400 underline-offset-4 hover:underline"
     @click="open"
   >
     {{ $t('feedback.open') }}
@@ -94,7 +94,7 @@ async function submit() {
       <div class="flex justify-end">
         <button
           type="button"
-          class="rounded-md bg-amber-500 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-amber-400"
+          class="rounded-md bg-accent-500 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-accent-400"
           @click="close"
         >
           {{ $t('feedback.close') }}
@@ -129,7 +129,7 @@ async function submit() {
             name="kind"
             :value="option"
             required
-            class="accent-amber-500"
+            class="accent-accent-500"
           >
           {{ $t(`feedback.kinds.${option}`) }}
         </label>
@@ -196,7 +196,7 @@ async function submit() {
         </button>
         <button
           type="submit"
-          class="rounded-md bg-amber-500 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-amber-400 disabled:opacity-50"
+          class="rounded-md bg-accent-500 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-accent-400 disabled:opacity-50"
           :disabled="status.state === 'sending'"
         >
           {{ status.state === 'sending' ? $t('feedback.sending') : $t('feedback.send') }}

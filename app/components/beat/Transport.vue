@@ -33,7 +33,7 @@ const silentModeHint = useSilentModeHint(() => props.isPlaying)
       <button
         type="button"
         class="play-button relative min-h-11 flex-1 overflow-hidden rounded-md px-5 py-2 font-semibold transition sm:flex-none"
-        :class="running ? 'bg-neutral-700 text-neutral-100 hover:bg-neutral-600' : 'bg-amber-500 text-neutral-900 hover:bg-amber-400'"
+        :class="running ? 'bg-neutral-700 text-neutral-100 hover:bg-neutral-600' : 'bg-accent-500 text-neutral-900 hover:bg-accent-400'"
         :aria-busy="isLoading"
         @click="running ? emit('stop') : emit('play')"
       >

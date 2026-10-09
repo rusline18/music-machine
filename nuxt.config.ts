@@ -46,6 +46,9 @@ export default defineNuxtConfig({
       // and the practice bar keeps clear of them with env(safe-area-inset-*).
       viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
     },
+    // Pages fade into each other, so salsa's amber turning into bachata's
+    // sky reads as one app changing color (main.css).
+    pageTransition: { name: 'page', mode: 'out-in' },
   },
 
   // Overridable by env vars at runtime.

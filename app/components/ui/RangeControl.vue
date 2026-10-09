@@ -35,7 +35,7 @@ const model = defineModel<number>({ required: true })
       :max="max"
       :step="step"
       :aria-label="label"
-      class="w-32 accent-amber-500 sm:w-40"
+      class="w-32 accent-accent-500 sm:w-40"
     >
     <span class="w-10 text-right font-mono text-sm text-neutral-200">{{ format(model) }}</span>
   </div>

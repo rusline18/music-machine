@@ -151,6 +151,23 @@ test.describe('salsa beat machine', () => {
   })
 })
 
+test('each genre has its accent color', async ({ page }) => {
+  await page.goto('/salsa')
+  await expect(page.locator('html')).toHaveAttribute('data-genre', 'salsa')
+  await page.goto('/bachata')
+  await expect(page.locator('html')).toHaveAttribute('data-genre', 'bachata')
+})
+
+test('animation can be switched off, and stays off', async ({ page }) => {
+  await page.goto('/salsa')
+  const animation = page.getByRole('switch', { name: 'Animation: on' })
+  await animation.click()
+  await expect(page.getByRole('switch', { name: 'Animation: off' })).toHaveAttribute('aria-checked', 'false')
+  await expect(page.locator('html')).toHaveClass(/no-motion/)
+  await page.reload()
+  await expect(page.locator('html')).toHaveClass(/no-motion/)
+})
+
 test('bachata starts at 8 counts and shows chord selectors in advanced mode', async ({ page }) => {
   await page.goto('/bachata')
   await advanced(page)

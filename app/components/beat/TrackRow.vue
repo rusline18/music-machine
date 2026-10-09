@@ -96,7 +96,7 @@ onBeforeUnmount(pressCancel)
         v-if="showControls"
         type="button"
         class="min-h-11 rounded px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide transition sm:min-h-0"
-        :class="track.muted ? 'bg-neutral-700 text-neutral-400' : 'bg-amber-500/20 text-amber-400'"
+        :class="track.muted ? 'bg-neutral-700 text-neutral-400' : 'bg-accent-500/20 text-accent-400'"
         :aria-pressed="track.muted"
         :aria-label="t('grid.mute', { instrument: instrumentName })"
         @click="emit('update:muted', !track.muted)"
@@ -144,11 +144,10 @@ onBeforeUnmount(pressCancel)
         type="button"
         class="step-cell h-11 min-w-0 flex-1 select-none overflow-hidden rounded font-mono text-[10px] transition [-webkit-touch-callout:none] active:scale-90 sm:h-9"
         :class="[
-          track.steps[stepIndex] ? 'bg-amber-500 text-neutral-900' : 'bg-neutral-800 text-neutral-600 hover:bg-neutral-700',
+          track.steps[stepIndex] ? 'bg-accent-500 text-neutral-900' : 'bg-neutral-800 text-neutral-600 hover:bg-neutral-700',
           { 'ml-1.5': i % stepsPerCount === 0 && i > 0 },
         ]"
         :data-step="stepIndex"
-        :data-on="track.steps[stepIndex] ? '' : undefined"
         :title="cellHint"
         :aria-label="t('grid.step', { instrument: instrumentName, n: stepIndex + 1 })"
         aria-haspopup="menu"
@@ -172,7 +171,7 @@ onBeforeUnmount(pressCancel)
       step="0.05"
       :value="track.volume"
       :aria-label="t('grid.volume', { instrument: instrumentName })"
-      class="w-20 shrink-0 accent-amber-500 max-sm:hidden"
+      class="w-20 shrink-0 accent-accent-500 max-sm:hidden"
       @input="emit('update:volume', Number(($event.target as HTMLInputElement).value))"
     >
     <span

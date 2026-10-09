@@ -59,7 +59,7 @@ onBeforeUnmount(() => {
   >
     <button
       type="button"
-      class="inline-flex cursor-help items-center gap-1.5 rounded text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+      class="inline-flex cursor-help items-center gap-1.5 rounded text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
       :aria-describedby="id"
       @click="show"
       @focus="show"

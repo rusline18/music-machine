@@ -22,13 +22,13 @@ const emit = defineEmits<{
         type="button"
         role="switch"
         class="flex min-h-14 w-full items-center gap-3 rounded-lg border px-3 py-2 text-left transition active:scale-[0.98]"
-        :class="track.muted ? 'border-neutral-800 bg-neutral-950 text-neutral-500' : 'border-amber-500/40 bg-amber-500/10 text-neutral-100'"
+        :class="track.muted ? 'border-neutral-800 bg-neutral-950 text-neutral-500' : 'border-accent-500/40 bg-accent-500/10 text-neutral-100'"
         :aria-checked="!track.muted"
         @click="emit('update:muted', track.instrument, !track.muted)"
       >
         <span
           class="instrument-icon"
-          :class="track.muted ? 'text-neutral-600' : 'text-amber-400'"
+          :class="track.muted ? 'text-neutral-600' : 'text-accent-400'"
           :data-instrument="track.instrument"
         >
           <UiIcon :name="track.instrument" />
@@ -37,7 +37,7 @@ const emit = defineEmits<{
         <!-- The switch itself, drawn: a knob that slides right when on. -->
         <span
           class="relative h-6 w-10 shrink-0 rounded-full transition-colors"
-          :class="track.muted ? 'bg-neutral-700' : 'bg-amber-500'"
+          :class="track.muted ? 'bg-neutral-700' : 'bg-accent-500'"
           aria-hidden="true"
         >
           <span

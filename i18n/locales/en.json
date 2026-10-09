@@ -57,7 +57,9 @@
     "faster": "Faster",
     "silentMode": "No sound? Turn off silent mode: the switch on the side of the iPhone.",
     "dismiss": "Dismiss",
-    "close": "Close"
+    "close": "Close",
+    "animationOn": "Animation: on",
+    "animationOff": "Animation: off"
   },
   "grid": {
     "block": "Block {n}",
@@ -173,7 +175,8 @@
       "count": "The count the music is on right now. 1 and 5 start each half of the 8 counts: listen for them.",
       "share": "Copies a link to this exact pattern — tempo, length, mutes and all. Send it to a partner or your students.",
       "reset": "Throws away your changes and goes back to the preset.",
-      "stepper": "Tap for 1 BPM, hold to change by 5."
+      "stepper": "Tap for 1 BPM, hold to change by 5.",
+      "animation": "Icons and counts move in time with the music. Switch it off if it distracts you."
     },
     "grid": {
       "cell": "Click to add or remove a hit",

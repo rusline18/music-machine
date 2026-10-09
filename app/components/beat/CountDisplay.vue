@@ -21,7 +21,7 @@ import { COUNTS_PER_BLOCK } from '~/core/pattern'
         v-for="count in COUNTS_PER_BLOCK"
         :key="count"
         class="count-box flex h-14 items-center justify-center rounded-md bg-neutral-900 font-mono text-2xl font-bold text-neutral-500 transition-colors duration-75 sm:h-12 sm:text-xl"
-        :class="{ 'ring-1 ring-inset ring-amber-500/60': count === 1 || count === 5 }"
+        :class="{ 'ring-1 ring-inset ring-accent-500/60': count === 1 || count === 5 }"
         :data-count-box="count - 1"
       >
         {{ count }}
