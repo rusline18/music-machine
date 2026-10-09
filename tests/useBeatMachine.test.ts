@@ -7,6 +7,8 @@ import { findGenre } from '~/genres'
 class FakeNode {
   gain = { value: 1, setTargetAtTime() {} }
   playbackRate = { value: 1 }
+  frequency = { value: 0 }
+  Q = { value: 0 }
   buffer: unknown = null
   connect() {}
   start() {}
@@ -42,6 +44,8 @@ describe('useBeatMachine loading', () => {
       createGain = () => new FakeNode()
       createBufferSource = () => new FakeNode()
       createConvolver = () => new FakeNode()
+      createBiquadFilter = () => new FakeNode()
+      createWaveShaper = () => new FakeNode()
       createBuffer = () => ({ getChannelData: () => new Float32Array(1) })
       sampleRate = 8
       async resume() {}

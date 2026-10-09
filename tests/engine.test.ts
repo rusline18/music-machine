@@ -59,6 +59,72 @@ describe('audio engine volume and mute', () => {
   })
 })
 
+describe('audio engine tone', () => {
+  /** Every node, with what it was connected to. */
+  let nodes: { kind: string, type?: string, targets: unknown[] }[]
+
+  beforeEach(() => {
+    nodes = []
+    const node = (kind: string) => {
+      const n = {
+        kind,
+        type: undefined as string | undefined,
+        targets: [] as unknown[],
+        gain: { value: 1 },
+        frequency: { value: 0 },
+        Q: { value: 0 },
+        curve: null as Float32Array | null,
+        oversample: 'none',
+        connect(target: unknown) {
+          n.targets.push(target)
+        },
+      }
+      nodes.push(n)
+      return n
+    }
+    vi.stubGlobal('AudioContext', class extends FakeAudioContext {
+      override createGain() {
+        return node('gain') as unknown as FakeGain
+      }
+
+      createBiquadFilter() {
+        return node('filter')
+      }
+
+      createWaveShaper() {
+        return node('shaper')
+      }
+    })
+  })
+
+  it('routes an instrument through its EQ and exciter to the master', () => {
+    const engine = createAudioEngine()
+    engine.setInstrumentTone('tres', {
+      highpass: 180,
+      peaks: [{ frequency: 400, gain: -5, q: 1 }],
+      exciter: { frequency: 1800, drive: 4, mix: 0.25 },
+    })
+    engine.setInstrumentVolume('tres', 0.5)
+    const [master, instrument, highpass, peak, band, shaper, wet] = nodes
+    expect(instrument!.targets).toEqual([highpass])
+    expect(highpass!.type).toBe('highpass')
+    expect(highpass!.targets).toEqual([peak])
+    expect(peak!.type).toBe('peaking')
+    // Dry to the master, and through the exciter in parallel.
+    expect(peak!.targets).toEqual([master, band])
+    expect(band!.targets).toEqual([shaper])
+    expect(shaper!.targets).toEqual([wet])
+    expect(wet!.targets).toEqual([master])
+  })
+
+  it('connects instruments without a tone straight to the master', () => {
+    const engine = createAudioEngine()
+    engine.setInstrumentVolume('clave', 1)
+    expect(nodes[1]!.targets).toEqual([nodes[0]])
+    expect(nodes).toHaveLength(2)
+  })
+})
+
 describe('audio engine sample loading', () => {
   /** URLs that decode; anything else fails like an unsupported codec. */
   let decodable: Set<string>

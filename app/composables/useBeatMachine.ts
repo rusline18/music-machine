@@ -32,6 +32,7 @@ const storageKey = (genreId: string) => `latin-beat-machine:pattern:${genreId}`
  */
 export function useBeatMachine(genre: Genre, locale: Ref<string>) {
   const engine = createAudioEngine()
+  for (const [instrument, { tone }] of Object.entries(genre.pitched)) if (tone) engine.setInstrumentTone(instrument, tone)
   const scheduler = createScheduler(engine)
   const resolveStep = stepResolver(genre, () => locale.value)
   /** The genre's counting voice track, if it has one. */

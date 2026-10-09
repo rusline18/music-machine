@@ -151,9 +151,23 @@ const tresDyad = (chord: Chord): Voice[] => {
  * doubled like a tres course. The root is played on the G course, in
  * octaves from G3 to F#4; other notes stay between C4 and D#5, inside the
  * recorded guitar range. `push` is the next bar's third and fifth, early.
+ *
+ * `tone` makes the nylon sound more like steel strings struck with a pick:
+ * less low boom and boxiness, a sharper attack, and an exciter for the
+ * bright, metallic overtones nylon doesn't have.
  */
 const tres: PitchedInstrument = {
   zones: GUITAR_ZONES,
+  tone: {
+    highpass: 180,
+    peaks: [
+      { frequency: 400, gain: -5, q: 1 },
+      { frequency: 2800, gain: 4, q: 1.2 },
+    ],
+    highShelf: { frequency: 5000, gain: 6 },
+    exciter: { frequency: 1800, drive: 4, mix: 0.25 },
+    gain: 1.5,
+  },
   articulations: {
     root: (chord) => course(noteFrom(55, chord.root), { octave: true, first: true }),
     '3rd': (chord) => course(tresNote(chord, 1), { first: true }),

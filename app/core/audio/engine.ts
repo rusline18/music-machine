@@ -15,6 +15,28 @@ export interface Note {
   group?: string
 }
 
+/**
+ * Tone shaping on one instrument's output, for making a recorded
+ * instrument sound like a related one: an EQ, plus an exciter that adds
+ * the overtones the recording lacks (EQ can only boost what is there).
+ */
+export interface Tone {
+  /** Cut below this frequency, Hz. */
+  highpass?: number
+  /** Peaking EQ bands; gain in dB. */
+  peaks?: { frequency: number, gain: number, q: number }[]
+  /** Boost (or cut) everything above `frequency`, in dB. */
+  highShelf?: { frequency: number, gain: number }
+  /**
+   * Distorts the sound above `frequency` and mixes it back in at `mix`:
+   * new high harmonics, the brightness of steel strings. `drive` is how
+   * hard it's pushed.
+   */
+  exciter?: { frequency: number, drive: number, mix: number }
+  /** Make-up gain for the level the EQ takes away. */
+  gain?: number
+}
+
 /** Whether this browser plays Opus in WebM; older Safari doesn't. */
 function canPlayOpus(): boolean {
   return typeof Audio !== 'undefined' && new Audio().canPlayType('audio/webm; codecs="opus"') !== ''
@@ -70,6 +92,7 @@ export function createAudioEngine() {
   let masterGain: GainNode | null = null
   let reverbGain: GainNode | null = null
   const instrumentGains = new Map<string, GainNode>()
+  const instrumentTones = new Map<string, Tone>()
   const bufferCache = new Map<string, AudioBuffer>()
   /** instrument → group → voices still sounding, for choking. */
   const ringing = new Map<string, Map<string, RingingVoice[]>>()
@@ -118,10 +141,56 @@ export function createAudioEngine() {
     let gain = instrumentGains.get(instrument)
     if (!gain) {
       gain = context.createGain()
-      gain.connect(masterGain!)
+      connectTone(context, gain, instrumentTones.get(instrument))
       instrumentGains.set(instrument, gain)
     }
     return gain
+  }
+
+  /** Route an instrument's gain to the master through its tone, if it has one. */
+  function connectTone(context: AudioContext, input: GainNode, tone: Tone | undefined) {
+    let last: AudioNode = input
+    if (tone?.gain !== undefined) {
+      const makeUp = context.createGain()
+      makeUp.gain.value = tone.gain
+      last.connect(makeUp)
+      last = makeUp
+    }
+    const filter = (type: BiquadFilterType, frequency: number, { gain = 0, q = Math.SQRT1_2 } = {}) => {
+      const node = context.createBiquadFilter()
+      node.type = type
+      node.frequency.value = frequency
+      node.gain.value = gain
+      node.Q.value = q
+      last.connect(node)
+      last = node
+    }
+    if (tone?.highpass) filter('highpass', tone.highpass)
+    for (const { frequency, gain, q } of tone?.peaks ?? []) filter('peaking', frequency, { gain, q })
+    if (tone?.highShelf) filter('highshelf', tone.highShelf.frequency, { gain: tone.highShelf.gain })
+    last.connect(masterGain!)
+
+    if (!tone?.exciter) return
+    const { frequency, drive, mix } = tone.exciter
+    const band = context.createBiquadFilter()
+    band.type = 'highpass'
+    band.frequency.value = frequency
+    const shaper = context.createWaveShaper()
+    const curve = new Float32Array(1024)
+    for (let i = 0; i < curve.length; i++) curve[i] = Math.tanh(drive * ((i / (curve.length - 1)) * 2 - 1)) / Math.tanh(drive)
+    shaper.curve = curve
+    shaper.oversample = '2x'
+    const wet = context.createGain()
+    wet.gain.value = mix
+    last.connect(band)
+    band.connect(shaper)
+    shaper.connect(wet)
+    wet.connect(masterGain!)
+  }
+
+  /** Shape an instrument's sound; set it before the instrument first plays or changes volume. */
+  function setInstrumentTone(instrument: string, tone: Tone) {
+    instrumentTones.set(instrument, tone)
   }
 
   function applyInstrumentGain(instrument: string) {
@@ -283,6 +352,7 @@ export function createAudioEngine() {
 
   function dispose() {
     instrumentGains.clear()
+    instrumentTones.clear()
     instrumentVolumes.clear()
     mutedInstruments.clear()
     bufferCache.clear()
@@ -299,6 +369,7 @@ export function createAudioEngine() {
     resume,
     setInstrumentVolume,
     setInstrumentMuted,
+    setInstrumentTone,
     prefetchSamples,
     loadSample,
     preloadSamples,
