@@ -1,4 +1,4 @@
-import type { Note } from './audio/engine'
+import type { Note, Tone } from './audio/engine'
 
 /**
  * Just enough harmony for pitched tracks (guitars, bass): chord names, chord
@@ -75,6 +75,8 @@ export interface PitchedInstrument {
    * coming chord ahead of the bar line.
    */
   articulations: Record<string, (chord: Chord, next: Chord) => Voice[]>
+  /** Reshapes the recorded zones' sound, e.g. guitar notes into a tres. */
+  tone?: Tone
 }
 
 /**
