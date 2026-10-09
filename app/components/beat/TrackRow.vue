@@ -119,18 +119,24 @@ onBeforeUnmount(pressCancel)
       <button
         v-if="showControls"
         type="button"
-        class="instrument-icon flex size-11 items-center justify-center rounded-xl bg-neutral-800/70 text-neutral-200 hover:bg-neutral-700 sm:hidden"
+        class="instrument-icon flex size-11 items-center justify-center rounded-xl bg-neutral-800/70 hover:bg-neutral-700 sm:hidden"
+        :class="track.muted ? 'text-neutral-500' : 'text-neutral-200'"
         :aria-label="t('grid.settings', { instrument: instrumentName })"
         :data-instrument="track.instrument"
         @click="emit('open-instrument')"
       >
-        <UiIcon :name="track.instrument" />
+        <UiIcon
+          :name="track.instrument"
+          :accent="!track.muted"
+        />
       </button>
       <UiControlLabel
         v-if="showControls"
-        class="instrument-icon min-w-0 text-sm text-neutral-200 max-sm:hidden"
+        class="instrument-icon min-w-0 text-sm max-sm:hidden"
+        :class="track.muted ? 'text-neutral-500' : 'text-neutral-200'"
         :label="instrumentName"
         :icon="track.instrument"
+        :accent="!track.muted"
         :hint="t(`help.instruments.${track.instrument}`)"
         :data-instrument="track.instrument"
         compact
@@ -140,6 +146,7 @@ onBeforeUnmount(pressCancel)
         class="instrument-icon min-w-0 truncate text-sm text-neutral-500"
         :label="instrumentName"
         :icon="track.instrument"
+        :accent="false"
         :data-instrument="track.instrument"
         compact
       />

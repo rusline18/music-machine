@@ -4,6 +4,11 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-09
 
+- Two-tone instrument icons: neutral lines plus the part that sounds or
+  strikes in the genre's color, moving on its own on every hit (the skin
+  squashes, the stick strikes, the keys dip); flat and dim when muted. The
+  guitars and bells got their own shapes: upright bass, teardrop tres,
+  requinto with a cutaway, the timbale bell on its side.
 - Salsa slowed to a social-dance tempo: verse and On2 165, montuno 170,
   mambo 175 (were 180–195); the bongo bell plays quarter notes (mouth on 1
   and 3, neck on 2 and 4) instead of every eighth.

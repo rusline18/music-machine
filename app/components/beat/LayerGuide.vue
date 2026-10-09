@@ -59,7 +59,10 @@ const emit = defineEmits<{
             class="inline-flex items-center gap-2 rounded-xl bg-accent-500 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-accent-400"
             @click="emit('add')"
           >
-            <UiIcon :name="layers.order[layers.added]!" />
+            <UiIcon
+              :name="layers.order[layers.added]!"
+              :accent="false"
+            />
             {{ $t('layers.add', { instrument: $t(`instruments.${layers.order[layers.added]}`) }) }}
           </button>
           <button

@@ -63,6 +63,42 @@ export const INSTRUMENT_MOTION: Record<string, Motion> = {
   segunda: pluck,
 }
 
+// The accent layer's motions. `px` inside the SVG are viewBox units, so 2px
+// is 2/24 of the icon.
+
+/** A drum skin giving under the hand. */
+const skin: Keyframe[] = [{ transform: 'scaleY(0.35)' }, { transform: 'scaleY(1.25)' }, { transform: 'none' }]
+/** Metal or a shaker head ringing: a quick swell. */
+const glow: Keyframe[] = [{ transform: 'scale(1.3)', opacity: 1 }, { transform: 'none', opacity: 0.7 }, { opacity: 1 }]
+/** A string instrument's body resonating. */
+const resonate: Keyframe[] = [{ transform: 'scale(1.12)' }, { transform: 'scale(0.97)' }, { transform: 'none' }]
+
+/** How the accent layer of each instrument's icon (ICON_ACCENTS) moves on a hit, on top of INSTRUMENT_MOTION. */
+export const ACCENT_MOTION: Record<string, Keyframe[]> = {
+  voice: [{ transform: 'scale(1.6)' }, { transform: 'none' }],
+  // The second stick comes down on the first.
+  clave: [{ transform: 'translate(-2.5px, -2.5px)' }, { transform: 'none' }],
+  congas: skin,
+  bongos: skin,
+  timbales: skin,
+  cowbell: glow,
+  timbalebell: glow,
+  // The stick strikes the bell.
+  campana: [{ transform: 'translate(1.5px, -1.5px)' }, { transform: 'none' }],
+  maracas: glow,
+  // The scraper runs along the ridges.
+  guiro: [{ transform: 'translateX(-2px)' }, { transform: 'translateX(2px)' }, { transform: 'none' }],
+  guira: [{ transform: 'translateY(4px)' }, { transform: 'none' }],
+  bass: resonate,
+  // The black keys dip.
+  piano: [{ transform: 'translateY(1.5px)' }, { transform: 'none' }],
+  tres: resonate,
+  trumpet: glow,
+  trombone: glow,
+  requinto: resonate,
+  segunda: resonate,
+}
+
 /** The count box pulsing on a beat; 1 and 5, where the halves of the phrase start, harder. */
 export function countPulse(strong: boolean): Keyframe[] {
   return [{ transform: `scale(${strong ? 1.18 : 1.08})` }, { transform: 'none' }]

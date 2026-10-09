@@ -19,7 +19,8 @@ app/
     resolve.ts           Turns a step into the notes to play: samples, chord-following
                          notes, or the counting voice
     tempo.ts             Slow / Normal / Fast, relative to a preset's own tempo; −/+ steps
-    motion.ts            How each instrument's icon moves when it plays
+    motion.ts            How each instrument's icon moves when it plays, and its
+                         accent part on top
     layers.ts            Order for "layer by layer"
     links.ts             Checks configured external links (https only)
     share.ts             Pattern ⇄ short link code; incoming links are checked and rebuilt
@@ -62,7 +63,8 @@ app/
                          + tooltip), Tooltip, Icon, Sheet (modal / bottom sheet)
   plugins/
     service-worker.client.ts  Registers public/sw.js (production only)
-  icons.ts             Line icons as SVG paths, keyed by instrument id or control
+  icons.ts             Line icons as SVG paths, keyed by instrument id or control;
+                       instruments add an accent layer in the genre's color
     LanguageSwitcher.vue
   pages/
     index.vue            Home: one link per genre
@@ -192,7 +194,9 @@ unset the link is hidden.
   one-line description for beginners (`help.presets.<id>`) to every locale.
 - **An instrument:** add it to the genre's `teachingOrder`, and besides its samples, give it a name
   (`instruments.<id>`), a tooltip (`help.instruments.<id>`) and an icon in
-  `app/icons.ts` — a few strokes on a 24×24 grid. Tests fail if any is missing.
+  `app/icons.ts` — a few strokes on a 24×24 grid, plus an accent part
+  (`ICON_ACCENTS`) and its motion (`ACCENT_MOTION` in `app/core/motion.ts`).
+  Tests fail if any is missing.
 - **A genre:** add `app/genres/<id>/` like the existing ones, register it in
   `app/genres/index.ts`, and add its texts and an accent colour on the home
   page. The `/<id>` page then exists automatically.
