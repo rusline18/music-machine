@@ -28,10 +28,13 @@ const emit = defineEmits<{
       >
         <span
           class="instrument-icon"
-          :class="track.muted ? 'text-neutral-600' : 'text-accent-400'"
+          :class="track.muted ? 'text-neutral-600' : 'text-neutral-100'"
           :data-instrument="track.instrument"
         >
-          <UiIcon :name="track.instrument" />
+          <UiIcon
+            :name="track.instrument"
+            :accent="!track.muted"
+          />
         </span>
         <span class="min-w-0 flex-1 break-words text-sm font-medium leading-tight">{{ $t(`instruments.${track.instrument}`) }}</span>
         <!-- The switch itself, drawn: a knob that slides right when on. -->

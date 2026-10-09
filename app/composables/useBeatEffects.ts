@@ -1,5 +1,5 @@
 import type { Beat } from '~/core/audio/playhead'
-import { countPulse, INSTRUMENT_MOTION } from '~/core/motion'
+import { ACCENT_MOTION, countPulse, INSTRUMENT_MOTION } from '~/core/motion'
 import { countInBlock } from '~/core/pattern'
 
 /** Marks what's sounding now: grid cells, count labels and the big count boxes. */
@@ -67,6 +67,8 @@ export function useBeatEffects(
         if (!svg) continue
         svg.style.transformOrigin = motion.origin ?? '50% 50%'
         svg.animate(motion.keyframes, { duration: hitMs, easing: 'ease-out' })
+        const accent = ACCENT_MOTION[instrument]
+        if (accent) svg.querySelector('.icon-accent')?.animate(accent, { duration: hitMs, easing: 'ease-out' })
       }
     }
     if (!onCount) return

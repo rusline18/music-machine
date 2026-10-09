@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import { ICONS } from '~/icons'
+import { ICON_ACCENTS, ICONS } from '~/icons'
 
-defineProps<{
+const props = withDefaults(defineProps<{
   /** A key of ICONS: an instrument id or a control name. */
   name: string
-}>()
+  /** Draw the accent layer in the genre's color; false = same color as the lines (muted, dimmed). */
+  accent?: boolean
+}>(), { accent: true })
+
+/** Looked up once so the template can narrow it: a lookup indexed by a prop doesn't narrow. */
+const layer = computed(() => ICON_ACCENTS[props.name])
 </script>
 
 <template>
@@ -24,5 +29,26 @@ defineProps<{
       :key="i"
       :d="d"
     />
+    <!-- Fill paths get a thin stroke: at 1.75 the sound holes and the
+         piano's keys close up. -->
+    <g
+      v-if="layer"
+      class="icon-accent"
+      :class="accent ? 'text-accent-400' : ''"
+    >
+      <path
+        v-for="(d, i) in layer.fill"
+        :key="`f${i}`"
+        :d="d"
+        fill="currentColor"
+        fill-rule="evenodd"
+        stroke-width="1"
+      />
+      <path
+        v-for="(d, i) in layer.line"
+        :key="`l${i}`"
+        :d="d"
+      />
+    </g>
   </svg>
 </template>

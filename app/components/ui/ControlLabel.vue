@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{
+withDefaults(defineProps<{
   label: string
   /** A key of ICONS shown before the label. */
   icon?: string
@@ -7,7 +7,9 @@ defineProps<{
   hint?: string
   /** On a phone show only the icon (the label stays for screen readers). */
   compact?: boolean
-}>()
+  /** Passed to the icon: false draws it in one flat color (a muted instrument). */
+  accent?: boolean
+}>(), { accent: true })
 </script>
 
 <template>
@@ -18,6 +20,7 @@ defineProps<{
     <UiIcon
       v-if="icon"
       :name="icon"
+      :accent="accent"
     />
     <span
       class="border-b border-dotted border-neutral-600"
@@ -31,6 +34,7 @@ defineProps<{
     <UiIcon
       v-if="icon"
       :name="icon"
+      :accent="accent"
     />
     <span :class="{ 'max-sm:sr-only': compact && icon }">{{ label }}</span>
   </span>

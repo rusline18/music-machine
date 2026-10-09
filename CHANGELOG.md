@@ -4,6 +4,11 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-09
 
+- Two-tone instrument icons: neutral lines plus the part that sounds or
+  strikes in the genre's color, moving on its own on every hit (the skin
+  squashes, the stick strikes, the keys dip); flat and dim when muted. The
+  guitars and bells got their own shapes: upright bass, teardrop tres,
+  requinto with a cutaway, the timbale bell on its side.
 - Song builder: join presets into one loop of up to 32 counts; only sections
   in the same clave and within 20 BPM can be added, the rest are greyed out
   with the reason; timbales fill between different sections. Replaces the
