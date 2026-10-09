@@ -74,6 +74,7 @@ scripts/
   generate-samples.mjs Builds public/audio from audio-sources, synth fallback
   encode-samples.mjs   Adds an Opus (.webm) copy of every WAV
   speak-counts.py      Speaks the counts with espeak-ng into audio-sources/voice
+  app-icon.svg         The app icon; render-icons.mjs turns it into public/*.png
 tests/                 Vitest unit tests
 e2e/                   Playwright: pages, grid editing, transport, sharing in a real browser
 docs/                  Plans
@@ -122,7 +123,8 @@ back to the preset.
 In production `public/sw.js` caches every genre page in both languages with
 its scripts on install, and every genre's sounds in the background, so the
 trainer works in a hall with no signal; it can also be installed to a phone's
-home screen (`public/manifest.webmanifest`). Pages are network-first, so a
+home screen (`public/manifest.webmanifest`; the icon is drawn in
+`scripts/app-icon.svg`, and `node scripts/render-icons.mjs` renders the PNGs). Pages are network-first, so a
 deploy shows up at once (the worker is registered as `/sw.js?v=<build id>`).
 Sounds live in their own cache across deploys: after `npm run samples`, bump
 `AUDIO_VERSION` in `sw.js`. Add new genre pages to `PAGES` there (a test

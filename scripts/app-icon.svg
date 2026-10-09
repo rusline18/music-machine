@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- The app icon: the 1–8 count with 1 and 5 lit, as on the trainer.
+       Drawn inside the centre 80% so Android's masks don't cut it.
+       Rendered to public/*.png by scripts/render-icons.mjs. -->
+  <rect width="512" height="512" fill="#0a0a0a"/>
+  <g fill="#262626">
+    <rect x="182" y="160" width="68" height="84" rx="14"/>
+    <rect x="262" y="160" width="68" height="84" rx="14"/>
+    <rect x="342" y="160" width="68" height="84" rx="14"/>
+    <rect x="182" y="268" width="68" height="84" rx="14"/>
+    <rect x="262" y="268" width="68" height="84" rx="14"/>
+    <rect x="342" y="268" width="68" height="84" rx="14"/>
+  </g>
+  <g fill="#f59e0b">
+    <rect x="102" y="160" width="68" height="84" rx="14"/>
+    <rect x="102" y="268" width="68" height="84" rx="14"/>
+  </g>
+  <g fill="#0a0a0a" font-family="ui-monospace, Menlo, 'DejaVu Sans Mono', monospace" font-size="44" font-weight="700" text-anchor="middle">
+    <text x="136" y="219">1</text>
+    <text x="136" y="327">5</text>
+  </g>
+</svg>
