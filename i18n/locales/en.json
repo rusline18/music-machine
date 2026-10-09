@@ -127,21 +127,19 @@
     "salsa-verse-3-2": "Verse — the basic groove",
     "salsa-montuno-3-2": "Montuno — more energy",
     "salsa-mambo-3-2": "Mambo — the brass takes over",
-    "salsa-verse-montuno": "Verse → Montuno (16 counts)",
     "bachata-derecho": "Verse (derecho) — calm",
     "bachata-majao": "Chorus (majao) — more energy",
     "bachata-mambo": "Mambo — the instrumental peak",
-    "bachata-derecho-majao": "Verse → Chorus (16 counts)",
     "salsa-verse-2-3": "Verse in 2-3 clave",
     "salsa-montuno-2-3": "Montuno in 2-3 clave",
     "salsa-mambo-2-3": "Mambo in 2-3 clave",
-    "salsa-verse-montuno-2-3": "Verse → Montuno, 2-3 (16 counts)",
     "salsa-chachacha-2-3": "Cha-cha-chá — slower, \"cha-cha-chá\" on 4 & 1",
     "salsa-guaguanco-3-2": "Rumba guaguancó — drums and clave",
     "salsa-on2-3-2": "On2 — the tumbao on 2 and 6",
     "salsa-son-2-3": "Son montuno — where salsa comes from",
     "salsa-bolero": "Bolero — slow and romantic",
     "salsa-pachanga-2-3": "Pachanga — the bouncing congas",
+    "song": "Your song",
     "custom": "Pattern from a link"
   },
   "help": {
@@ -149,21 +147,19 @@
       "salsa-verse-3-2": "The steady groove under the singing. Clear clave and congas: the best place to start.",
       "salsa-montuno-3-2": "The hotter part after the verse: the bongo and timbales bells come in and the band pushes forward.",
       "salsa-mambo-3-2": "The instrumental peak: the singers step back and the brass plays the mambo. The trombones keep a riff going, the trumpets punch out the clave over it — the dancers' cue for shines.",
-      "salsa-verse-montuno": "8 counts of verse, then 8 of montuno, to hear how a song builds up. A timbales fill leads into the montuno.",
       "bachata-derecho": "The calm groove of the verse. Good for practising basic steps.",
       "bachata-majao": "The chorus: the bongos and güira drop the offbeats and land on each count.",
       "bachata-mambo": "The climax: the bell rings on every count, the dancers' cue for footwork.",
-      "bachata-derecho-majao": "8 counts of verse, then 8 of chorus, like in a real song.",
       "salsa-verse-2-3": "The same verse, but the clave starts from its \"2\" side. Compare it with 3-2 to hear where a phrase begins.",
       "salsa-montuno-2-3": "The montuno with the clave started from its \"2\" side.",
       "salsa-mambo-2-3": "The mambo with the clave started from its \"2\" side.",
-      "salsa-verse-montuno-2-3": "8 counts of verse, then 8 of montuno, in 2-3 clave.",
       "salsa-chachacha-2-3": "Around 120 BPM. Listen to the güiro: two short scrapes and a long one are the \"cha-cha-chá\" you step on 4 & 1.",
       "salsa-guaguanco-3-2": "The street rumba salsa bands quote in \"rumba\" breaks. Rumba clave: the third stroke comes half a beat later than in son clave. Simplified for one conga player.",
       "salsa-on2-3-2": "For dancing \"on 2\": the voice counts only 2 and 6, where you break, and the congas lead — their slap lands on the same counts.",
       "salsa-son-2-3": "Slower Cuban son, as a septeto plays it: bongó, maracas, tres and bass, no congas or piano. Good for hearing the clave and tres clearly.",
       "salsa-bolero": "Around 80 BPM, each count a real beat. Soft maracas and bongó, bass on 1 and 3: for slow, close dancing.",
       "salsa-pachanga-2-3": "Early-1960s charanga craze, between cha-cha-chá and salsa in tempo. The congas slap on the beat and bounce with two open tones after it.",
+      "song": "A song you put together from the presets below. Change its sections in the song panel; Reset throws away grid edits.",
       "custom": "Someone shared this pattern with you. Edit it freely; Reset goes back to the first preset."
     },
     "instruments": {
@@ -217,6 +213,28 @@
     "addAll": "Add all the rest",
     "done": "That's the whole band. Try switching one instrument off to hear what goes missing.",
     "close": "Done"
+  },
+  "song": {
+    "start": "Build a song from sections",
+    "intro": "Join up to {max} counts of sections, e.g. verse → montuno, to hear how a song changes from one part to the next.",
+    "parts": "Sections of the song",
+    "remove": "Remove section {n}: {name}",
+    "add": "Add a section",
+    "full": "The song is {max} counts: that's the longest loop",
+    "why": {
+      "clave": "other clave: {clave}",
+      "tempo": "other tempo: {bpm} BPM",
+      "full": "too long"
+    },
+    "rules": "A song plays in one clave and at one tempo ({bpm} BPM, its first section's). Sections in another clave, or written more than {spread} BPM away, can't be added: they're greyed out in the list.",
+    "rulesTempo": "A song plays at one tempo ({bpm} BPM, its first section's). Sections written more than {spread} BPM away can't be added: they're greyed out in the list.",
+    "fill": "Before each change of section there's a fill ({instrument}).",
+    "edits": "Changing the sections starts the grid over: edits made to it are lost.",
+    "clave": {
+      "son-3-2": "son 3-2",
+      "son-2-3": "son 2-3",
+      "rumba-3-2": "rumba 3-2"
+    }
   },
   "footer": {
     "support": "Support the developer",

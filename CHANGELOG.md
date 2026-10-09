@@ -4,6 +4,10 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-09
 
+- Song builder: join presets into one loop of up to 32 counts; only sections
+  in the same clave and within 20 BPM can be added, the rest are greyed out
+  with the reason; timbales fill between different sections. Replaces the
+  fixed verse → montuno and derecho → majao chain presets.
 - VPS deploy: setup script, systemd + Caddy, GitHub Actions with rollback.
 - Salsa presets from existing sounds: On2 (voice counts 2 and 6, congas lead),
   son montuno, bolero (salsa tempo now starts at 60), pachanga.

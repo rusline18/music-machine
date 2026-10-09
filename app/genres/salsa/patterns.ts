@@ -1,5 +1,5 @@
-import type { Pattern, Step } from '~/core/pattern'
-import { chainPatterns, definePattern, rotateFigure } from '~/core/pattern'
+import type { Step } from '~/core/pattern'
+import { definePattern, rotateFigure } from '~/core/pattern'
 import { voiceTrack } from '../voice'
 
 // Figures are eighth notes; one 8-count block = one two-bar clave cycle
@@ -85,8 +85,11 @@ const TRUMPET_MAMBO_3_2: Step[] = [
   null, null, null, 'hit', null, null, 'hit', null,
   null, null, 'hit', null, 'hit', null, null, 'push',
 ]
-/** Timbales fill (the last two counts of a block): macho, then down to the hembra. */
-const TIMBALES_FILL: Step[] = ['high', 'high', 'high', 'low']
+/**
+ * Timbales fill (the last two counts of a block): macho, then down to the
+ * hembra. Leads from one section of a song into the next.
+ */
+export const TIMBALES_FILL: Step[] = ['high', 'high', 'high', 'low']
 
 // 2-3 is the same two-bar cycle started from the other bar. Only the parts
 // that follow the clave turn; tumbao, martillo, bongo bell and bass repeat
@@ -112,19 +115,6 @@ const RUMBA_CLAVE_3_2: Step[] = [
   'hit', null, null, 'hit', null, null, null, 'hit',
   null, null, 'hit', null, 'hit', null, null, null,
 ]
-
-/**
- * The same block with `instrument`'s last steps replaced by `ending` — a
- * fill that leads into the next section.
- */
-function endWith(pattern: Pattern, instrument: string, ending: Step[]): Pattern {
-  return {
-    ...pattern,
-    tracks: pattern.tracks.map((track) => track.instrument !== instrument
-      ? track
-      : { ...track, steps: [...track.steps.slice(0, -ending.length), ...ending], muted: false }),
-  }
-}
 
 /** Verse feel in 3-2 son clave: tumbao, martillo, cáscara, bass, piano montuno and tres guajeo. */
 export const salsaVerse = definePattern({
@@ -496,16 +486,13 @@ export const salsaOn2 = definePattern({
   ],
 })
 
-// Going into the montuno, the timbalero ends the verse with a fill.
 export const salsaPresets = [
   salsaVerse,
   salsaMontuno,
   salsaMambo,
-  chainPatterns('salsa-verse-montuno', endWith(salsaVerse, 'timbales', TIMBALES_FILL), salsaMontuno),
   salsaVerse23,
   salsaMontuno23,
   salsaMambo23,
-  chainPatterns('salsa-verse-montuno-2-3', endWith(salsaVerse23, 'timbales', TIMBALES_FILL), salsaMontuno23),
   salsaOn2,
   salsaSon,
   salsaBolero,
@@ -513,3 +500,19 @@ export const salsaPresets = [
   salsaPachanga,
   salsaGuaguanco,
 ]
+
+/** The clave each preset is in: only sections in the same clave go in one song. */
+export const salsaClave: Record<string, string> = {
+  'salsa-verse-3-2': 'son-3-2',
+  'salsa-montuno-3-2': 'son-3-2',
+  'salsa-mambo-3-2': 'son-3-2',
+  'salsa-verse-2-3': 'son-2-3',
+  'salsa-montuno-2-3': 'son-2-3',
+  'salsa-mambo-2-3': 'son-2-3',
+  'salsa-on2-3-2': 'son-3-2',
+  'salsa-son-2-3': 'son-2-3',
+  'salsa-bolero': 'son-2-3',
+  'salsa-chachacha-2-3': 'son-2-3',
+  'salsa-pachanga-2-3': 'son-2-3',
+  'salsa-guaguanco-3-2': 'rumba-3-2',
+}

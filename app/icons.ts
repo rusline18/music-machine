@@ -67,6 +67,8 @@ export const ICONS: Record<string, readonly string[]> = {
   clear: ['M15 4l5 5-9 9H6l-2-2z', 'M10 9l5 5', 'M11 20h9'],
   /** Three stacked layers: build a rhythm one instrument at a time. */
   layers: ['M12 3 3 7.5 12 12l9-4.5z', 'M3 12l9 4.5 9-4.5', 'M3 16.5 12 21l9-4.5'],
+  /** Three blocks in a row: a song built from sections. */
+  song: ['M2 8h5v8H2z', 'M9.5 8h5v8h-5z', 'M17 8h5v8h-5z'],
   /** A heart: support the developer. */
   /** Two chain links: a link to the pattern. */
   share: ['M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1', 'M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1'],

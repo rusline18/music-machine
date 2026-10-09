@@ -142,6 +142,26 @@ test.describe('salsa beat machine', () => {
     await expect(other.getByRole('button', { name: 'Clave step 1', exact: true })).toHaveText('')
   })
 
+  test('a song is built from sections; ones that do not fit are greyed out with the reason', async ({ page }) => {
+    await page.getByRole('button', { name: 'Build a song from sections' }).click()
+    await expect(page.getByRole('combobox', { name: 'Pattern' })).toHaveValue('song')
+    const add = page.getByRole('combobox', { name: 'Add a section' })
+    await expect(add.getByRole('option', { name: 'Verse in 2-3 clave (other clave: son 2-3)' })).toBeDisabled()
+
+    await add.selectOption('salsa-montuno-3-2')
+    const parts = page.getByRole('list', { name: 'Sections of the song' })
+    await expect(parts.getByRole('listitem')).toHaveText([/1\. Verse/, /2\. Montuno/])
+    await advanced(page)
+    await expect(page.getByRole('button', { name: '16', exact: true })).toHaveAttribute('aria-pressed', 'true')
+
+    // The song comes back after a reload, sections and all.
+    await page.reload()
+    await expect(parts.getByRole('listitem')).toHaveCount(2)
+
+    await page.getByRole('button', { name: 'Remove section 1: Verse — the basic groove' }).click()
+    await expect(parts.getByRole('listitem')).toHaveText([/1\. Montuno/])
+  })
+
   test('edits survive a reload', async ({ page }) => {
     const step = page.getByRole('button', { name: 'Clave step 2', exact: true })
     await step.click()

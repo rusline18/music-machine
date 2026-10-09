@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { COUNTING_MODES, stepNames } from '~/core/resolve'
+import { SONG_PATTERN_ID } from '~/core/song'
 import { TEMPO_CHOICES } from '~/core/tempo'
 import { genres } from '~/genres'
 import { countingVoice } from '~/genres/voice'
@@ -30,8 +31,12 @@ const dataKeys = genres.flatMap((genre) => [
   ...genre.instruments.flatMap((instrument) => stepNames(genre, instrument).map((step) => ['steps', step])),
   ...genre.presets.map((preset) => ['presets', preset.id]),
   ...genre.presets.map((preset) => ['help', 'presets', preset.id]),
+  ...Object.values(genre.clave ?? {}).map((clave) => ['song', 'clave', clave]),
+  ...(genre.transitionFill ? [['instruments', genre.transitionFill.instrument]] : []),
   ...COUNTING_MODES.map((mode) => ['controls', 'counting', mode]),
   ...TEMPO_CHOICES.map((choice) => ['controls', 'tempo', choice]),
+  ['presets', SONG_PATTERN_ID],
+  ['help', 'presets', SONG_PATTERN_ID],
 ])
 
 describe.each([['en', en], ['ru', ru]] as const)('%s messages', (locale, messages) => {

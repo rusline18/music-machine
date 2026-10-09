@@ -23,6 +23,8 @@ app/
     layers.ts            Order for "layer by layer"
     links.ts             Checks configured external links (https only)
     share.ts             Pattern ⇄ short link code; incoming links are checked and rebuilt
+    song.ts              Songs built from presets: which sections fit together (clave,
+                         tempo, length) and joining them with a fill between sections
     sendLink.ts          Share sheet on touch screens, clipboard elsewhere
     audio/
       engine.ts          AudioContext, per-instrument gain, sample loading (Opus with
@@ -52,7 +54,8 @@ app/
   components/
     beat/                BeatMachine (the whole trainer), BeatGrid, TrackRow,
                          CountDisplay, PracticeBar, Transport, TempoStepper,
-                         InstrumentCards, LayerGuide, PresetSelector
+                         InstrumentCards, LayerGuide, PresetSelector,
+                         SongBuilder
     SiteFooter.vue       Feedback and donation links (hidden until configured)
     FeedbackDialog.vue   The feedback form
     ui/                  RangeControl, SegmentedControl, ControlLabel (icon + label
@@ -110,6 +113,18 @@ icon opens a sheet with its volume.
 Icons and the count move in time with the music (`useBeatEffects`, timed by
 the audio clock); `prefers-reduced-motion` or the **Animation** switch turns
 that off. Salsa is amber, bachata sky blue (CSS variables in `main.css`).
+
+### Songs
+
+**Build a song from sections** joins presets into one loop, up to 32 counts
+(e.g. verse → verse → montuno). A loop has one clave and one tempo, so only
+sections in the same clave and written within 20 BPM of every section
+already in the song can be added; the others stay in the list, greyed out
+with the reason ("other clave: son 2-3", "other tempo: 120 BPM"). In salsa
+the timbales play a fill wherever the next section is a different one. Each
+track plays at the volume of the loudest section it's in. A song is an
+ordinary pattern with its sections listed, so it's edited, shared and saved
+like any other (`app/core/song.ts`).
 
 ### Sharing and saving
 
@@ -261,7 +276,7 @@ script.
   the montuno, bongo and timbales bells and a brass moña (trumpets call,
   trombones answer), and a mambo where both brass sections play at once
   (a trombone riff, trumpets on the clave); Bachata derecho, majao and mambo over
-  an Am–E loop; plus a verse → montuno/chorus chain. Every preset starts at
+  an Am–E loop. Every preset starts at
   8 counts. They follow documented references but still need sign-off from a
   player.
 - What's next: [docs/roadmap.md](docs/roadmap.md); what's done:
