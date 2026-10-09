@@ -13,6 +13,6 @@ export const salsa: Genre = {
   bpmRange: [100, 230],
   // Clave is the key everything locks to; the congas' tumbao is the pulse,
   // and the bass's tumbao sits on it. Bells, piano and the rest come after.
-  teachingOrder: ['clave', 'congas', 'bass', 'bongos', 'maracas', 'timbales', 'cowbell', 'timbalebell', 'guiro', 'piano'],
+  teachingOrder: ['clave', 'congas', 'bass', 'bongos', 'maracas', 'timbales', 'cowbell', 'timbalebell', 'guiro', 'piano', 'tres'],
   presets: salsaPresets,
 }

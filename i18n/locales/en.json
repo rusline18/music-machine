@@ -94,6 +94,7 @@
     "campana": "Campana",
     "bass": "Bass",
     "piano": "Piano",
+    "tres": "Tres",
     "requinto": "Requinto",
     "segunda": "Segunda"
   },
@@ -165,6 +166,7 @@
       "campana": "A bell the bongo player switches to in the mambo. When you hear it, the mambo has started.",
       "bass": "Plays the low notes of the chords. In bachata it marks the 1; in salsa it plays the next chord early, on 4, and skips the 1 (the tumbao).",
       "piano": "The montuno: a repeating, syncopated piano figure locked to the clave. \"push\" plays the next chord ahead of the bar.",
+      "tres": "The Cuban tres: three pairs of strings struck with a pick. It plays the guajeo, a repeating figure locked to the clave. Played here from guitar recordings.",
       "requinto": "The lead guitar: high melodies and runs between the singer's lines.",
       "segunda": "The rhythm guitar: plays the chords in a steady, rolling pattern."
     },
