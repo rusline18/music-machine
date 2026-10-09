@@ -29,7 +29,7 @@ describe('sectionFit', () => {
   })
 
   it('refuses a section written at a far-off tempo, and says so', () => {
-    // Both in 2-3, but cha-cha-chá is 120 against salsa's 180.
+    // Both in 2-3, but cha-cha-chá is 120 against salsa's 165.
     expect(sectionFit(salsa, ['salsa-verse-2-3'], 'salsa-chachacha-2-3')).toBe('tempo')
   })
 
@@ -47,8 +47,8 @@ describe('sectionFit', () => {
 describe('buildSong', () => {
   it('plays the sections one after another, at the first one\'s tempo', () => {
     const song = buildSong(salsa, ['salsa-verse-3-2', 'salsa-montuno-3-2'])
-    expect(song).toMatchObject({ id: SONG_PATTERN_ID, counts: 16, bpm: 180, sections: ['salsa-verse-3-2', 'salsa-montuno-3-2'] })
-    expect(songBpm(salsa, song.sections!)).toBe(180)
+    expect(song).toMatchObject({ id: SONG_PATTERN_ID, counts: 16, bpm: 165, sections: ['salsa-verse-3-2', 'salsa-montuno-3-2'] })
+    expect(songBpm(salsa, song.sections!)).toBe(165)
     for (const track of song.tracks) expect(track.steps, track.instrument).toHaveLength(patternLength(song))
     // Bongo bell only in the montuno.
     expect(steps(song, 'cowbell').slice(0, 16).every((step) => step === null)).toBe(true)
