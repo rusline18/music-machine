@@ -1,0 +1,15 @@
+# Caddy: HTTPS (Let's Encrypt, renewed automatically) in front of Node.
+# setup.sh replaces example.ru with your domain and installs this as
+# /etc/caddy/Caddyfile. Security and cache headers come from the app
+# (nuxt.config.ts), so Caddy only proxies.
+
+example.ru {
+	# Static files arrive already compressed from Nitro; this covers
+	# server-rendered pages. Caddy skips responses that are already encoded.
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:3000
+}
+
+www.example.ru {
+	redir https://example.ru{uri} permanent
+}

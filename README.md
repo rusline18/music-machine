@@ -78,7 +78,8 @@ scripts/
   app-icon.svg         The app icon; render-icons.mjs turns it into public/*.png
 tests/                 Vitest unit tests
 e2e/                   Playwright: pages, grid editing, transport, sharing in a real browser
-docs/                  Roadmap and research notes
+deploy/                VPS setup: systemd unit, Caddyfile, setup and release scripts
+docs/                  Roadmap, deploy guide and research notes
 CHANGELOG.md           What's done
 ```
 
@@ -207,6 +208,14 @@ every pull request and push to `main`; when e2e fails, download the
 
 For correct `hreflang` links in production, set the site's public URL:
 `NUXT_PUBLIC_I18N_BASE_URL=https://example.com`.
+
+## Deploy
+
+The site runs on a VPS: Node behind Caddy (HTTPS). After CI passes on
+`main`, `.github/workflows/deploy.yml` builds the app and ships it over SSH;
+the server keeps the last 5 releases and rolls back if a new one doesn't
+answer. One-time server setup and the GitHub secrets it needs:
+[docs/deploy.md](docs/deploy.md).
 
 ## Audio samples
 

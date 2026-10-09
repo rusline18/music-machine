@@ -1,0 +1,35 @@
+# systemd unit: runs the built Nuxt server (.output) behind Caddy.
+# Installed by setup.sh to /etc/systemd/system/music-machine.service.
+[Unit]
+Description=Music Machine (Nuxt server)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=musicmachine
+Group=musicmachine
+# Feedback is stored under ./.data relative to this directory, so it
+# survives releases (each release is a fresh folder under releases/).
+WorkingDirectory=/srv/music-machine
+EnvironmentFile=/etc/music-machine.env
+ExecStart=/usr/bin/node /srv/music-machine/current/server/index.mjs
+Restart=always
+RestartSec=3
+
+# The app only needs to write feedback; everything else is read-only.
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/srv/music-machine/.data
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target
