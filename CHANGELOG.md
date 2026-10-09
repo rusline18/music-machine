@@ -1,63 +1,34 @@
-# Что сделано
+# Changelog
 
-Здесь — то, что уже работает. Планы на будущее — в
-[docs/roadmap.md](docs/roadmap.md); выполненные пункты переезжают сюда.
+What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-09
 
-- **«Поделиться» на телефоне** открывает системное меню (Web Share API:
-  WhatsApp, Telegram…); на компьютере ссылка по-прежнему копируется.
-- **Сальса, полная ритм-секция:**
-  - колокол тимбалес (мамбо-колокол в монтуно, колокол ча-ча-ча), удар
-    у горла колокола бонго (кампаны);
-  - конги: пятка и носок в тумбао;
-  - бас-тумбао (2& и 4, «раз» пропускает) и пиано-монтуно (записи рояля
-    VCSL), оба подталкивают следующий аккорд; монтуно и мамбо-колокол
-    поворачиваются вместе с клаве;
-  - брейк тимбалес в конце куплета в цепочке «куплет → монтуно»;
-  - трес: гуахео в куплете и монтуно на записях гитары, каждая нота
-    удвоена, как пара струн; яркий тон стальных струн;
-  - трубы и тромбоны (короткие ноты VSCO 2): монья в монтуно — трубы на
-    стороне «3» клаве, тромбоны отвечают на стороне «2»;
-  - пресет **Mambo 3-2 / 2-3** (195 BPM): рифф тромбонов, трубы по клаве.
-- **Бачата**: пресеты сверены с письменными разборами
-  ([docs/bachata-rhythms.md](docs/bachata-rhythms.md)); кампана у горла — из
-  настоящей записи; громкость мягких ударов — в карте сэмплов.
-- **Удобство и скорость** (бывший `docs/ux-plan.md`, все пять этапов):
-  - плейхед — через `requestAnimationFrame` по часам аудио, сжатие ответов;
-  - практика на телефоне: нижняя панель, темп −/+ (тап — 1 BPM, удержание
-    — 5), крупный счёт, переключатели инструментов, Wake Lock, звук на iOS;
-  - редактор на телефоне: такт на экран, свайпы, меню звука по долгому
-    нажатию, карточка инструмента; ландшафт и планшет — блок 8 счётов;
-  - анимация в такт музыке, SVG-иконки, цвет у каждого жанра,
-    reduced-motion;
-  - PWA и офлайн: service worker кэширует страницы, скрипты и звуки; звуки
-    жанра предзагружаются с главной; иконка — счёт 1–8 с выделенными 1 и 5;
-    e2e-тест режима самолёта.
+- Share opens the system share menu on phones; computers still copy the link.
+- Salsa rhythm section: timbales bell, bongo bell neck stroke, conga heel/toe,
+  bass tumbao and piano montuno, timbales break, tres guajeo, brass moña
+  (trumpets and trombones), Mambo 3-2 / 2-3 preset.
+- Bachata presets checked against written breakdowns
+  ([docs/bachata-rhythms.md](docs/bachata-rhythms.md)); real campana neck stroke.
+- Phone UX: bottom bar, tempo −/+, instrument switches, bar-per-screen editor
+  with swipes and sound menu, Wake Lock, iOS audio.
+- Playhead on the audio clock via `requestAnimationFrame`; animation in time
+  with the music, per-genre colors, reduced motion.
+- PWA and offline: service worker caches pages and sounds, home page preloads
+  a genre's sounds, app icon.
 
 ## 2026-10-08
 
-- **Ссылка на паттерн и автосохранение**: Share копирует `/salsa?p=…`
-  (темп, длина, mute, громкость, аккорды, голос); чужая ссылка проверяется и
-  чинится (`app/core/share.ts`); правки хранятся в браузере, нетронутый
-  пресет не сохраняется; Reset возвращает пресет.
-- **Ритмы сальсы, первая волна**: Verse / Montuno в 3-2 и 2-3, ча-ча-ча
-  (2-3, 120), румба гуагуанко (румба-клаве 3-2, 190).
-- **Для начинающих**: голосовой счёт «раз, два…» или «1 и 2 и…» на языке
-  интерфейса; простой режим (медленно / нормально / быстро, клик —
-  вкл/выкл); урок по слоям; иконки и подсказки; английский и русский.
-- **Бачата**: гитары и бас играют аккорды на настоящих нотах гитары; мамбо
-  с кампаной, переработанный majao; все пресеты начинаются с 8 счётов.
-- **Звуки**: Opus с запасным WAV (Salsa 0,69 → 0,14 МБ, Bachata 1,84 →
-  0,39 МБ); загрузка с открытия страницы и прогресс на Play.
-- **Безопасность** (по аудиту): проверка паттернов из ссылок, защита
-  планировщика от нулевого шага, security-заголовки в продакшене,
-  `Cache-Control` для `/audio/**`.
-- Диалог обратной связи (выключен по умолчанию), ссылка на донат.
-- Инфраструктура: ESLint, vue-tsc, Vitest, Playwright, CI в GitHub Actions.
+- Pattern links (`?p=…`, validated on open), autosave in the browser, Reset.
+- Salsa: verse/montuno in 3-2 and 2-3, cha-cha-chá, rumba guaguancó.
+- Beginners: counting voice, simple mode, layer-by-layer lesson, tooltips;
+  English and Russian.
+- Bachata: chord-following guitars and bass, mambo with campana, new majao.
+- Opus samples with WAV fallback (~5× smaller), early loading with progress.
+- Security headers, audio `Cache-Control`, feedback dialog, donation link.
+- ESLint, vue-tsc, Vitest, Playwright, GitHub Actions CI.
 
 ## 2026-10-07
 
-- Первая версия: сетка ритмов сальсы и бачаты, CC0-записи инструментов с
-  синтезированной заменой, пресеты по документированным ритмам, паттерны
-  блоками по 8 счётов с выбором длины.
+- First version: salsa and bachata grids, CC0 samples with synth fallback,
+  documented presets, 8-count blocks.
