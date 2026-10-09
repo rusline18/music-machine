@@ -1,0 +1,14 @@
+{
+  "name": "Latin Beat Machine",
+  "short_name": "Beat Machine",
+  "description": "Salsa & Bachata rhythm trainer: build a beat, practise at your own tempo, also offline.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

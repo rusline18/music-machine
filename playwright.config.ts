@@ -14,6 +14,9 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: 'on-first-retry',
+    // The offline worker would cache pages between steps of a test; the
+    // offline test (e2e/offline.spec.ts) switches it back on.
+    serviceWorkers: 'block',
   },
 
   projects: [

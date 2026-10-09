@@ -28,6 +28,10 @@ export default defineNuxtConfig({
           'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
         },
       },
+      // Checked on every visit, so a new deploy's worker is picked up at once.
+      '/sw.js': {
+        headers: { 'Cache-Control': 'no-cache' },
+      },
       // Built by `npm run samples` and rarely changed; revalidate after a week.
       '/audio/**': {
         headers: { 'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400' },
@@ -45,6 +49,12 @@ export default defineNuxtConfig({
       // viewport-fit=cover: the page runs under the notch and the home bar,
       // and the practice bar keeps clear of them with env(safe-area-inset-*).
       viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
+      // Installable on a phone's home screen (public/manifest.webmanifest).
+      link: [
+        { rel: 'manifest', href: '/manifest.webmanifest' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+      ],
+      meta: [{ name: 'theme-color', content: '#0a0a0a' }],
     },
     // Pages fade into each other, so salsa's amber turning into bachata's
     // sky reads as one app changing color (main.css).

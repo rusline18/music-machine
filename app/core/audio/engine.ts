@@ -20,6 +20,15 @@ function canPlayOpus(): boolean {
   return typeof Audio !== 'undefined' && new Audio().canPlayType('audio/webm; codecs="opus"') !== ''
 }
 
+/**
+ * Samples are named by their .wav, the lossless master; each has a ~5×
+ * smaller Opus copy beside it (scripts/encode-samples.mjs). That's the file
+ * to download when the browser can play Opus.
+ */
+export function playableFile(url: string): string {
+  return url.endsWith('.wav') && canPlayOpus() ? `${url.slice(0, -'.wav'.length)}.webm` : url
+}
+
 interface RingingVoice {
   source: AudioBufferSourceNode
   gain: GainNode
@@ -139,15 +148,6 @@ export function createAudioEngine() {
   /** Samples being decoded, so two callers never load the same one twice. */
   const decoding = new Map<string, Promise<AudioBuffer>>()
 
-  /**
-   * Samples are named by their .wav, the lossless master; each has a ~5×
-   * smaller Opus copy beside it (scripts/encode-samples.mjs). That's the file
-   * to download when the browser can play Opus.
-   */
-  function fileFor(url: string): string {
-    return url.endsWith('.wav') && canPlayOpus() ? `${url.slice(0, -'.wav'.length)}.webm` : url
-  }
-
   function download(file: string): Promise<ArrayBuffer> {
     let bytes = downloads.get(file)
     if (!bytes) {
@@ -171,7 +171,7 @@ export function createAudioEngine() {
 
   /** The Opus copy where the browser plays Opus, else (or if it won't decode) the WAV. */
   async function decodeSample(url: string): Promise<AudioBuffer> {
-    const file = fileFor(url)
+    const file = playableFile(url)
     if (file !== url) {
       try {
         return await decode(file)
@@ -202,7 +202,7 @@ export function createAudioEngine() {
    * finishes or fails (loadSample retries those).
    */
   function prefetchSamples(urls: string[], onSettled?: (url: string, ok: boolean) => void): Promise<void> {
-    return Promise.all(urls.map((url) => (bufferCache.has(url) ? Promise.resolve() : download(fileFor(url))).then(
+    return Promise.all(urls.map((url) => (bufferCache.has(url) ? Promise.resolve() : download(playableFile(url))).then(
       () => onSettled?.(url, true),
       () => onSettled?.(url, false),
     ))).then(() => {})
