@@ -33,8 +33,11 @@ const CASCARA_3_2: Step[] = [
  * on the cáscara's off-beat strokes, so the bell keeps the clave's shape.
  */
 const MAMBO_BELL_3_2: Step[] = CASCARA_3_2.map((step, i) => (i % 2 === 0 ? 'open' : step && 'neck'))
-/** Bongo bell (one count): the mouth on the beat, the neck on the &. */
-const BONGO_BELL: Step[] = ['hit', 'neck']
+/**
+ * Bongo bell (two counts): quarter notes, the mouth on 1 and 3, the neck on
+ * 2 and 4 — half as busy as the martillo it replaces.
+ */
+const BONGO_BELL: Step[] = ['hit', null, 'neck', null]
 /** Güiro (one count): long on the beat, two short scrapes after */
 const GUIRO: Step[] = ['long', null, 'short', 'short']
 /**
@@ -120,7 +123,7 @@ const RUMBA_CLAVE_3_2: Step[] = [
 export const salsaVerse = definePattern({
   id: 'salsa-verse-3-2',
   counts: 8,
-  bpm: 180,
+  bpm: 165,
   chords: PROGRESSION,
   tracks: [
     voiceTrack,
@@ -150,7 +153,7 @@ export const salsaVerse = definePattern({
 export const salsaMontuno = definePattern({
   id: 'salsa-montuno-3-2',
   counts: 8,
-  bpm: 190,
+  bpm: 170,
   chords: PROGRESSION,
   tracks: [
     voiceTrack,
@@ -174,7 +177,7 @@ export const salsaMontuno = definePattern({
 export const salsaVerse23 = definePattern({
   id: 'salsa-verse-2-3',
   counts: 8,
-  bpm: 180,
+  bpm: 165,
   chords: PROGRESSION,
   tracks: [
     voiceTrack,
@@ -198,7 +201,7 @@ export const salsaVerse23 = definePattern({
 export const salsaMontuno23 = definePattern({
   id: 'salsa-montuno-2-3',
   counts: 8,
-  bpm: 190,
+  bpm: 170,
   chords: PROGRESSION,
   tracks: [
     voiceTrack,
@@ -227,7 +230,7 @@ export const salsaMontuno23 = definePattern({
 export const salsaMambo = definePattern({
   id: 'salsa-mambo-3-2',
   counts: 8,
-  bpm: 195,
+  bpm: 175,
   chords: PROGRESSION,
   tracks: [
     voiceTrack,
@@ -251,7 +254,7 @@ export const salsaMambo = definePattern({
 export const salsaMambo23 = definePattern({
   id: 'salsa-mambo-2-3',
   counts: 8,
-  bpm: 195,
+  bpm: 175,
   chords: PROGRESSION,
   tracks: [
     voiceTrack,
@@ -459,7 +462,7 @@ export const salsaPachanga = definePattern({
 export const salsaOn2 = definePattern({
   id: 'salsa-on2-3-2',
   counts: 8,
-  bpm: 180,
+  bpm: 165,
   chords: PROGRESSION,
   tracks: [
     {
