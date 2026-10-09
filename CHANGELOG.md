@@ -5,6 +5,8 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 ## 2026-10-09
 
 - VPS deploy: setup script, systemd + Caddy, GitHub Actions with rollback.
+- Salsa presets from existing sounds: On2 (voice counts 2 and 6, congas lead),
+  son montuno, bolero (salsa tempo now starts at 60), pachanga.
 - Share opens the system share menu on phones; computers still copy the link.
 - Salsa rhythm section: timbales bell, bongo bell neck stroke, conga heel/toe,
   bass tumbao and piano montuno, timbales break, tres guajeo, brass moña
