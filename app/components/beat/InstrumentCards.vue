@@ -21,7 +21,7 @@ const emit = defineEmits<{
       <button
         type="button"
         role="switch"
-        class="flex min-h-14 w-full items-center gap-3 rounded-lg border px-3 py-2 text-left transition active:scale-[0.98]"
+        class="flex min-h-16 w-full items-center gap-2.5 rounded-2xl border px-2.5 py-2 text-left transition active:scale-[0.98]"
         :class="track.muted ? 'border-neutral-800 bg-neutral-950 text-neutral-500' : 'border-accent-500/40 bg-accent-500/10 text-neutral-100'"
         :aria-checked="!track.muted"
         @click="emit('update:muted', track.instrument, !track.muted)"
@@ -33,16 +33,16 @@ const emit = defineEmits<{
         >
           <UiIcon :name="track.instrument" />
         </span>
-        <span class="min-w-0 flex-1 break-words text-sm font-medium leading-tight">{{ $t(`instruments.${track.instrument}`) }}</span>
+        <span class="min-w-0 flex-1 hyphens-auto text-sm font-bold leading-tight">{{ $t(`instruments.${track.instrument}`) }}</span>
         <!-- The switch itself, drawn: a knob that slides right when on. -->
         <span
-          class="relative h-6 w-10 shrink-0 rounded-full transition-colors"
+          class="relative h-6 w-9 shrink-0 rounded-full transition-colors"
           :class="track.muted ? 'bg-neutral-700' : 'bg-accent-500'"
           aria-hidden="true"
         >
           <span
             class="absolute left-0 top-1 size-4 rounded-full bg-neutral-100 transition-transform"
-            :class="track.muted ? 'translate-x-1' : 'translate-x-5'"
+            :class="track.muted ? 'translate-x-1' : 'translate-x-4'"
           />
         </span>
       </button>

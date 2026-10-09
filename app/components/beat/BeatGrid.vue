@@ -116,7 +116,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
     >
       <button
         type="button"
-        class="min-h-11 min-w-11 rounded-md bg-neutral-800 px-4 py-2 text-neutral-200 disabled:opacity-40"
+        class="min-h-11 min-w-11 rounded-xl bg-neutral-800 px-4 py-2 text-neutral-200 disabled:opacity-40"
         :aria-label="t('grid.previous')"
         :disabled="shownSections[0] === 0"
         @click="turnTo(shownSections[0]! - 1)"
@@ -126,7 +126,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
       <span class="text-sm text-neutral-400">{{ t('grid.page', { n: shownSections[0]! + 1, total: sectionCount }) }}</span>
       <button
         type="button"
-        class="min-h-11 rounded-md border px-3 text-sm transition"
+        class="min-h-11 rounded-xl border px-3 text-sm transition"
         :class="follow ? 'border-accent-500/40 text-accent-400' : 'border-neutral-700 text-neutral-400'"
         :aria-pressed="follow"
         @click="follow = !follow"
@@ -135,7 +135,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
       </button>
       <button
         type="button"
-        class="min-h-11 min-w-11 rounded-md bg-neutral-800 px-4 py-2 text-neutral-200 disabled:opacity-40"
+        class="min-h-11 min-w-11 rounded-xl bg-neutral-800 px-4 py-2 text-neutral-200 disabled:opacity-40"
         :aria-label="t('grid.next')"
         :disabled="shownSections[0] === sectionCount - 1"
         @click="turnTo(shownSections[0]! + 1)"
@@ -147,7 +147,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
     <div
       v-for="section in shownSections"
       :key="section"
-      class="touch-pan-y rounded-lg border border-neutral-800 bg-neutral-950 p-3 sm:p-4"
+      class="touch-pan-y rounded-3xl border border-neutral-800 bg-neutral-900 p-3 sm:p-5"
       @pointerdown="swipeDown"
       @pointerup="swipeUp"
       @pointercancel="swipeStart = null"
@@ -241,7 +241,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
           :key="name"
           type="button"
           role="menuitemradio"
-          class="min-h-11 rounded-md px-3 py-2 font-mono text-sm transition"
+          class="min-h-11 rounded-xl px-3 py-2 font-mono text-sm transition"
           :class="menuTrack.steps[menu.stepIndex] === name ? 'bg-accent-500 text-neutral-900' : 'bg-neutral-800 text-neutral-200 hover:bg-neutral-700'"
           :aria-checked="menuTrack.steps[menu.stepIndex] === name"
           @click="pick(name)"
@@ -251,7 +251,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
         <button
           type="button"
           role="menuitemradio"
-          class="min-h-11 rounded-md border border-neutral-700 px-3 py-2 text-sm text-neutral-300 transition hover:bg-neutral-800"
+          class="min-h-11 rounded-xl border border-neutral-700 px-3 py-2 text-sm text-neutral-300 transition hover:bg-neutral-800"
           :aria-checked="!menuTrack.steps[menu.stepIndex]"
           @click="pick(null)"
         >
@@ -275,7 +275,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
         <button
           type="button"
           role="switch"
-          class="flex min-h-11 w-full items-center justify-between gap-3 rounded-md bg-neutral-800 px-3 text-sm"
+          class="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl bg-neutral-800 px-3 text-sm"
           :aria-checked="!sheetTrack.muted"
           @click="emit('update:muted', sheetTrack.instrument, !sheetTrack.muted)"
         >

@@ -54,12 +54,17 @@ export default defineNuxtConfig({
         { rel: 'manifest', href: '/manifest.webmanifest' },
         { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
       ],
-      meta: [{ name: 'theme-color', content: '#0a0a0a' }],
+      meta: [{ name: 'theme-color', content: '#110E0D' }],
     },
-    // Pages fade into each other, so salsa's amber turning into bachata's
-    // sky reads as one app changing color (main.css).
+    // Pages fade into each other, so salsa's coral turning into bachata's
+    // teal reads as one app changing color (main.css).
     pageTransition: { name: 'page', mode: 'out-in' },
   },
+
+  // Self-hosted (the CSP allows no font CDN): Onest for text, with Cyrillic;
+  // JetBrains Mono for BPM, counts and step labels. Each subset downloads
+  // only when the page uses its characters.
+  css: ['@fontsource-variable/onest', '@fontsource-variable/jetbrains-mono'],
 
   // Overridable by env vars at runtime.
   runtimeConfig: {

@@ -72,7 +72,7 @@ onBeforeUnmount(() => {
       v-show="position"
       :id="id"
       role="tooltip"
-      class="fixed z-30 w-64 max-w-[80vw] rounded-md border border-neutral-700 bg-neutral-900 px-3 py-2 text-left text-xs font-normal normal-case leading-snug tracking-normal text-neutral-200 shadow-lg"
+      class="fixed z-30 w-64 max-w-[80vw] rounded-xl border border-neutral-700 bg-neutral-900 px-3 py-2 text-left text-xs font-normal normal-case leading-snug tracking-normal text-neutral-200 shadow-lg"
       :style="position && { top: `${position.top}px`, left: `${position.left}px` }"
     >
       {{ text }}

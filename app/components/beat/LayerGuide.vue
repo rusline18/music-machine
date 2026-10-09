@@ -13,14 +13,14 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="rounded-lg border border-neutral-800 p-4">
+  <div class="rounded-3xl border border-neutral-800 bg-neutral-900 p-5">
     <div
       v-if="!layers"
       class="flex flex-wrap items-center gap-3"
     >
       <button
         type="button"
-        class="inline-flex items-center gap-2 rounded-md bg-neutral-800 px-4 py-2 text-sm font-semibold text-neutral-100 hover:bg-neutral-700"
+        class="inline-flex items-center gap-2 rounded-xl bg-neutral-800 px-4 py-2 text-sm font-semibold text-neutral-100 hover:bg-neutral-700"
         @click="emit('start')"
       >
         <UiIcon name="layers" />
@@ -56,7 +56,7 @@ const emit = defineEmits<{
         <template v-if="layers.added < layers.order.length">
           <button
             type="button"
-            class="inline-flex items-center gap-2 rounded-md bg-accent-500 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-accent-400"
+            class="inline-flex items-center gap-2 rounded-xl bg-accent-500 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-accent-400"
             @click="emit('add')"
           >
             <UiIcon :name="layers.order[layers.added]!" />
@@ -64,7 +64,7 @@ const emit = defineEmits<{
           </button>
           <button
             type="button"
-            class="rounded-md px-3 py-2 text-sm text-neutral-400 hover:text-neutral-200"
+            class="rounded-xl px-3 py-2 text-sm text-neutral-400 hover:text-neutral-200"
             @click="emit('end', true)"
           >
             {{ $t('layers.addAll') }}
@@ -76,7 +76,7 @@ const emit = defineEmits<{
           </p>
           <button
             type="button"
-            class="rounded-md bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700"
+            class="rounded-xl bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700"
             @click="emit('end', false)"
           >
             {{ $t('layers.close') }}

@@ -6,7 +6,8 @@
   },
   "nav": {
     "back": "← Назад",
-    "language": "Язык"
+    "language": "Язык",
+    "genres": "Жанры"
   },
   "genres": {
     "salsa": {

@@ -43,7 +43,7 @@ onUnmounted(() => clearTimeout(resetTimer))
   <div class="flex flex-wrap items-center gap-3">
     <button
       type="button"
-      class="inline-flex min-h-11 items-center gap-1.5 rounded-md bg-accent-500/20 px-4 py-2 sm:min-h-0 text-sm font-medium text-accent-400 hover:bg-accent-500/30"
+      class="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-accent-500/20 px-4 py-2 sm:min-h-0 text-sm font-medium text-accent-400 hover:bg-accent-500/30"
       :title="$t('help.controls.share')"
       @click="share"
     >
@@ -60,7 +60,7 @@ onUnmounted(() => clearTimeout(resetTimer))
       :value="link"
       readonly
       :aria-label="$t('controls.link')"
-      class="min-w-0 flex-1 rounded-md border border-neutral-700 bg-neutral-900 px-3 py-2 font-mono text-xs text-neutral-300"
+      class="min-w-0 flex-1 rounded-xl border border-neutral-700 bg-neutral-900 px-3 py-2 font-mono text-xs text-neutral-300"
       @focus="selectAll"
     >
   </div>

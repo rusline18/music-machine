@@ -42,6 +42,17 @@ function stepLabel(stepIndex: number): string {
   return name === 'count' ? String(countInBlock(stepIndex, props.stepsPerCount) + 1) : t(`steps.${name}`)
 }
 
+/**
+ * A cell's colors: the instrument's main sound in the genre's color, its
+ * other sounds (open, slap…) lighter, the counting voice neutral.
+ */
+function cellClass(stepIndex: number): string {
+  const name = props.track.steps[stepIndex]
+  if (!name) return 'bg-neutral-800 text-neutral-600 hover:bg-neutral-700'
+  if (name === 'count' || name === 'and') return 'bg-neutral-700 text-neutral-100'
+  return name === props.stepNames[0] ? 'bg-accent-500 text-neutral-950' : 'bg-accent-300 text-neutral-950'
+}
+
 // A long press opens the sound menu. iOS doesn't fire contextmenu on touch,
 // hence the timer; elsewhere contextmenu (right-click, the menu key,
 // Android's long press) opens it too.
@@ -90,12 +101,12 @@ onBeforeUnmount(pressCancel)
 </script>
 
 <template>
-  <div class="flex items-center gap-2 border-b border-neutral-800 py-2 sm:gap-3">
+  <div class="flex items-center gap-2 border-t border-neutral-800/60 py-1.5 sm:gap-3">
     <div class="flex w-[4.5rem] shrink-0 items-center gap-1 sm:w-32 sm:gap-2">
       <button
         v-if="showControls"
         type="button"
-        class="min-h-11 rounded px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide transition sm:min-h-0"
+        class="min-h-11 rounded-lg px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide transition sm:min-h-0"
         :class="track.muted ? 'bg-neutral-700 text-neutral-400' : 'bg-accent-500/20 text-accent-400'"
         :aria-pressed="track.muted"
         :aria-label="t('grid.mute', { instrument: instrumentName })"
@@ -108,7 +119,7 @@ onBeforeUnmount(pressCancel)
       <button
         v-if="showControls"
         type="button"
-        class="instrument-icon flex size-11 items-center justify-center rounded text-neutral-200 hover:bg-neutral-800 sm:hidden"
+        class="instrument-icon flex size-11 items-center justify-center rounded-xl bg-neutral-800/70 text-neutral-200 hover:bg-neutral-700 sm:hidden"
         :aria-label="t('grid.settings', { instrument: instrumentName })"
         :data-instrument="track.instrument"
         @click="emit('open-instrument')"
@@ -142,9 +153,9 @@ onBeforeUnmount(pressCancel)
         v-for="(stepIndex, i) in stepIndices"
         :key="stepIndex"
         type="button"
-        class="step-cell h-11 min-w-0 flex-1 select-none overflow-hidden rounded font-mono text-[10px] transition [-webkit-touch-callout:none] active:scale-90 sm:h-9"
+        class="step-cell h-11 min-w-0 flex-1 select-none overflow-hidden rounded-lg font-mono text-[10px] font-bold transition [-webkit-touch-callout:none] active:scale-90 sm:h-9"
         :class="[
-          track.steps[stepIndex] ? 'bg-accent-500 text-neutral-900' : 'bg-neutral-800 text-neutral-600 hover:bg-neutral-700',
+          cellClass(stepIndex),
           { 'ml-1.5': i % stepsPerCount === 0 && i > 0 },
         ]"
         :data-step="stepIndex"
