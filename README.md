@@ -19,8 +19,8 @@ app/
     resolve.ts           Turns a step into the notes to play: samples, chord-following
                          notes, or the counting voice
     tempo.ts             Slow / Normal / Fast, relative to a preset's own tempo; −/+ steps
-    motion.ts            How each instrument's icon moves when it plays, and its
-                         accent part on top
+    motion.ts            How each instrument's icon and its accent part move when it
+                         plays: struck, ringing and dying away
     layers.ts            Order for "layer by layer"
     links.ts             Checks configured external links (https only)
     share.ts             Pattern ⇄ short link code; incoming links are checked and rebuilt
@@ -195,7 +195,7 @@ unset the link is hidden.
 - **An instrument:** add it to the genre's `teachingOrder`, and besides its samples, give it a name
   (`instruments.<id>`), a tooltip (`help.instruments.<id>`) and an icon in
   `app/icons.ts` — a few strokes on a 24×24 grid, plus an accent part
-  (`ICON_ACCENTS`) and its motion (`ACCENT_MOTION` in `app/core/motion.ts`).
+  (`ICON_ACCENTS`) and its motion (`INSTRUMENT_MOTION` in `app/core/motion.ts`).
   Tests fail if any is missing.
 - **A genre:** add `app/genres/<id>/` like the existing ones, register it in
   `app/genres/index.ts`, and add its texts and an accent colour on the home

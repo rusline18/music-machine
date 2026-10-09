@@ -1,5 +1,5 @@
 import type { Beat } from '~/core/audio/playhead'
-import { ACCENT_MOTION, countPulse, INSTRUMENT_MOTION } from '~/core/motion'
+import { countPulse, INSTRUMENT_MOTION } from '~/core/motion'
 import { countInBlock } from '~/core/pattern'
 
 /** Marks what's sounding now: grid cells, count labels and the big count boxes. */
@@ -7,8 +7,11 @@ const NOW = 'is-now'
 /** Added to the big count box when the step is on the count itself, not its "&". */
 const ON_BEAT = 'is-on-beat'
 
-/** No hit animation lasts longer than this, however slow the tempo. */
-const MAX_HIT_MS = 220
+/**
+ * How many hits may ring on one icon part at once. A new hit adds on top of
+ * the ones still ringing; past this the oldest, by then nearly still, stops.
+ */
+const MAX_RINGING = 3
 
 export interface BeatEffectsOptions {
   stepsPerCount: () => number
@@ -40,6 +43,15 @@ export function useBeatEffects(
   options: BeatEffectsOptions,
 ) {
   let marked: Element[] = []
+  const ringing = new WeakMap<Element, Animation[]>()
+
+  /** Plays a hit on `element` on top of the hits still ringing there. */
+  function ring(element: Element, keyframes: Keyframe[], duration: number) {
+    const running = (ringing.get(element) ?? []).filter((animation) => animation.playState === 'running')
+    while (running.length >= MAX_RINGING) running.shift()?.cancel()
+    running.push(element.animate(keyframes, { duration, composite: 'add' }))
+    ringing.set(element, running)
+  }
 
   const all = (selector: string) => root.value?.querySelectorAll<HTMLElement>(selector) ?? []
 
@@ -58,7 +70,6 @@ export function useBeatEffects(
 
   function animate(beat: Beat, onCount: boolean, count: number) {
     const stepMs = 60_000 / options.bpm() / options.stepsPerCount()
-    const hitMs = Math.min(MAX_HIT_MS, stepMs * 1.5)
 
     for (const instrument of beat.instruments) {
       const motion = INSTRUMENT_MOTION[instrument]
@@ -67,9 +78,14 @@ export function useBeatEffects(
         const svg = icon.querySelector('svg')
         if (!svg) continue
         svg.style.transformOrigin = motion.origin ?? '50% 50%'
-        svg.animate(motion.keyframes, { duration: hitMs, easing: 'ease-out' })
-        const accent = ACCENT_MOTION[instrument]
-        if (accent) svg.querySelector('.icon-accent')?.animate(accent, { duration: hitMs, easing: 'ease-out' })
+        ring(svg, motion.keyframes, motion.duration)
+        const accent = svg.querySelector<SVGGElement>('.icon-accent')
+        if (accent) {
+          accent.style.transformOrigin = motion.accentOrigin ?? ''
+          ring(accent, motion.accent, motion.duration)
+        }
+        const base = svg.querySelector('.icon-base')
+        if (base && motion.base) ring(base, motion.base, motion.duration)
       }
     }
     if (!onCount) return
