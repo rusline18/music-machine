@@ -14,7 +14,7 @@ test.describe('salsa beat machine', () => {
     await page.goto('/salsa')
   })
 
-  test('simple mode: a click turns a step on and off', async ({ page }) => {
+  test('a click turns a step on and off', async ({ page }) => {
     const step = page.getByRole('button', { name: 'Clave step 2', exact: true })
     await expect(step).toHaveText('')
     await step.click()
@@ -23,14 +23,18 @@ test.describe('salsa beat machine', () => {
     await expect(step).toHaveText('')
   })
 
-  test('advanced mode: a click cycles through the sounds, then off', async ({ page }) => {
-    await advanced(page)
+  test('right-click picks the sound from a menu', async ({ page }) => {
     const step = page.getByRole('button', { name: 'Congas step 1', exact: true })
     await expect(step).toHaveText('')
-    await step.click()
-    await expect(step).not.toHaveText('')
-    // One click per sound, then it wraps back to empty.
-    for (let i = 0; i < 10 && (await step.textContent())?.trim(); i++) await step.click()
+    await step.click({ button: 'right' })
+    const menu = page.getByRole('dialog', { name: 'Congas step 1' })
+    await menu.getByRole('menuitemradio', { name: 'open' }).click()
+    await expect(menu).toBeHidden()
+    await expect(step).toHaveText('open')
+
+    await step.click({ button: 'right' })
+    await expect(menu.getByRole('menuitemradio', { name: 'open' })).toHaveAttribute('aria-checked', 'true')
+    await menu.getByRole('menuitemradio', { name: 'Silence' }).click()
     await expect(step).toHaveText('')
   })
 
@@ -173,6 +177,39 @@ test.describe('on a phone', () => {
     await page.getByRole('button', { name: 'Edit grid' }).tap()
     await expect(page.getByRole('button', { name: 'Clave step 1', exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Mute Clave' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  test('a long press on a cell opens the sound menu', async ({ page }) => {
+    await page.goto('/salsa')
+    await page.getByRole('button', { name: 'Edit grid' }).tap()
+    const step = page.getByRole('button', { name: 'Congas step 1', exact: true })
+    const box = (await step.boundingBox())!
+    const at = { clientX: box.x + box.width / 2, clientY: box.y + box.height / 2, button: 0, pointerType: 'touch', isPrimary: true }
+    await step.dispatchEvent('pointerdown', at)
+    await page.waitForTimeout(600)
+    await step.dispatchEvent('pointerup', at)
+    await page.getByRole('dialog', { name: 'Congas step 1' }).getByRole('menuitemradio', { name: 'slap' }).tap()
+    await expect(step).toHaveText('slap')
+  })
+
+  test('a swipe turns the bar; the icon opens the instrument sheet', async ({ page }) => {
+    await page.goto('/salsa')
+    await page.getByRole('button', { name: 'Edit grid' }).tap()
+    await expect(page.getByText('Bar 1 of 2')).toBeVisible()
+    const section = page.locator('.touch-pan-y').first()
+    const box = (await section.boundingBox())!
+    const y = box.y + 20
+    await section.dispatchEvent('pointerdown', { clientX: box.x + box.width - 20, clientY: y, button: 0, pointerType: 'touch' })
+    await section.dispatchEvent('pointerup', { clientX: box.x + 20, clientY: y, button: 0, pointerType: 'touch' })
+    await expect(page.getByText('Bar 2 of 2')).toBeVisible()
+
+    await page.getByRole('button', { name: 'Clave: sound and volume' }).tap()
+    const sheet = page.getByRole('dialog', { name: 'Clave' })
+    const playing = sheet.getByRole('switch', { name: 'Playing' })
+    await expect(playing).toHaveAttribute('aria-checked', 'true')
+    await playing.tap()
+    await expect(playing).toHaveAttribute('aria-checked', 'false')
+    await expect(sheet.getByRole('slider', { name: 'Volume' })).toBeVisible()
   })
 
   test('Play stays on screen at the bottom', async ({ page }) => {

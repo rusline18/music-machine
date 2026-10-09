@@ -41,7 +41,7 @@ const emit = defineEmits<{
           aria-hidden="true"
         >
           <span
-            class="absolute top-1 size-4 rounded-full bg-neutral-100 transition-transform"
+            class="absolute left-0 top-1 size-4 rounded-full bg-neutral-100 transition-transform"
             :class="track.muted ? 'translate-x-1' : 'translate-x-5'"
           />
         </span>

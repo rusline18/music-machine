@@ -143,12 +143,6 @@ export function setPatternCounts(pattern: Pattern, counts: number): void {
   pattern.counts = counts
 }
 
-/** The step after `current` when a grid cell is clicked: each name in turn, then silence. */
-export function nextStep(current: Step, names: string[]): Step {
-  const next = (current === null ? -1 : names.indexOf(current)) + 1
-  return names[next] ?? null
-}
-
 /**
  * The simple-mode click: an empty cell gets the track's main sound (the one
  * it plays most, or the instrument's first), a filled one goes silent.

@@ -26,7 +26,7 @@ const {
   stop,
   setCounts,
   setChord,
-  toggleStep,
+  setStep,
   switchStep,
   tempo,
   setTempo,
@@ -84,12 +84,6 @@ const root = useTemplateRef('root')
 useBeatEffects(root, onBeat, () => pattern.value.stepsPerCount)
 /** Changes once a bar rather than every step, so the grid isn't re-rendered while playing. */
 const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(activeStep.value / (COUNTS_PER_BAR * pattern.value.stepsPerCount))))
-
-/** A cell click: on/off in simple mode, cycling through the sounds in advanced. */
-function clickStep(instrument: string, stepIndex: number) {
-  if (advanced.value) toggleStep(instrument, stepIndex)
-  else switchStep(instrument, stepIndex)
-}
 </script>
 
 <template>
@@ -250,7 +244,8 @@ function clickStep(instrument: string, stepIndex: number) {
         :playing-bar="playingBar"
         :advanced="advanced"
         :simple-hides="simpleHides"
-        @toggle-step="clickStep"
+        @toggle-step="switchStep"
+        @set-step="setStep"
         @update:volume="setVolume"
         @update:muted="setMuted"
         @update:chord="setChord"

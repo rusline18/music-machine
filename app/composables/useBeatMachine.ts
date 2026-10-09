@@ -4,7 +4,7 @@ import { createPlayhead } from '~/core/audio/playhead'
 import { createScheduler } from '~/core/audio/scheduler'
 import { layerOrder } from '~/core/layers'
 import type { Pattern } from '~/core/pattern'
-import { nextStep, patternLength, resizeSteps, setPatternCounts, switchStep } from '~/core/pattern'
+import { patternLength, resizeSteps, setPatternCounts, switchStep } from '~/core/pattern'
 import type { CountingMode } from '~/core/resolve'
 import { decodePattern, encodePattern } from '~/core/share'
 import { COUNTING_MODES, countingFigure, sampleUrls, stepNames, stepResolver } from '~/core/resolve'
@@ -230,13 +230,16 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     if (chords && bar < chords.length) chords[bar] = chord
   }
 
-  function toggleStep(instrument: string, stepIndex: number) {
+  /** A sound from the step menu, or null for silence; like a click, a hit switches the track on. */
+  function setStep(instrument: string, stepIndex: number, name: string | null) {
     const track = findTrack(instrument)
-    if (track) track.steps[stepIndex] = nextStep(track.steps[stepIndex] ?? null, stepNames(genre, instrument))
+    if (!track || (name !== null && !stepNames(genre, instrument).includes(name))) return
+    track.steps[stepIndex] = name
+    if (name && track.muted) setMuted(instrument, false)
   }
 
   /**
-   * Simple mode's click: on with the track's main sound, or off. Adding a
+   * A click on a cell: on with the track's main sound, or off. Adding a
    * hit to a switched-off track switches it on, so the click is heard.
    */
   function switchStepOnOff(instrument: string, stepIndex: number) {
@@ -363,7 +366,7 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     /** In place, so a running loop picks the new length up on its next tick. */
     setCounts: (counts: number) => setPatternCounts(pattern.value, counts),
     setChord,
-    toggleStep,
+    setStep,
     switchStep: switchStepOnOff,
     /** Slow / normal / fast, or undefined when the slider set some other tempo. */
     tempo,

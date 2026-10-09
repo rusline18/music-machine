@@ -4,7 +4,6 @@ import {
   chordAt,
   countInBlock,
   definePattern,
-  nextStep,
   patternLength,
   resizeSteps,
   setPatternCounts,
@@ -131,19 +130,6 @@ describe('setPatternCounts', () => {
     setPatternCounts(pattern, 8)
     expect(pattern.tracks[0]!.steps).toHaveLength(16)
     expect(pattern.chords).toEqual(['Am', 'Dm'])
-  })
-})
-
-describe('nextStep', () => {
-  it('cycles through the names, then back to silence', () => {
-    const names = ['low', 'high']
-    expect(nextStep(null, names)).toBe('low')
-    expect(nextStep('low', names)).toBe('high')
-    expect(nextStep('high', names)).toBeNull()
-  })
-
-  it('starts over from an unknown name', () => {
-    expect(nextStep('gone', ['low', 'high'])).toBe('low')
   })
 })
 
