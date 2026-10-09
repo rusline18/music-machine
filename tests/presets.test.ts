@@ -149,7 +149,7 @@ describe('rhythm reference', () => {
     },
   )
 
-  it('montuno: bongo player and timbalero move to their bells; verse: bongos and cáscara', () => {
+  it('montuno: bongo player and timbalero move to their bells, the brass comes in; verse: bongos and cáscara', () => {
     const plays = (pattern: Pattern, instrument: string) => {
       const track = pattern.tracks.find((t) => t.instrument === instrument)!
       return !track.muted && track.steps.some(Boolean)
@@ -159,6 +159,8 @@ describe('rhythm reference', () => {
       const montuno = id.includes('montuno')
       expect(plays(pattern, 'cowbell'), id).toBe(montuno)
       expect(plays(pattern, 'timbalebell'), id).toBe(montuno)
+      expect(plays(pattern, 'trumpet'), id).toBe(montuno)
+      expect(plays(pattern, 'trombone'), id).toBe(montuno)
       expect(plays(pattern, 'bongos'), id).toBe(!montuno)
       expect(plays(pattern, 'timbales'), id).toBe(!montuno)
       // The tres keeps its guajeo through both.
@@ -166,13 +168,17 @@ describe('rhythm reference', () => {
     }
   })
 
-  it('mambo bell, piano montuno and tres guajeo turn with the clave', () => {
+  it('mambo bell, piano montuno, tres guajeo and brass moña turn with the clave', () => {
     const steps = (id: string, instrument: string) =>
       salsaPresets.find((p) => p.id === id)!.tracks.find((t) => t.instrument === instrument)!.steps
-    for (const instrument of ['timbalebell', 'piano', 'tres']) {
+    for (const instrument of ['timbalebell', 'piano', 'tres', 'trumpet', 'trombone']) {
       const turned = [...steps('salsa-montuno-3-2', instrument).slice(8), ...steps('salsa-montuno-3-2', instrument).slice(0, 8)]
       expect(steps('salsa-montuno-2-3', instrument), instrument).toEqual(turned)
     }
+    // Moña in 3-2: the trumpets call on the 3 side, the trombones answer on the 2 side.
+    const montuno = salsaPresets.find((p) => p.id === 'salsa-montuno-3-2')!
+    expect(onsets(montuno, 'trumpet').every((i) => i < 8)).toBe(true)
+    expect(onsets(montuno, 'trombone').every((i) => i >= 8)).toBe(true)
     // The bell's mouth keeps the beat; its neck strokes are the cáscara's off-beats.
     const bell = steps('salsa-montuno-3-2', 'timbalebell')
     expect(bell.filter((_, i) => i % 2 === 0).every((step) => step === 'open')).toBe(true)

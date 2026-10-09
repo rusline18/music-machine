@@ -246,7 +246,8 @@ script.
   and rumba guaguancó (3-2 rumba clave), with bass tumbao and piano montuno
   over C–G7 (both anticipate the next chord), a tres guajeo (played from
   the bachata guitar notes, each note doubled like a tres course) and, in
-  the montuno, bongo and timbales bells; Bachata derecho, majao and mambo over
+  the montuno, bongo and timbales bells and a brass moña (trumpets call,
+  trombones answer); Bachata derecho, majao and mambo over
   an Am–E loop; plus a verse → montuno/chorus chain. Every preset starts at
   8 counts. They follow documented references but still need sign-off from a
   player.

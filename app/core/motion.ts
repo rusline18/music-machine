@@ -57,6 +57,8 @@ export const INSTRUMENT_MOTION: Record<string, Motion> = {
   bass: pluck,
   piano: pluck,
   tres: pluck,
+  trumpet: flash,
+  trombone: flash,
   requinto: pluck,
   segunda: pluck,
 }
