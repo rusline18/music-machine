@@ -1,0 +1,68 @@
+name: Deploy
+
+# After CI passes on main, build and ship to the VPS (docs/deploy.md).
+# Does nothing until the DEPLOY_HOST variable is set in the repository.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deploy at a time; a newer one waits instead of cutting this one off.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and deploy
+    if: >-
+      vars.DEPLOY_HOST != '' && (
+        (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    env:
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      TARGET: musicmachine@${{ vars.DEPLOY_HOST }}
+      SSH_PORT: ${{ vars.DEPLOY_SSH_PORT || '22' }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.SHA }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      # Built here, not on the server: a 1 GB VPS can run out of memory
+      # building Nuxt. .output is self-contained (no npm install there).
+      - run: npm ci
+
+      - run: npm run build
+
+      - name: Pack the build
+        run: tar -C .output -czf "$SHA.tar.gz" .
+
+      - name: Set up SSH
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Upload
+        run: scp -i ~/.ssh/deploy_key -P "$SSH_PORT" "$SHA.tar.gz" deploy/release.sh "$TARGET:/srv/music-machine/incoming/"
+
+      - name: Release (rolls back if the new build doesn't answer)
+        run: ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$TARGET" bash /srv/music-machine/incoming/release.sh "$SHA"
