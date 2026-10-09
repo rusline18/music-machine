@@ -190,7 +190,7 @@
       "advancedMode": "Loop length, feel, reverb, volumes and chords.",
       "simpleMode": "Hide the extra controls. Your rhythm and settings stay as they are.",
       "count": "The count the music is on right now. 1 and 5 start each half of the 8 counts: listen for them.",
-      "share": "Copies a link to this exact pattern — tempo, length, mutes and all. Send it to a partner or your students.",
+      "share": "A link to this exact pattern — tempo, length, mutes and all. On a phone it opens the share menu, on a computer it copies the link. Send it to a partner or your students.",
       "reset": "Throws away your changes and goes back to the preset.",
       "stepper": "Tap for 1 BPM, hold to change by 5.",
       "animation": "Icons and counts move in time with the music. Switch it off if it distracts you."

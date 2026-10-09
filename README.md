@@ -23,6 +23,7 @@ app/
     layers.ts            Order for "layer by layer"
     links.ts             Checks configured external links (https only)
     share.ts             Pattern ⇄ short link code; incoming links are checked and rebuilt
+    sendLink.ts          Share sheet on touch screens, clipboard elsewhere
     audio/
       engine.ts          AudioContext, per-instrument gain, sample loading (Opus with
                          WAV fallback, prefetch before the first click), playback, reverb
@@ -77,7 +78,8 @@ scripts/
   app-icon.svg         The app icon; render-icons.mjs turns it into public/*.png
 tests/                 Vitest unit tests
 e2e/                   Playwright: pages, grid editing, transport, sharing in a real browser
-docs/                  Plans
+docs/                  Roadmap and research notes
+CHANGELOG.md           What's done
 ```
 
 ### Simple and advanced mode
@@ -110,7 +112,8 @@ that off. Salsa is amber, bachata sky blue (CSS variables in `main.css`).
 
 ### Sharing and saving
 
-**Share** copies a link like `/salsa?p=…` to the exact pattern: tempo, length,
+**Share** sends a link like `/salsa?p=…` to the exact pattern: on a touch
+screen through the system share menu, elsewhere it's copied. The link holds tempo, length,
 mutes, volumes, chords and the voice. Each step is one letter, so a 32-count
 pattern stays well under 2 KB. Opening a link loads the pattern and drops the
 code from the address bar; anything decoded is checked against the genre and
@@ -252,8 +255,7 @@ script.
   an Am–E loop; plus a verse → montuno/chorus chain. Every preset starts at
   8 counts. They follow documented references but still need sign-off from a
   player.
-- What's next: [docs/roadmap.md](docs/roadmap.md). Earlier reviews:
-  [security and performance audit](docs/security-performance-audit.md),
-  [UX plan](docs/ux-plan.md).
+- What's next: [docs/roadmap.md](docs/roadmap.md); what's done:
+  [CHANGELOG.md](CHANGELOG.md).
 - Patterns are 8, 16, 24 or 32 dance counts long, shown as 8-count blocks.
   Each count is two cells ("1 &"); BPM is counts per minute.
