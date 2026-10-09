@@ -110,6 +110,8 @@ describe('rhythm reference', () => {
     'salsa-verse-3-2': SON_CLAVE_3_2,
     'salsa-montuno-3-2': SON_CLAVE_3_2,
     'salsa-verse-montuno': SON_CLAVE_3_2,
+    'salsa-mambo-3-2': SON_CLAVE_3_2,
+    'salsa-mambo-2-3': SON_CLAVE_2_3,
     'salsa-verse-2-3': SON_CLAVE_2_3,
     'salsa-montuno-2-3': SON_CLAVE_2_3,
     'salsa-verse-montuno-2-3': SON_CLAVE_2_3,
@@ -183,6 +185,24 @@ describe('rhythm reference', () => {
     const bell = steps('salsa-montuno-3-2', 'timbalebell')
     expect(bell.filter((_, i) => i % 2 === 0).every((step) => step === 'open')).toBe(true)
     expect(bell.flatMap((step, i) => (step === 'neck' ? [i] : []))).toEqual([5, 7, 9])
+  })
+
+  it('mambo: both brass sections play through the whole cycle, the trumpets on the clave', () => {
+    const steps = (id: string, instrument: string) =>
+      salsaPresets.find((p) => p.id === id)!.tracks.find((t) => t.instrument === instrument)!.steps
+    const mambo = salsaPresets.find((p) => p.id === 'salsa-mambo-3-2')!
+    for (const instrument of ['trumpet', 'trombone']) {
+      const track = mambo.tracks.find((t) => t.instrument === instrument)!
+      expect(track.muted, instrument).toBeFalsy()
+      expect(onsets(mambo, instrument).some((i) => i < 8), instrument).toBe(true)
+      expect(onsets(mambo, instrument).some((i) => i >= 8), instrument).toBe(true)
+      // Pushes into the next cycle on &8, like the rest of the band.
+      expect(steps('salsa-mambo-3-2', instrument)[15], instrument).toBe('push')
+      const turned = [...steps('salsa-mambo-3-2', instrument).slice(8), ...steps('salsa-mambo-3-2', instrument).slice(0, 8)]
+      expect(steps('salsa-mambo-2-3', instrument), instrument).toEqual(turned)
+    }
+    // Trumpet stabs land on the clave strokes after the 1 (it rings with the push).
+    expect(onsets(mambo, 'trumpet').slice(0, 4)).toEqual(SON_CLAVE_3_2.slice(1))
   })
 
   it.each(['salsa-verse-montuno', 'salsa-verse-montuno-2-3'])('%s: the timbales fill into the montuno', (id) => {

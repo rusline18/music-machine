@@ -71,6 +71,20 @@ const TROMBONE_MONA_3_2: Step[] = [
   null, null, null, null, null, null, null, null,
   null, 'hit', null, 'hit', 'root', null, '5th', 'push',
 ]
+/**
+ * Mambo section (3-2): the arranged brass break, both sections at once.
+ * The trombones lock into a riff that runs through both bars, pushing on &4;
+ * over it the trumpets punch out the clave itself — 2& and 4, then 6 and
+ * 7 — and push into the next cycle.
+ */
+const TROMBONE_MAMBO_3_2: Step[] = [
+  null, 'root', null, '3rd', '5th', null, '3rd', 'push',
+  null, 'root', null, '3rd', null, '5th', null, 'push',
+]
+const TRUMPET_MAMBO_3_2: Step[] = [
+  null, null, null, 'hit', null, null, 'hit', null,
+  null, null, 'hit', null, 'hit', null, null, 'push',
+]
 /** Timbales fill (the last two counts of a block): macho, then down to the hembra. */
 const TIMBALES_FILL: Step[] = ['high', 'high', 'high', 'low']
 
@@ -90,6 +104,9 @@ const GUAJEO_2_3 = rotateFigure(GUAJEO_3_2, 8)
 /** Brass moña (2-3) */
 const TRUMPET_MONA_2_3 = rotateFigure(TRUMPET_MONA_3_2, 8)
 const TROMBONE_MONA_2_3 = rotateFigure(TROMBONE_MONA_3_2, 8)
+/** Mambo section (2-3) */
+const TRUMPET_MAMBO_2_3 = rotateFigure(TRUMPET_MAMBO_3_2, 8)
+const TROMBONE_MAMBO_2_3 = rotateFigure(TROMBONE_MAMBO_3_2, 8)
 /** 3-2 rumba clave: like son clave, but the third stroke moves from 4 to &4. */
 const RUMBA_CLAVE_3_2: Step[] = [
   'hit', null, null, 'hit', null, null, null, 'hit',
@@ -212,6 +229,59 @@ export const salsaMontuno23 = definePattern({
 })
 
 /**
+ * Mambo: the instrumental peak of a salsa tune, where the singers step back
+ * and the brass takes over. Bells as in the montuno, with the maracas and
+ * güiro dropped under the horns; trombones and trumpets both play through
+ * the whole cycle, louder than in the moña.
+ */
+export const salsaMambo = definePattern({
+  id: 'salsa-mambo-3-2',
+  counts: 8,
+  bpm: 195,
+  chords: PROGRESSION,
+  tracks: [
+    voiceTrack,
+    { instrument: 'clave', figure: CLAVE_3_2 },
+    { instrument: 'congas', figure: TUMBAO },
+    { instrument: 'bongos', volume: 0.8 },
+    { instrument: 'timbales', volume: 0.7 },
+    { instrument: 'cowbell', figure: BONGO_BELL, volume: 0.7 },
+    { instrument: 'timbalebell', figure: MAMBO_BELL_3_2, volume: 0.65 },
+    { instrument: 'maracas', figure: ['hit'], volume: 0.4, muted: true },
+    { instrument: 'guiro', figure: GUIRO, volume: 0.6, muted: true },
+    { instrument: 'bass', figure: BASS_TUMBAO, volume: 0.9 },
+    { instrument: 'piano', figure: MONTUNO_3_2, volume: 0.5 },
+    { instrument: 'tres', figure: GUAJEO_3_2, volume: 0.4, muted: true },
+    { instrument: 'trumpet', figure: TRUMPET_MAMBO_3_2, volume: 0.75 },
+    { instrument: 'trombone', figure: TROMBONE_MAMBO_3_2, volume: 0.75 },
+  ],
+})
+
+/** The mambo in 2-3 clave. */
+export const salsaMambo23 = definePattern({
+  id: 'salsa-mambo-2-3',
+  counts: 8,
+  bpm: 195,
+  chords: PROGRESSION,
+  tracks: [
+    voiceTrack,
+    { instrument: 'clave', figure: CLAVE_2_3 },
+    { instrument: 'congas', figure: TUMBAO },
+    { instrument: 'bongos', volume: 0.8 },
+    { instrument: 'timbales', volume: 0.7 },
+    { instrument: 'cowbell', figure: BONGO_BELL, volume: 0.7 },
+    { instrument: 'timbalebell', figure: MAMBO_BELL_2_3, volume: 0.65 },
+    { instrument: 'maracas', figure: ['hit'], volume: 0.4, muted: true },
+    { instrument: 'guiro', figure: GUIRO, volume: 0.6, muted: true },
+    { instrument: 'bass', figure: BASS_TUMBAO, volume: 0.9 },
+    { instrument: 'piano', figure: MONTUNO_2_3, volume: 0.5 },
+    { instrument: 'tres', figure: GUAJEO_2_3, volume: 0.4, muted: true },
+    { instrument: 'trumpet', figure: TRUMPET_MAMBO_2_3, volume: 0.75 },
+    { instrument: 'trombone', figure: TROMBONE_MAMBO_2_3, volume: 0.75 },
+  ],
+})
+
+/**
  * Cha-cha-chá, charanga style, over 2-3 son clave. Each count is a real
  * quarter note at ~120 BPM rather than salsa's cut time. The güiro gives
  * the name: long on the beat, two shorts after — the shorts on "4 &" plus
@@ -294,9 +364,11 @@ export const salsaGuaguanco = definePattern({
 export const salsaPresets = [
   salsaVerse,
   salsaMontuno,
+  salsaMambo,
   chainPatterns('salsa-verse-montuno', endWith(salsaVerse, 'timbales', TIMBALES_FILL), salsaMontuno),
   salsaVerse23,
   salsaMontuno23,
+  salsaMambo23,
   chainPatterns('salsa-verse-montuno-2-3', endWith(salsaVerse23, 'timbales', TIMBALES_FILL), salsaMontuno23),
   salsaChachacha,
   salsaGuaguanco,
