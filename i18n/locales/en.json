@@ -126,6 +126,7 @@
   "presets": {
     "salsa-verse-3-2": "Verse — the basic groove",
     "salsa-montuno-3-2": "Montuno — more energy",
+    "salsa-mambo-3-2": "Mambo — the brass takes over",
     "salsa-verse-montuno": "Verse → Montuno (16 counts)",
     "bachata-derecho": "Verse (derecho) — calm",
     "bachata-majao": "Chorus (majao) — more energy",
@@ -133,6 +134,7 @@
     "bachata-derecho-majao": "Verse → Chorus (16 counts)",
     "salsa-verse-2-3": "Verse in 2-3 clave",
     "salsa-montuno-2-3": "Montuno in 2-3 clave",
+    "salsa-mambo-2-3": "Mambo in 2-3 clave",
     "salsa-verse-montuno-2-3": "Verse → Montuno, 2-3 (16 counts)",
     "salsa-chachacha-2-3": "Cha-cha-chá — slower, \"cha-cha-chá\" on 4 & 1",
     "salsa-guaguanco-3-2": "Rumba guaguancó — drums and clave",
@@ -142,6 +144,7 @@
     "presets": {
       "salsa-verse-3-2": "The steady groove under the singing. Clear clave and congas: the best place to start.",
       "salsa-montuno-3-2": "The hotter part after the verse: the bongo and timbales bells come in and the band pushes forward.",
+      "salsa-mambo-3-2": "The instrumental peak: the singers step back and the brass plays the mambo. The trombones keep a riff going, the trumpets punch out the clave over it — the dancers' cue for shines.",
       "salsa-verse-montuno": "8 counts of verse, then 8 of montuno, to hear how a song builds up. A timbales fill leads into the montuno.",
       "bachata-derecho": "The calm groove of the verse. Good for practising basic steps.",
       "bachata-majao": "The chorus: the bongos and güira drop the offbeats and land on each count.",
@@ -149,6 +152,7 @@
       "bachata-derecho-majao": "8 counts of verse, then 8 of chorus, like in a real song.",
       "salsa-verse-2-3": "The same verse, but the clave starts from its \"2\" side. Compare it with 3-2 to hear where a phrase begins.",
       "salsa-montuno-2-3": "The montuno with the clave started from its \"2\" side.",
+      "salsa-mambo-2-3": "The mambo with the clave started from its \"2\" side.",
       "salsa-verse-montuno-2-3": "8 counts of verse, then 8 of montuno, in 2-3 clave.",
       "salsa-chachacha-2-3": "Around 120 BPM. Listen to the güiro: two short scrapes and a long one are the \"cha-cha-chá\" you step on 4 & 1.",
       "salsa-guaguanco-3-2": "The street rumba salsa bands quote in \"rumba\" breaks. Rumba clave: the third stroke comes half a beat later than in son clave. Simplified for one conga player.",
