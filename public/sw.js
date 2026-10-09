@@ -28,9 +28,13 @@ async function storable(response) {
   return new Response(await response.blob(), { status: response.status, statusText: response.statusText, headers: response.headers })
 }
 
-/** The page plus the scripts and styles it loads. */
+/**
+ * The page plus the scripts and styles it loads. Without cookies: each page
+ * sets the language cookie, and with it the home page would redirect to
+ * whichever language was fetched last.
+ */
 async function precachePage(cache, path) {
-  const response = await fetch(path, { credentials: 'same-origin' })
+  const response = await fetch(path, { credentials: 'omit' })
   if (!response.ok) return
   const html = await response.clone().text()
   await cache.put(path, await storable(response))
@@ -43,8 +47,13 @@ async function precachePage(cache, path) {
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(PAGES_CACHE)
-    // One page failing (a flaky connection) shouldn't stop the others.
-    await Promise.allSettled(PAGES.map((path) => precachePage(cache, path)))
+    // One at a time, and one page failing (a flaky connection) doesn't
+    // stop the others.
+    for (const path of PAGES) {
+      try {
+        await precachePage(cache, path)
+      } catch { /* cached when it's next visited */ }
+    }
     await self.skipWaiting()
   })())
 })

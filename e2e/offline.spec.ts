@@ -19,6 +19,8 @@ test('works offline once visited', async ({ page, context }) => {
     return settled
   }, { timeout: 20_000, intervals: [1000] }).toBe(true)
 
+  const failed: string[] = []
+  page.on('requestfailed', (request) => failed.push(`${request.url()} ${request.failure()?.errorText}`))
   await context.setOffline(true)
   await page.goto('/bachata')
   await expect(page.getByRole('heading', { name: 'Bachata' })).toBeVisible()
@@ -27,5 +29,12 @@ test('works offline once visited', async ({ page, context }) => {
   await expect(page.getByText('Sounds that didn\'t load')).toHaveCount(0)
 
   await page.goto('/ru/salsa')
-  await expect(page.getByRole('heading', { name: 'Сальса' })).toBeVisible()
+  try {
+    await expect(page.getByRole('heading', { name: 'Сальса' })).toBeVisible()
+  } catch (error) {
+    // What the worker had and what didn't load, for the CI log.
+    console.log('Requests that failed offline:', failed)
+    console.log('Page:', page.url(), (await page.content()).slice(0, 500))
+    throw error
+  }
 })
