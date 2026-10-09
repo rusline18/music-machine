@@ -1,6 +1,7 @@
 import type { Chord, PitchedInstrument, Voice, Zone } from '~/core/harmony'
 import { chordTones, noteFrom } from '~/core/harmony'
 import type { Sample, SampleMap } from '~/core/resolve'
+import { GUITAR_ZONES } from '../bachata/samples'
 
 /** Takes of a soft stroke, each played at `gain`. */
 const soft = (gain: number, ...urls: string[]): Sample[] => urls.map((url) => ({ url, gain }))
@@ -121,4 +122,45 @@ const piano: PitchedInstrument = {
   },
 }
 
-export const salsaPitched: Record<string, PitchedInstrument> = { bass, piano }
+/**
+ * One course of the tres: two strings struck together by the pick, the
+ * second a few milliseconds later. The tres has three such pairs (G, C, E):
+ * the G course in octaves, the other two in unison, slightly apart in
+ * tuning — the shimmer that sets it apart from a guitar. `first` damps
+ * whatever the tres was still ringing.
+ */
+const course = (midi: number, { octave = false, delay = 0, first = false } = {}): Voice[] => [
+  { midi, delay, gain: 0.8, group: first ? '*' : `c${midi}` },
+  { midi: octave ? midi + 12 : midi + 0.05, delay: delay + 0.005, gain: 0.55, group: `c${midi}b` },
+]
+/** A chord tone from C4 to B4. */
+const tresNote = (chord: Chord, degree: number) => noteFrom(60, chord.root + chord.intervals[degree]!)
+/** Third and fifth together, the fifth above the third — the tres's thirds and sixths. */
+const tresDyad = (chord: Chord): Voice[] => {
+  const third = tresNote(chord, 1)
+  return [
+    ...course(third, { first: true }),
+    ...course(noteFrom(third + 1, chord.root + chord.intervals[2]!), { delay: 0.012 }),
+  ]
+}
+
+/**
+ * Tres: the guajeo, a repeating figure locked to the clave. There are no
+ * free recordings of a tres, so it plays from the bachata guitar notes
+ * (nylon strings, so softer than a real tres's steel), with each note
+ * doubled like a tres course. The root is played on the G course, in
+ * octaves from G3 to F#4; other notes stay between C4 and D#5, inside the
+ * recorded guitar range. `push` is the next bar's third and fifth, early.
+ */
+const tres: PitchedInstrument = {
+  zones: GUITAR_ZONES,
+  articulations: {
+    root: (chord) => course(noteFrom(55, chord.root), { octave: true, first: true }),
+    '3rd': (chord) => course(tresNote(chord, 1), { first: true }),
+    '5th': (chord) => course(tresNote(chord, 2), { first: true }),
+    dyad: (chord) => tresDyad(chord),
+    push: (_chord, next) => tresDyad(next),
+  },
+}
+
+export const salsaPitched: Record<string, PitchedInstrument> = { bass, piano, tres }

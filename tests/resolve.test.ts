@@ -148,8 +148,9 @@ describe('bachata pitched tracks', () => {
 
 describe('salsa pitched tracks', () => {
   const resolve = stepResolver(salsa, () => 'en')
-  // The bass has a single recorded A2; piano zones are 3–4 semitones apart.
-  const MAX_SHIFT: Record<string, number> = { bass: 7, piano: 2 }
+  // The bass has a single recorded A2; piano and guitar (tres) zones are
+  // 3–4 semitones apart, plus the tres's few cents of course detuning.
+  const MAX_SHIFT: Record<string, number> = { bass: 7, piano: 2, tres: 2.05 }
 
   /** Notes for `step` on count 4 of the first bar, over `chords` (a chord per bar). */
   function notesOn4(instrument: string, step: string, chords: string[]) {
@@ -162,7 +163,7 @@ describe('salsa pitched tracks', () => {
     return resolve(pattern, pattern.tracks[0]!, 6)
   }
   const pitchOf = (note: { url: string, rate?: number }) => {
-    const zone = [...salsa.pitched.bass!.zones, ...salsa.pitched.piano!.zones].find((z) => z.url === note.url)!
+    const zone = Object.values(salsa.pitched).flatMap((p) => p.zones).find((z) => z.url === note.url)!
     return Math.round(zone.midi + 12 * Math.log2(note.rate ?? 1))
   }
 
@@ -189,7 +190,23 @@ describe('salsa pitched tracks', () => {
     expect(pitches.slice(2).map((p) => p % 12).sort()).toEqual([0, 5, 9])
   })
 
-  it.each(['bass', 'piano'])('%s stays close to a recorded note for every chord', (instrument) => {
+  it('doubles every tres note like a course: the root in octaves, the rest in unison, a little apart', () => {
+    const root = notesOn4('tres', 'root', ['C', 'G7'])
+    // C on the G course: C4 with C5 above it, a few ms later
+    expect(root.map(pitchOf)).toEqual([60, 72])
+    expect(root[1]!.delay).toBeGreaterThan(root[0]!.delay ?? 0)
+    expect(root[0]!.group).toBe('*')
+    const third = notesOn4('tres', '3rd', ['C', 'G7'])
+    expect(third.map(pitchOf)).toEqual([64, 64])
+    expect(third[0]!.rate).not.toBe(third[1]!.rate)
+  })
+
+  it('plays the tres push as the next chord in thirds', () => {
+    // Next chord G7: B4 and D5, each a doubled course
+    expect(notesOn4('tres', 'push', ['C', 'G7']).map(pitchOf)).toEqual([71, 71, 74, 74])
+  })
+
+  it.each(['bass', 'piano', 'tres'])('%s stays close to a recorded note for every chord', (instrument) => {
     for (const chord of CHORD_NAMES) {
       for (const next of ['C', 'F#m7', 'B7']) {
         for (const step of stepNames(salsa, instrument)) {

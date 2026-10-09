@@ -56,6 +56,7 @@ export const INSTRUMENT_MOTION: Record<string, Motion> = {
   guira: scrape,
   bass: pluck,
   piano: pluck,
+  tres: pluck,
   requinto: pluck,
   segunda: pluck,
 }

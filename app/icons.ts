@@ -39,6 +39,8 @@ export const ICONS: Record<string, readonly string[]> = {
   bass: ['M3 17a4 4 0 1 0 8 0a4 4 0 1 0 -8 0', 'M7 17h.01', 'M9.8 14.2 20 4', 'M14 20c1.5-2 3 2 4.5 0s3 2 4.5 0'],
   /** Piano keys. */
   piano: ['M3 5h18v14H3z', 'M7.5 13v6M12 13v6M16.5 13v6', 'M6 5h3v8H6zM10.5 5h3v8h-3zM15 5h3v8h-3z'],
+  /** A small guitar with a short neck: the Cuban tres. */
+  tres: ['M4 18a3.5 3.5 0 1 0 7 0a3.5 3.5 0 1 0 -7 0', 'M9.5 15.5 19 6', 'M17 3l4 4', 'M13 20h7M13 17h7'],
   /** A guitar with a spark: the lead guitar. */
   requinto: ['M3 17a4 4 0 1 0 8 0a4 4 0 1 0 -8 0', 'M7 17h.01', 'M9.8 14.2 20 4', 'M5 3v5M2.5 5.5h5'],
   /** A guitar with strum lines: the rhythm guitar. */

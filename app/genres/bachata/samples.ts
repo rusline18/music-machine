@@ -33,8 +33,9 @@ export const bachataSamples: Record<string, SampleMap> = {
  * Recorded guitar notes every 3 semitones from E2 to E5 (C5 stands in for
  * a missing C#5), tuned exactly to pitch by `npm run samples`. Any other
  * note is at most 2 semitones away, close enough to resample cleanly.
+ * Salsa's tres plays from them too.
  */
-const GUITAR_ZONES: Zone[] = [
+export const GUITAR_ZONES: Zone[] = [
   { url: '/audio/bachata/guitar/e2.wav', midi: 40 },
   { url: '/audio/bachata/guitar/g2.wav', midi: 43 },
   { url: '/audio/bachata/guitar/bb2.wav', midi: 46 },

@@ -161,13 +161,15 @@ describe('rhythm reference', () => {
       expect(plays(pattern, 'timbalebell'), id).toBe(montuno)
       expect(plays(pattern, 'bongos'), id).toBe(!montuno)
       expect(plays(pattern, 'timbales'), id).toBe(!montuno)
+      // The tres keeps its guajeo through both.
+      expect(plays(pattern, 'tres'), id).toBe(true)
     }
   })
 
-  it('mambo bell and piano montuno turn with the clave', () => {
+  it('mambo bell, piano montuno and tres guajeo turn with the clave', () => {
     const steps = (id: string, instrument: string) =>
       salsaPresets.find((p) => p.id === id)!.tracks.find((t) => t.instrument === instrument)!.steps
-    for (const instrument of ['timbalebell', 'piano']) {
+    for (const instrument of ['timbalebell', 'piano', 'tres']) {
       const turned = [...steps('salsa-montuno-3-2', instrument).slice(8), ...steps('salsa-montuno-3-2', instrument).slice(0, 8)]
       expect(steps('salsa-montuno-2-3', instrument), instrument).toEqual(turned)
     }

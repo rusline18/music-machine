@@ -6,7 +6,7 @@ import { voiceTrack } from '../voice'
 // (cells 0–7 = counts 1–4, cells 8–15 = counts 5–8). Built from documented
 // references, but still needs sign-off from a salsa player. The clave is the
 // anchor: every part that isn't the same in both bars (cáscara, bells,
-// piano) is written for 3-2 and turned with the clave for 2-3.
+// piano, tres) is written for 3-2 and turned with the clave for 2-3.
 
 /** I–V7, a chord per bar; bass and piano follow it. */
 const PROGRESSION = ['C', 'G7']
@@ -50,6 +50,14 @@ const MONTUNO_3_2: Step[] = [
   null, 'chord', '3rd', null, 'chord', '5th', null, 'push',
   null, 'chord', 'root', 'chord', null, '3rd', 'chord', 'push',
 ]
+/**
+ * Tres guajeo (3-2): single notes and thirds in the gaps the piano leaves,
+ * the same push on &4 as the bass and piano, and no downbeat after it.
+ */
+const GUAJEO_3_2: Step[] = [
+  null, '5th', 'dyad', null, '3rd', 'dyad', 'root', 'push',
+  null, '3rd', null, 'dyad', '5th', null, 'dyad', 'push',
+]
 /** Timbales fill (the last two counts of a block): macho, then down to the hembra. */
 const TIMBALES_FILL: Step[] = ['high', 'high', 'high', 'low']
 
@@ -64,6 +72,8 @@ const CASCARA_2_3 = rotateFigure(CASCARA_3_2, 8)
 const MAMBO_BELL_2_3 = rotateFigure(MAMBO_BELL_3_2, 8)
 /** Piano montuno (2-3) */
 const MONTUNO_2_3 = rotateFigure(MONTUNO_3_2, 8)
+/** Tres guajeo (2-3) */
+const GUAJEO_2_3 = rotateFigure(GUAJEO_3_2, 8)
 /** 3-2 rumba clave: like son clave, but the third stroke moves from 4 to &4. */
 const RUMBA_CLAVE_3_2: Step[] = [
   'hit', null, null, 'hit', null, null, null, 'hit',
@@ -83,7 +93,7 @@ function endWith(pattern: Pattern, instrument: string, ending: Step[]): Pattern 
   }
 }
 
-/** Verse feel in 3-2 son clave: tumbao, martillo, cáscara, bass and piano montuno. */
+/** Verse feel in 3-2 son clave: tumbao, martillo, cáscara, bass, piano montuno and tres guajeo. */
 export const salsaVerse = definePattern({
   id: 'salsa-verse-3-2',
   counts: 8,
@@ -101,13 +111,15 @@ export const salsaVerse = definePattern({
     { instrument: 'guiro', figure: GUIRO, volume: 0.6, muted: true },
     { instrument: 'bass', figure: BASS_TUMBAO, volume: 0.9 },
     { instrument: 'piano', figure: MONTUNO_3_2, volume: 0.6 },
+    { instrument: 'tres', figure: GUAJEO_3_2, volume: 0.5 },
   ],
 })
 
 /**
  * Montuno feel: the bongocero puts the bongos down for the bongo bell, the
  * timbalero leaves the shell for the mambo bell, and the güiro comes in.
- * Bass and piano keep their tumbao and montuno.
+ * Bass, piano and tres keep their tumbao, montuno and guajeo; the tres
+ * digs in a little louder.
  */
 export const salsaMontuno = definePattern({
   id: 'salsa-montuno-3-2',
@@ -126,6 +138,7 @@ export const salsaMontuno = definePattern({
     { instrument: 'guiro', figure: GUIRO, volume: 0.6 },
     { instrument: 'bass', figure: BASS_TUMBAO, volume: 0.9 },
     { instrument: 'piano', figure: MONTUNO_3_2, volume: 0.6 },
+    { instrument: 'tres', figure: GUAJEO_3_2, volume: 0.6 },
   ],
 })
 
@@ -147,6 +160,7 @@ export const salsaVerse23 = definePattern({
     { instrument: 'guiro', figure: GUIRO, volume: 0.6, muted: true },
     { instrument: 'bass', figure: BASS_TUMBAO, volume: 0.9 },
     { instrument: 'piano', figure: MONTUNO_2_3, volume: 0.6 },
+    { instrument: 'tres', figure: GUAJEO_2_3, volume: 0.5 },
   ],
 })
 
@@ -168,6 +182,7 @@ export const salsaMontuno23 = definePattern({
     { instrument: 'guiro', figure: GUIRO, volume: 0.6 },
     { instrument: 'bass', figure: BASS_TUMBAO, volume: 0.9 },
     { instrument: 'piano', figure: MONTUNO_2_3, volume: 0.6 },
+    { instrument: 'tres', figure: GUAJEO_2_3, volume: 0.6 },
   ],
 })
 
@@ -200,6 +215,8 @@ export const salsaChachacha = definePattern({
     { instrument: 'guiro', figure: GUIRO, volume: 0.8 },
     { instrument: 'bass', figure: ['root', null, null, null, '5th', null, null, null], volume: 0.9 },
     { instrument: 'piano', figure: MONTUNO_2_3, volume: 0.45 },
+    // Charangas have no tres
+    { instrument: 'tres', volume: 0.5 },
   ],
 })
 
@@ -210,10 +227,10 @@ export const salsaChachacha = definePattern({
  * the beat — a muffled slap on 2 and 6, open tones on 4 and 5 — and the
  * tumba (low) answers off the beat on "4 &", "7 &" and 8. The palitos play
  * the guagua pattern on the timbal shell (the figure salsa calls cáscara).
- * The quinto improvises, so it isn't written. Rumba has no bells, bass or
- * piano. A simplified, one-player
- * version of a part that varies between Havana and Matanzas styles: needs
- * sign-off from a rumbero before it's treated as reference.
+ * The quinto improvises, so it isn't written. Rumba has no bells, bass,
+ * piano or tres. A simplified, one-player version of a part that varies
+ * between Havana and Matanzas styles: needs sign-off from a rumbero before
+ * it's treated as reference.
  */
 export const salsaGuaguanco = definePattern({
   id: 'salsa-guaguanco-3-2',
@@ -240,6 +257,7 @@ export const salsaGuaguanco = definePattern({
     { instrument: 'guiro', volume: 0.6 },
     { instrument: 'bass', volume: 0.9 },
     { instrument: 'piano', volume: 0.6 },
+    { instrument: 'tres', volume: 0.5 },
   ],
 })
 
