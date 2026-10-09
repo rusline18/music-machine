@@ -30,6 +30,7 @@ const {
   switchStep,
   tempo,
   setTempo,
+  nudgeTempo,
   setVolume,
   setMuted,
   hasVoice,
@@ -57,6 +58,23 @@ const presetIds = computed(() => {
 })
 /** Simple mode leaves these off the grid: the voice has its own switch above it. */
 const simpleHides = props.genre.instruments.filter((instrument) => props.genre.spoken[instrument])
+/** The band, without the counting voice: the practice switches and the 1–9 keys. */
+const bandTracks = computed(() => pattern.value.tracks.filter((track) => !simpleHides.includes(track.instrument)))
+
+const { view, setView } = useBeatView()
+const viewOptions = computed(() => (['practice', 'editor'] as const).map((value) => ({ value, label: t(`view.${value}`) })))
+
+const togglePlay = () => (isPlaying.value || isLoading.value ? stop() : play())
+useWakeLock(() => isPlaying.value)
+useHotkeys({
+  togglePlay,
+  nudgeTempo,
+  toggleInstrument: (index) => {
+    const track = bandTracks.value[index]
+    if (track) setMuted(track.instrument, !track.muted)
+  },
+})
+
 /** Worked out once: a fresh array on each render would re-render every row. */
 const namesByInstrument = new Map(props.genre.instruments.map((instrument) => [instrument, stepNames(props.genre, instrument)]))
 const stepNamesFor = (instrument: string) => namesByInstrument.get(instrument) ?? []
@@ -75,7 +93,12 @@ function clickStep(instrument: string, stepIndex: number) {
 </script>
 
 <template>
-  <div ref="root">
+  <!-- A column so the practice bar can sit last on a phone (stuck to the
+       bottom) and above the grid on wider screens (stuck to the top). -->
+  <div
+    ref="root"
+    class="flex flex-col"
+  >
     <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
         <NuxtLinkLocale
@@ -100,18 +123,20 @@ function clickStep(instrument: string, stepIndex: number) {
       </div>
     </div>
 
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-      <UiRangeControl
-        v-if="advanced"
-        v-model="pattern.bpm"
-        :label="$t('controls.bpm')"
-        icon="tempo"
-        :hint="$t('help.controls.bpm')"
-        :min="genre.bpmRange[0]"
-        :max="genre.bpmRange[1]"
-      />
+    <UiSegmentedControl
+      class="mb-6 sm:hidden"
+      :label="$t('view.label')"
+      :options="viewOptions"
+      :model-value="view"
+      @update:model-value="(next) => next && setView(next)"
+    />
+
+    <div
+      v-if="!advanced || hasVoice"
+      class="mb-6 flex flex-wrap items-center gap-x-6 gap-y-3"
+    >
       <UiSegmentedControl
-        v-else
+        v-if="!advanced"
         :label="$t('controls.speed')"
         icon="tempo"
         :hint="$t('help.controls.speed')"
@@ -128,96 +153,114 @@ function clickStep(instrument: string, stepIndex: number) {
         :model-value="countingMode"
         @update:model-value="(mode) => mode && setCounting(mode)"
       />
+    </div>
+
+    <BeatPracticeBar class="max-sm:order-last sm:mb-6">
       <BeatTransport
         :is-playing="isPlaying"
         :is-loading="isLoading"
         :load-progress="loadProgress"
         :failed-samples="failedSamples"
+        :bpm="pattern.bpm"
         @play="play"
         @stop="stop"
+        @nudge="nudgeTempo"
       />
-    </div>
+    </BeatPracticeBar>
 
+    <!-- On a phone the guide and the buttons below go after the cards or
+         the grid (order-1), so what's practised is on the first screen. -->
     <BeatLayerGuide
-      class="mb-6"
+      class="mb-6 max-sm:order-1"
       :layers="layers"
       @start="startLayers"
       @add="addLayer"
       @end="endLayers"
     />
 
-    <div
-      v-if="advanced"
-      class="mb-6 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-lg border border-neutral-800 p-4"
-    >
-      <UiSegmentedControl
-        :label="$t('controls.counts')"
-        icon="counts"
-        :hint="$t('help.controls.counts')"
-        :options="countOptions"
-        :model-value="pattern.counts"
-        @update:model-value="(counts) => counts && setCounts(counts)"
-      />
-      <UiRangeControl
-        v-model="feel"
-        :label="$t('controls.feel')"
-        icon="feel"
-        :hint="$t('help.controls.feel')"
-        :min="0"
-        :max="1"
-        :step="0.05"
-        :format="percent"
-      />
-      <UiRangeControl
-        v-model="reverb"
-        :label="$t('controls.reverb')"
-        icon="reverb"
-        :hint="$t('help.controls.reverb')"
-        :min="0"
-        :max="1"
-        :step="0.05"
-        :format="percent"
-      />
-      <div class="flex gap-3">
-        <button
-          type="button"
-          class="inline-flex items-center gap-1.5 rounded-md bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700"
-          :title="$t('help.controls.random')"
-          @click="randomize"
-        >
-          <UiIcon name="random" />
-          {{ $t('controls.random') }}
-        </button>
-        <button
-          type="button"
-          class="inline-flex items-center gap-1.5 rounded-md bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700"
-          :title="$t('help.controls.clear')"
-          @click="clear"
-        >
-          <UiIcon name="clear" />
-          {{ $t('controls.clear') }}
-        </button>
-      </div>
-    </div>
-
-    <BeatCountDisplay class="mb-4" />
-
-    <BeatGrid
-      :pattern="pattern"
-      :step-names="stepNamesFor"
-      :playing-bar="playingBar"
-      :advanced="advanced"
-      :simple-hides="simpleHides"
-      @toggle-step="clickStep"
-      @update:volume="setVolume"
+    <!-- Practice view on a phone. Shown and hidden with CSS, so the server
+         renders the right one and nothing jumps after loading. -->
+    <BeatInstrumentCards
+      :class="view === 'practice' ? 'mb-6 sm:hidden' : 'hidden'"
+      :tracks="bandTracks"
       @update:muted="setMuted"
-      @update:chord="setChord"
     />
 
-    <div class="mt-6 flex flex-wrap items-center gap-3">
+    <div
+      class="max-sm:mb-6"
+      :class="{ 'max-sm:hidden': view === 'practice' }"
+    >
+      <div
+        v-if="advanced"
+        class="mb-6 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-lg border border-neutral-800 p-4"
+      >
+        <UiSegmentedControl
+          :label="$t('controls.counts')"
+          icon="counts"
+          :hint="$t('help.controls.counts')"
+          :options="countOptions"
+          :model-value="pattern.counts"
+          @update:model-value="(counts) => counts && setCounts(counts)"
+        />
+        <UiRangeControl
+          v-model="feel"
+          :label="$t('controls.feel')"
+          icon="feel"
+          :hint="$t('help.controls.feel')"
+          :min="0"
+          :max="1"
+          :step="0.05"
+          :format="percent"
+        />
+        <UiRangeControl
+          v-model="reverb"
+          :label="$t('controls.reverb')"
+          icon="reverb"
+          :hint="$t('help.controls.reverb')"
+          :min="0"
+          :max="1"
+          :step="0.05"
+          :format="percent"
+        />
+        <div class="flex gap-3">
+          <button
+            type="button"
+            class="inline-flex min-h-11 items-center gap-1.5 rounded-md bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700 sm:min-h-0"
+            :title="$t('help.controls.random')"
+            @click="randomize"
+          >
+            <UiIcon name="random" />
+            {{ $t('controls.random') }}
+          </button>
+          <button
+            type="button"
+            class="inline-flex min-h-11 items-center gap-1.5 rounded-md bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700 sm:min-h-0"
+            :title="$t('help.controls.clear')"
+            @click="clear"
+          >
+            <UiIcon name="clear" />
+            {{ $t('controls.clear') }}
+          </button>
+        </div>
+      </div>
+
+      <BeatGrid
+        :pattern="pattern"
+        :step-names="stepNamesFor"
+        :playing-bar="playingBar"
+        :advanced="advanced"
+        :simple-hides="simpleHides"
+        @toggle-step="clickStep"
+        @update:volume="setVolume"
+        @update:muted="setMuted"
+        @update:chord="setChord"
+      />
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3 max-sm:order-1 sm:mt-6">
       <button
         type="button"
-        class="inline-flex items-center gap-1.5 rounded-md bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700"
+        class="inline-flex min-h-11 items-center gap-1.5 rounded-md bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700 sm:min-h-0"
         :title="$t('help.controls.reset')"
         @click="reset"
       >
@@ -227,10 +270,10 @@ function clickStep(instrument: string, stepIndex: number) {
       <BeatShareButton :code="shareCode" />
     </div>
 
-    <div class="mt-4 flex flex-wrap items-center gap-3">
+    <div class="mt-4 flex flex-wrap items-center gap-3 max-sm:order-1 max-sm:mb-6">
       <button
         type="button"
-        class="inline-flex items-center gap-2 rounded-md border border-neutral-700 px-4 py-2 text-sm text-neutral-200 transition hover:bg-neutral-800"
+        class="inline-flex min-h-11 items-center gap-2 rounded-md border border-neutral-700 px-4 py-2 text-sm text-neutral-200 transition hover:bg-neutral-800 sm:min-h-0"
         :aria-pressed="advanced"
         @click="setMode(advanced ? 'simple' : 'advanced')"
       >
@@ -241,5 +284,10 @@ function clickStep(instrument: string, stepIndex: number) {
         {{ advanced ? $t('help.controls.simpleMode') : $t('help.controls.advancedMode') }}
       </p>
     </div>
+
+    <!-- Only where there's a keyboard and a mouse. -->
+    <p class="mt-4 hidden text-xs text-neutral-500 [@media(hover:hover)_and_(pointer:fine)]:block">
+      {{ $t('help.hotkeys') }}
+    </p>
   </div>
 </template>

@@ -76,7 +76,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
     >
       <button
         type="button"
-        class="rounded-md bg-neutral-800 px-4 py-2 text-neutral-200 disabled:opacity-40"
+        class="min-h-11 min-w-11 rounded-md bg-neutral-800 px-4 py-2 text-neutral-200 disabled:opacity-40"
         :aria-label="t('grid.previous')"
         :disabled="shownSections[0] === 0"
         @click="page = shownSections[0]! - 1"
@@ -86,7 +86,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
       <span class="text-sm text-neutral-400">{{ t('grid.page', { n: shownSections[0]! + 1, total: sectionCount }) }}</span>
       <button
         type="button"
-        class="rounded-md bg-neutral-800 px-4 py-2 text-neutral-200 disabled:opacity-40"
+        class="min-h-11 min-w-11 rounded-md bg-neutral-800 px-4 py-2 text-neutral-200 disabled:opacity-40"
         :aria-label="t('grid.next')"
         :disabled="shownSections[0] === sectionCount - 1"
         @click="page = shownSections[0]! + 1"

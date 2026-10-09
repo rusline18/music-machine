@@ -44,7 +44,7 @@ function stepLabel(stepIndex: number): string {
       <button
         v-if="showControls"
         type="button"
-        class="rounded px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide transition"
+        class="min-h-11 rounded px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide transition sm:min-h-0"
         :class="track.muted ? 'bg-neutral-700 text-neutral-400' : 'bg-amber-500/20 text-amber-400'"
         :aria-pressed="track.muted"
         :aria-label="t('grid.mute', { instrument: instrumentName })"
@@ -77,7 +77,7 @@ function stepLabel(stepIndex: number): string {
         v-for="(stepIndex, i) in stepIndices"
         :key="stepIndex"
         type="button"
-        class="step-cell h-9 min-w-0 flex-1 overflow-hidden rounded font-mono text-[10px] transition"
+        class="step-cell h-11 min-w-0 flex-1 overflow-hidden rounded font-mono text-[10px] transition active:scale-90 sm:h-9"
         :class="[
           track.steps[stepIndex] ? 'bg-amber-500 text-neutral-900' : 'bg-neutral-800 text-neutral-600 hover:bg-neutral-700',
           { 'ml-1.5': i % stepsPerCount === 0 && i > 0 },

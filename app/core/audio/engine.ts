@@ -73,6 +73,10 @@ export function createAudioEngine() {
 
   function getContext(): AudioContext {
     if (!ctx) {
+      // Music, not a notification sound: on iOS (Safari 16.4+) it then plays
+      // with the side switch on silent too.
+      const { audioSession } = navigator as Navigator & { audioSession?: { type: string } }
+      if (audioSession) audioSession.type = 'playback'
       ctx = new AudioContext()
       masterGain = ctx.createGain()
       masterGain.connect(ctx.destination)

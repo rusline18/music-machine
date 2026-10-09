@@ -26,3 +26,9 @@ body {
     @apply bg-amber-400;
   }
 }
+
+/* A clear ring for keyboard users on every control, not just the ones that ask. */
+:focus-visible {
+  outline: 2px solid theme('colors.amber.400');
+  outline-offset: 2px;
+}

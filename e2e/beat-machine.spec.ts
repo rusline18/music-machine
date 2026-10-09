@@ -68,20 +68,53 @@ test.describe('salsa beat machine', () => {
   })
 
   test('play and stop', async ({ page }) => {
-    const play = page.getByRole('button', { name: '▶ Play' })
+    // One button that flips between the two.
+    await page.getByRole('button', { name: '▶ Play' }).click()
     const stop = page.getByRole('button', { name: '■ Stop' })
-    await expect(stop).toBeDisabled()
-
-    await play.click()
-    await expect(stop).toBeEnabled()
-    await expect(play).toBeDisabled()
+    await expect(stop).toBeVisible()
     // The playhead lights the cells of the step being heard.
     await expect(page.locator('.step-cell.is-now').first()).toBeVisible()
 
     await stop.click()
-    await expect(play).toBeEnabled()
-    await expect(stop).toBeDisabled()
+    await expect(page.getByRole('button', { name: '▶ Play' })).toBeVisible()
     await expect(page.locator('.is-now')).toHaveCount(0)
+  })
+
+  test('tempo buttons: a click is 1 BPM, holding goes by 5', async ({ page }) => {
+    const bpm = page.getByRole('group', { name: 'BPM' }).locator('output')
+    const start = Number((await bpm.textContent())!.match(/\d+/)![0])
+    await page.getByRole('button', { name: 'Faster' }).click()
+    await expect(bpm).toContainText(String(start + 1))
+    await page.getByRole('button', { name: 'Slower' }).click()
+    await expect(bpm).toContainText(String(start))
+
+    const slower = page.getByRole('button', { name: 'Slower' })
+    await slower.hover()
+    await page.mouse.down()
+    await page.waitForTimeout(600)
+    await page.mouse.up()
+    const held = Number((await bpm.textContent())!.match(/\d+/)![0])
+    // Repeats by 5 for as long as it's held; the click that ends it adds nothing.
+    expect(held).toBeLessThanOrEqual(start - 5)
+    expect((start - held) % 5).toBe(0)
+  })
+
+  test('keyboard: Space plays and stops, arrows change the tempo, digits switch instruments', async ({ page }) => {
+    const bpm = page.getByRole('group', { name: 'BPM' }).locator('output')
+    const start = Number((await bpm.textContent())!.match(/\d+/)![0])
+    await page.locator('h1').click()
+    await page.keyboard.press('ArrowRight')
+    await expect(bpm).toContainText(String(start + 1))
+    await page.keyboard.press('Shift+ArrowLeft')
+    await expect(bpm).toContainText(String(start - 4))
+
+    await page.keyboard.press('1')
+    await expect(page.getByRole('button', { name: 'Mute Clave' })).toHaveAttribute('aria-pressed', 'true')
+
+    await page.keyboard.press('Space')
+    await expect(page.getByRole('button', { name: '■ Stop' })).toBeVisible()
+    await page.keyboard.press('Space')
+    await expect(page.getByRole('button', { name: '▶ Play' })).toBeVisible()
   })
 
   test('a shared link opens the same pattern, and Reset undoes it', async ({ page, context, browser }) => {
@@ -123,4 +156,32 @@ test('bachata starts at 8 counts and shows chord selectors in advanced mode', as
   await expect(page.getByRole('combobox', { name: 'Chord for bar 2' })).toHaveValue('E')
   await chord.selectOption('Dm')
   await expect(chord).toHaveValue('Dm')
+})
+
+test.describe('on a phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true })
+
+  test('practice shows a switch per instrument, the grid is one tap away', async ({ page }) => {
+    await page.goto('/salsa')
+    const clave = page.getByRole('switch', { name: 'Clave' })
+    await expect(clave).toHaveAttribute('aria-checked', 'true')
+    await expect(page.getByRole('button', { name: 'Clave step 1', exact: true })).toBeHidden()
+
+    await clave.tap()
+    await expect(clave).toHaveAttribute('aria-checked', 'false')
+
+    await page.getByRole('button', { name: 'Edit grid' }).tap()
+    await expect(page.getByRole('button', { name: 'Clave step 1', exact: true })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Mute Clave' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  test('Play stays on screen at the bottom', async ({ page }) => {
+    await page.goto('/salsa')
+    const play = page.getByRole('button', { name: '▶ Play' })
+    await page.mouse.wheel(0, 2000)
+    await expect(play).toBeInViewport()
+    const box = (await play.boundingBox())!
+    expect(box.y).toBeGreaterThan(844 / 2)
+    expect(box.height).toBeGreaterThanOrEqual(44)
+  })
 })

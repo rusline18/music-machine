@@ -52,7 +52,11 @@
     "share": "Share",
     "linkCopied": "Link copied",
     "link": "Link to this pattern",
-    "reset": "Reset"
+    "reset": "Reset",
+    "slower": "Slower",
+    "faster": "Faster",
+    "silentMode": "No sound? Turn off silent mode: the switch on the side of the iPhone.",
+    "dismiss": "Dismiss"
   },
   "grid": {
     "block": "Block {n}",
@@ -151,7 +155,6 @@
     },
     "controls": {
       "speed": "How fast the music plays. Normal is the usual tempo for this rhythm; start slow while learning.",
-      "bpm": "Tempo in beats (counts) per minute.",
       "voice": "A voice counting along: just the numbers, or with “and” between them.",
       "counts": "How many counts the loop lasts before it repeats. Dancers count in blocks of 8.",
       "feel": "0% plays exactly on the grid; higher adds small timing, volume and pitch variations, like a live band.",
@@ -163,12 +166,14 @@
       "simpleMode": "Hide the extra controls. Your rhythm and settings stay as they are.",
       "count": "The count the music is on right now. 1 and 5 start each half of the 8 counts: listen for them.",
       "share": "Copies a link to this exact pattern — tempo, length, mutes and all. Send it to a partner or your students.",
-      "reset": "Throws away your changes and goes back to the preset."
+      "reset": "Throws away your changes and goes back to the preset.",
+      "stepper": "Tap for 1 BPM, hold to change by 5."
     },
     "grid": {
       "cellSimple": "Click to add or remove a hit",
       "cellAdvanced": "Click to cycle through: {sounds}"
-    }
+    },
+    "hotkeys": "Keys: Space — play/stop · ← → — tempo (Shift: by 5) · 1–9 — switch instruments on and off"
   },
   "layers": {
     "start": "Build it layer by layer",
@@ -210,5 +215,10 @@
       "invalid": "Please check the form: {reason}.",
       "network": "Couldn't send it — please check your connection and try again."
     }
+  },
+  "view": {
+    "label": "View",
+    "practice": "Practice",
+    "editor": "Edit grid"
   }
 }

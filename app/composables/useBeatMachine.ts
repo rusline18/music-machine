@@ -9,7 +9,7 @@ import type { CountingMode } from '~/core/resolve'
 import { decodePattern, encodePattern } from '~/core/share'
 import { COUNTING_MODES, countingFigure, sampleUrls, stepNames, stepResolver } from '~/core/resolve'
 import type { TempoChoice } from '~/core/tempo'
-import { tempoChoice, tempoFor } from '~/core/tempo'
+import { nudgeBpm, tempoChoice, tempoFor } from '~/core/tempo'
 import type { Genre } from '~/genres'
 
 /** Reverb wet level at the slider's top; beyond this the rhythm smears. */
@@ -254,6 +254,11 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     pattern.value.bpm = tempoFor(choice, presetBpm.value, genre.bpmRange)
   }
 
+  /** Faster (positive) or slower by `delta` BPM, within the genre's range. */
+  function nudgeTempo(delta: number) {
+    pattern.value.bpm = nudgeBpm(pattern.value.bpm, delta, genre.bpmRange)
+  }
+
   function setVolume(instrument: string, volume: number) {
     const track = findTrack(instrument)
     if (!track) return
@@ -363,6 +368,7 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     /** Slow / normal / fast, or undefined when the slider set some other tempo. */
     tempo,
     setTempo,
+    nudgeTempo,
     setVolume,
     setMuted,
     hasVoice: voiceInstrument !== undefined,

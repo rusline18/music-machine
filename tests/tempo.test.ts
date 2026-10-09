@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { tempoChoice, tempoFor } from '~/core/tempo'
+import { nudgeBpm, tempoChoice, tempoFor } from '~/core/tempo'
 
 const RANGE = [90, 160] as const
 
@@ -24,5 +24,17 @@ describe('tempoChoice', () => {
 
   it('is undefined for a tempo set with the slider', () => {
     expect(tempoChoice(121, 130, RANGE)).toBeUndefined()
+  })
+})
+
+describe('nudgeBpm', () => {
+  it('moves by whole beats', () => {
+    expect(nudgeBpm(180, 1, [80, 240])).toBe(181)
+    expect(nudgeBpm(180.4, -5, [80, 240])).toBe(175)
+  })
+
+  it('stays inside the range', () => {
+    expect(nudgeBpm(238, 5, [80, 240])).toBe(240)
+    expect(nudgeBpm(82, -5, [80, 240])).toBe(80)
   })
 })

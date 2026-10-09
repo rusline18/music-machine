@@ -40,6 +40,14 @@ export default defineNuxtConfig({
   ssr: true,
   devtools: { enabled: true },
 
+  app: {
+    head: {
+      // viewport-fit=cover: the page runs under the notch and the home bar,
+      // and the practice bar keeps clear of them with env(safe-area-inset-*).
+      viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
+    },
+  },
+
   // Overridable by env vars at runtime.
   runtimeConfig: {
     /** NUXT_FEEDBACK_WEBHOOK_URL: also POST each piece of feedback here (Slack, Discord, automation tools). */

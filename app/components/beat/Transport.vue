@@ -7,32 +7,41 @@ const props = defineProps<{
   loadProgress?: number
   /** Samples that failed to load on the last Play. */
   failedSamples?: number
+  bpm: number
 }>()
 
 const emit = defineEmits<{
   play: []
   stop: []
+  /** Change the tempo by this many BPM. */
+  nudge: [delta: number]
 }>()
 
 const progress = computed(() => props.loadProgress ?? 1)
 const percent = computed(() => Math.round(progress.value * 100))
+/** Stop also cancels a Play that's still loading. */
+const running = computed(() => props.isPlaying || props.isLoading)
+
+const silentModeHint = useSilentModeHint(() => props.isPlaying)
 </script>
 
 <template>
   <div class="flex flex-col gap-1">
     <div class="flex items-center gap-2">
+      <!-- One big button that flips between Play and Stop, so it's always
+           in the same place under the thumb. -->
       <button
         type="button"
-        class="relative overflow-hidden rounded-md bg-amber-500 px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-amber-400 disabled:opacity-50"
-        :class="isLoading ? 'disabled:opacity-80' : ''"
-        :disabled="isPlaying || isLoading"
+        class="play-button relative min-h-11 flex-1 overflow-hidden rounded-md px-5 py-2 font-semibold transition sm:flex-none"
+        :class="running ? 'bg-neutral-700 text-neutral-100 hover:bg-neutral-600' : 'bg-amber-500 text-neutral-900 hover:bg-amber-400'"
         :aria-busy="isLoading"
-        @click="emit('play')"
+        @click="running ? emit('stop') : emit('play')"
       >
         <span
           v-if="isLoading"
           class="tabular-nums"
         >{{ $t('controls.loading', { percent }) }}</span>
+        <span v-else-if="isPlaying">{{ $t('controls.stop') }}</span>
         <span v-else>{{ $t('controls.play') }}</span>
         <span
           v-if="progress < 1"
@@ -49,23 +58,33 @@ const percent = computed(() => Math.round(progress.value * 100))
           />
         </span>
       </button>
-      <button
-        type="button"
-        class="rounded-md bg-neutral-700 px-4 py-2 text-sm font-semibold text-neutral-200 transition hover:bg-neutral-600 disabled:opacity-50"
-        :disabled="!isPlaying && !isLoading"
-        @click="emit('stop')"
-      >
-        {{ $t('controls.stop') }}
-      </button>
+      <BeatTempoStepper
+        :bpm="bpm"
+        @nudge="(delta) => emit('nudge', delta)"
+      />
     </div>
-    <!-- w-0 min-w-full: as wide as the buttons, so it wraps instead of widening the toolbar. -->
     <p
       v-if="failedSamples"
       role="status"
-      class="w-0 min-w-full text-xs text-red-400"
+      class="text-xs text-red-400"
       :title="$t('controls.failedHint')"
     >
       {{ $t('controls.failed', { count: failedSamples }) }}
+    </p>
+    <p
+      v-if="silentModeHint.shown"
+      role="status"
+      class="flex items-start gap-2 text-xs text-neutral-400"
+    >
+      <span class="flex-1">{{ $t('controls.silentMode') }}</span>
+      <button
+        type="button"
+        class="-m-2 shrink-0 p-2 text-neutral-500 hover:text-neutral-300"
+        :aria-label="$t('controls.dismiss')"
+        @click="silentModeHint.dismiss"
+      >
+        ✕
+      </button>
     </p>
   </div>
 </template>
