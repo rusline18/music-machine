@@ -137,6 +137,43 @@ describe('rhythm reference', () => {
     expect(onsets(pattern, 'bass')).toEqual(expected)
   })
 
+  // Rules confirmed by written breakdowns; see docs/bachata-rhythms.md.
+  const bachataSection = (id: string) => bachataPresets.find((p) => p.id === id)!
+  /** Onsets of an instrument within each bar, the same for every bar. */
+  const barOnsets = (pattern: Pattern, instrument: string) => {
+    const bars = Array.from({ length: pattern.counts / COUNTS_PER_BAR }, (_, b) =>
+      onsets(pattern, instrument).filter((i) => Math.floor(i / 8) === b).map((i) => i % 8))
+    for (const bar of bars) expect(bar, instrument).toEqual(bars[0])
+    return bars[0]
+  }
+  const hits = (pattern: Pattern, instrument: string, positions: number[]) =>
+    positions.map((i) => pattern.tracks.find((t) => t.instrument === instrument)!.steps[i])
+
+  it('bachata derecho: bongo and güira on every eighth, the hembra on 4', () => {
+    const derecho = bachataSection('bachata-derecho')
+    expect(barOnsets(derecho, 'bongos')).toEqual([0, 1, 2, 3, 4, 5, 6, 7])
+    expect(barOnsets(derecho, 'guira')).toEqual([0, 1, 2, 3, 4, 5, 6, 7])
+    expect(hits(derecho, 'bongos', [0, 4, 6])).toEqual(['high', 'high', 'low'])
+  })
+
+  it('bachata derecho: segunda bass notes on 1, 3, 4, strums in between', () => {
+    const derecho = bachataSection('bachata-derecho')
+    expect(barOnsets(derecho, 'segunda')).toEqual([0, 1, 2, 3, 4, 5, 6, 7])
+    const steps = hits(derecho, 'segunda', [0, 1, 2, 3, 4, 5, 6, 7])
+    expect(steps.flatMap((s, i) => (s === 'chord' ? [] : [i]))).toEqual([0, 4, 6])
+  })
+
+  it('bachata majao: bongo and güira drop the upbeats, the hembra still on 4', () => {
+    const majao = bachataSection('bachata-majao')
+    expect(barOnsets(majao, 'bongos')).toEqual([0, 2, 4, 6])
+    expect(barOnsets(majao, 'guira')).toEqual([0, 2, 4, 6])
+    expect(hits(majao, 'bongos', [0, 2, 4, 6])).toEqual(['high', 'high', 'high', 'low'])
+  })
+
+  it('bachata mambo: güira on 1, 2&, 3, 4&', () => {
+    expect(barOnsets(bachataSection('bachata-mambo'), 'guira')).toEqual([0, 3, 4, 7])
+  })
+
   it('bachata: the bongo player switches to campana for the mambo only', () => {
     const plays = (pattern: Pattern, instrument: string) => {
       const track = pattern.tracks.find((t) => t.instrument === instrument)!
