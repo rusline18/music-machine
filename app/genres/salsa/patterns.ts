@@ -360,6 +360,142 @@ export const salsaGuaguanco = definePattern({
   ],
 })
 
+/**
+ * Son montuno over 2-3 son clave: the Cuban son that salsa grew out of, as
+ * a septeto plays it. Slower than salsa; the bongó keeps the martillo, the
+ * maracas every eighth, the tres plays its guajeo and the bass its tumbao.
+ * A septeto has no congas, timbales or piano, and its one trumpet improvises
+ * over the montuno, so those tracks start muted. Assembled from common
+ * descriptions of the style; check by ear against recordings.
+ */
+export const salsaSon = definePattern({
+  id: 'salsa-son-2-3',
+  counts: 8,
+  bpm: 110,
+  chords: PROGRESSION,
+  tracks: [
+    voiceTrack,
+    { instrument: 'clave', figure: CLAVE_2_3 },
+    { instrument: 'congas', figure: TUMBAO, volume: 0.7, muted: true },
+    { instrument: 'bongos', figure: MARTILLO, volume: 0.85 },
+    { instrument: 'timbales', volume: 0.7 },
+    { instrument: 'cowbell', volume: 0.7 },
+    { instrument: 'timbalebell', volume: 0.7 },
+    { instrument: 'maracas', figure: ['hit'], volume: 0.6 },
+    { instrument: 'guiro', volume: 0.6 },
+    { instrument: 'bass', figure: BASS_TUMBAO, volume: 0.9 },
+    { instrument: 'piano', figure: MONTUNO_2_3, volume: 0.5, muted: true },
+    { instrument: 'tres', figure: GUAJEO_2_3, volume: 0.7 },
+    { instrument: 'trumpet', volume: 0.6 },
+    { instrument: 'trombone', volume: 0.6 },
+  ],
+})
+
+/**
+ * Bolero, the slow romantic song: around 80 BPM, each count a real quarter
+ * note. The maracas keep even eighths, the bongó a soft martillo, the
+ * congas a light tumbao; the bass marks 1 and 3, and the piano rings the
+ * chord on the 1 and pushes it again on 2& — the bolero's lilt. The clave
+ * is played softly, as some bolero-son bands do. Assembled from common
+ * descriptions of the style; check by ear against recordings.
+ */
+export const salsaBolero = definePattern({
+  id: 'salsa-bolero',
+  counts: 8,
+  bpm: 80,
+  chords: PROGRESSION,
+  tracks: [
+    voiceTrack,
+    { instrument: 'clave', figure: CLAVE_2_3, volume: 0.5 },
+    { instrument: 'congas', figure: TUMBAO, volume: 0.6 },
+    { instrument: 'bongos', figure: MARTILLO, volume: 0.6 },
+    { instrument: 'timbales', volume: 0.7 },
+    { instrument: 'cowbell', volume: 0.7 },
+    { instrument: 'timbalebell', volume: 0.7 },
+    { instrument: 'maracas', figure: ['hit'], volume: 0.6 },
+    { instrument: 'guiro', volume: 0.6 },
+    { instrument: 'bass', figure: ['root', null, null, null, '5th', null, null, null], volume: 0.9 },
+    { instrument: 'piano', figure: ['chord', null, null, 'chord', null, null, null, null], volume: 0.45 },
+    { instrument: 'tres', volume: 0.5 },
+    { instrument: 'trumpet', volume: 0.6 },
+    { instrument: 'trombone', volume: 0.6 },
+  ],
+})
+
+/**
+ * Pachanga conga (one bar): a slap on the beat and two open tones after it,
+ * on every other count — the "bouncing" figure the dance's knee bounce
+ * follows.
+ */
+const PACHANGA_CONGAS: Step[] = ['slap', null, 'open', 'open', 'slap', null, 'open', 'open']
+
+/**
+ * Pachanga: the charanga dance craze of the early 1960s, between cha-cha-chá
+ * and salsa in tempo. Like cha-cha-chá it's a charanga sound (no bongó,
+ * tres or brass): quarter notes on the timbales bell, the güiro's
+ * "cha-cha-chá" figure, the bass on 1 and 3. The congas give it its bounce.
+ * Assembled from common descriptions of the style; check by ear against
+ * recordings.
+ */
+export const salsaPachanga = definePattern({
+  id: 'salsa-pachanga-2-3',
+  counts: 8,
+  bpm: 135,
+  chords: PROGRESSION,
+  tracks: [
+    voiceTrack,
+    { instrument: 'clave', figure: CLAVE_2_3, volume: 0.7 },
+    { instrument: 'congas', figure: PACHANGA_CONGAS },
+    { instrument: 'bongos', volume: 0.8 },
+    { instrument: 'timbales', figure: [null, null, 'rim', null, null, null, 'low', null], volume: 0.6 },
+    { instrument: 'cowbell', volume: 0.7 },
+    { instrument: 'timbalebell', figure: ['open', null], volume: 0.7 },
+    { instrument: 'maracas', volume: 0.5 },
+    { instrument: 'guiro', figure: GUIRO, volume: 0.7 },
+    { instrument: 'bass', figure: ['root', null, null, null, '5th', null, null, null], volume: 0.9 },
+    { instrument: 'piano', figure: MONTUNO_2_3, volume: 0.5 },
+    { instrument: 'tres', volume: 0.5 },
+    { instrument: 'trumpet', volume: 0.6 },
+    { instrument: 'trombone', volume: 0.6 },
+  ],
+})
+
+/**
+ * For dancers "on 2": the voice says only "2" and "6", the break steps,
+ * and the congas lead the band at full volume — their slap lands on the
+ * same counts. Everything else is the verse, pulled back so the tumbao
+ * stands out.
+ */
+export const salsaOn2 = definePattern({
+  id: 'salsa-on2-3-2',
+  counts: 8,
+  bpm: 180,
+  chords: PROGRESSION,
+  tracks: [
+    {
+      instrument: 'voice',
+      figure: [
+        null, null, 'count', null, null, null, null, null,
+        null, null, 'count', null, null, null, null, null,
+      ],
+      volume: 0.9,
+    },
+    { instrument: 'clave', figure: CLAVE_3_2, volume: 0.7 },
+    { instrument: 'congas', figure: TUMBAO, volume: 1 },
+    { instrument: 'bongos', figure: MARTILLO, volume: 0.5 },
+    { instrument: 'timbales', figure: CASCARA_3_2, volume: 0.4 },
+    { instrument: 'cowbell', volume: 0.7 },
+    { instrument: 'timbalebell', volume: 0.7 },
+    { instrument: 'maracas', figure: ['hit'], volume: 0.4 },
+    { instrument: 'guiro', figure: GUIRO, volume: 0.6, muted: true },
+    { instrument: 'bass', figure: BASS_TUMBAO, volume: 0.7 },
+    { instrument: 'piano', figure: MONTUNO_3_2, volume: 0.4 },
+    { instrument: 'tres', figure: GUAJEO_3_2, volume: 0.35 },
+    { instrument: 'trumpet', volume: 0.6 },
+    { instrument: 'trombone', volume: 0.6 },
+  ],
+})
+
 // Going into the montuno, the timbalero ends the verse with a fill.
 export const salsaPresets = [
   salsaVerse,
@@ -370,6 +506,10 @@ export const salsaPresets = [
   salsaMontuno23,
   salsaMambo23,
   chainPatterns('salsa-verse-montuno-2-3', endWith(salsaVerse23, 'timbales', TIMBALES_FILL), salsaMontuno23),
+  salsaOn2,
+  salsaSon,
+  salsaBolero,
   salsaChachacha,
+  salsaPachanga,
   salsaGuaguanco,
 ]
