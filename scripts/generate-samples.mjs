@@ -278,7 +278,9 @@ const generators = {
   '/audio/salsa/timbales/high.wav': timbale({ freq: 385, decay: 0.11, seed: 33 }),
   '/audio/salsa/timbales/rim.wav': timbaleRim,
   '/audio/salsa/congas/heel.wav': handDrum({ freq: 170, decay: 0.03, seed: 14 }),
+  '/audio/salsa/congas/heel-2.wav': handDrum({ freq: 168, decay: 0.03, seed: 16 }),
   '/audio/salsa/congas/toe.wav': handDrum({ freq: 230, decay: 0.02, slap: 0.2, seed: 15 }),
+  '/audio/salsa/congas/toe-2.wav': handDrum({ freq: 227, decay: 0.02, slap: 0.2, seed: 17 }),
   '/audio/salsa/cowbell/hit.wav': cowbell,
   '/audio/salsa/cowbell/neck.wav': cowbellNeck(),
   '/audio/salsa/timbalebell/open.wav': () => cowbell(TIMBALE_BELL),
@@ -356,14 +358,18 @@ const recordings = {
   '/audio/salsa/timbales/low.wav': { freesound: 533094, maxLength: 0.9 },
   '/audio/salsa/timbales/high.wav': { freesound: 533095, maxLength: 0.8 },
   '/audio/salsa/timbales/rim.wav': { freesound: 533089, maxLength: 0.5 },
-  // Heel: a muffled stroke on the tumba; toe: fingertips on the conga.
+  // Heel: a muffled stroke on the tumba; toe: fingertips on the conga. Both
+  // are the softest takes VCSL has (v1/v2) — a soft stroke sounds duller,
+  // not just quieter — and two round-robin takes each.
   '/audio/salsa/congas/heel.wav': { vcsl: 'Tumba_HitFM_v2_rr1_Sum.wav', maxLength: 0.25 },
+  '/audio/salsa/congas/heel-2.wav': { vcsl: 'Tumba_HitFM_v2_rr2_Sum.wav', maxLength: 0.25 },
   '/audio/salsa/congas/toe.wav': { vcsl: 'Conga_HitFM_v1_rr1_Sum.wav', maxLength: 0.25 },
+  '/audio/salsa/congas/toe-2.wav': { vcsl: 'Conga_HitFM_v1_rr2_Sum.wav', maxLength: 0.25 },
   '/audio/salsa/cowbell/hit.wav': { vcsl: 'Cowbell1_Hit_v3_rr1_Mid.wav', maxLength: 0.5 },
-  '/audio/salsa/cowbell/neck.wav': { vcsl: 'Cowbell1_Muted_v3_rr1_Mid.wav', maxLength: 0.15 },
+  '/audio/salsa/cowbell/neck.wav': { vcsl: 'Cowbell1_Muted_v2_rr1_Mid.wav', maxLength: 0.15 },
   // A second, different bell for the timbales, so the two bells don't blur.
   '/audio/salsa/timbalebell/open.wav': { vcsl: 'Cowbell2_Normal_v3_rr1_Mid.wav', maxLength: 0.5 },
-  '/audio/salsa/timbalebell/neck.wav': { vcsl: 'Cowbell2_Muted_v3_rr1_Mid.wav', maxLength: 0.15 },
+  '/audio/salsa/timbalebell/neck.wav': { vcsl: 'Cowbell2_Muted_v2_rr1_Mid.wav', maxLength: 0.15 },
   '/audio/salsa/bass/a2.wav': { freesound: 43938, maxLength: 0.9 },
   // VCSL grand piano (Kawai), sustained notes; not committed, see
   // audio-sources/README.md. VCSL names them an octave low: its "C3" is C4.
@@ -409,15 +415,6 @@ const recordings = {
   '/audio/bachata/guitar/bb4.wav': { uiowa: 'Guitar.mf.sulB.C4B4.mono.aif', midi: 70, maxLength: 1.2 },
   '/audio/bachata/guitar/c5.wav': { uiowa: 'Guitar.mf.sul_E.C5B5.mono.aif', midi: 72, maxLength: 1.2 },
   '/audio/bachata/guitar/e5.wav': { uiowa: 'Guitar.mf.sul_E.C5B5.mono.aif', midi: 76, maxLength: 1.2 },
-}
-
-// Quiet strokes, as a fraction of full level: every sample is normalized,
-// and a track has one volume, so a soft stroke has to be soft in its file.
-const levels = {
-  '/audio/salsa/congas/heel.wav': 0.35,
-  '/audio/salsa/congas/toe.wav': 0.3,
-  '/audio/salsa/cowbell/neck.wav': 0.5,
-  '/audio/salsa/timbalebell/neck.wav': 0.5,
 }
 
 const SOURCES = join(ROOT, 'audio-sources')
@@ -665,15 +662,15 @@ function fadeOut(signal, seconds) {
   return signal
 }
 
-/** Peak-normalize to -1 dBFS (times `level`) and add short edge fades so nothing clicks. */
-function finalize(signal, level = 1) {
+/** Peak-normalize to -1 dBFS and add short edge fades so nothing clicks. */
+function finalize(signal) {
   // Plucks start mid-waveform; ramp the first millisecond in.
   const fadeInLength = Math.round(0.001 * SAMPLE_RATE)
   for (let i = 0; i < fadeInLength; i++) signal[i] *= i / fadeInLength
   fadeOut(signal, 0.005)
   let peak = 0
   for (const v of signal) peak = Math.max(peak, Math.abs(v))
-  const scale = peak > 0 ? (0.891 * level) / peak : 0
+  const scale = peak > 0 ? 0.891 / peak : 0
   return signal.map((v) => v * scale)
 }
 
@@ -725,10 +722,10 @@ for (const path of referenced) {
   if (source) {
     const slice = recording.voice ? sliceWord : recording.midi ? sliceNote : sliceRecording
     const { rate, signal, tuning } = slice(source, recording)
-    wav = encodeWav(finalize(signal, levels[path]), rate)
+    wav = encodeWav(finalize(signal), rate)
     if (tuning !== undefined) detail = `  retuned ${tuning >= 0 ? '+' : ''}${Math.round(tuning * 100)} cents`
   } else {
-    wav = encodeWav(finalize(generators[path](), levels[path]))
+    wav = encodeWav(finalize(generators[path]()))
     synthesized.push(path)
   }
   const target = join(ROOT, 'public', path)

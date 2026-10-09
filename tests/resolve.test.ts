@@ -15,6 +15,16 @@ describe('sampleResolver', () => {
     const urls = [0, 1, 2, 3].map((i) => resolve(pattern, track, i)[0]?.url)
     expect(urls).toEqual(['/h1.wav', '/h2.wav', '/h1.wav', '/l.wav'])
   })
+
+  it('plays a soft stroke at its own level, and only that stroke', () => {
+    const soft = sampleResolver({ congas: { heel: [{ url: '/heel.wav', gain: 0.35 }, { url: '/heel-2.wav', gain: 0.35 }], open: '/open.wav' } })
+    const congas = { instrument: 'congas', steps: ['heel', 'heel', 'open'], volume: 1, muted: false }
+    expect([0, 1, 2].map((i) => soft(pattern, congas, i))).toEqual([
+      [{ url: '/heel.wav', gain: 0.35 }],
+      [{ url: '/heel-2.wav', gain: 0.35 }],
+      [{ url: '/open.wav' }],
+    ])
+  })
 })
 
 describe('stepNames', () => {
@@ -31,6 +41,8 @@ describe('sampleUrls', () => {
     expect(urls).toContain('/audio/bachata/guira/long-3.wav')
     expect(urls).toContain('/audio/bachata/bass/a2.wav')
     expect(urls).toContain('/audio/bachata/guitar/e5.wav')
+    // Soft strokes are listed by URL, like any other sample.
+    expect(sampleUrls(salsa, 'en')).toContain('/audio/salsa/congas/heel-2.wav')
     expect([...urls].filter((url) => url.includes('/guitar/'))).toHaveLength(13)
   })
 

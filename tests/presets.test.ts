@@ -8,6 +8,7 @@ import { sampleUrls, stepNames } from '~/core/resolve'
 import { genres } from '~/genres'
 import { bachataPresets } from '~/genres/bachata/patterns'
 import { salsaPresets } from '~/genres/salsa/patterns'
+import { salsaSamples } from '~/genres/salsa/samples'
 
 const publicDir = fileURLToPath(new URL('../public', import.meta.url))
 
@@ -85,6 +86,18 @@ describe.each(genres.map((genre) => [genre.id, genre] as const))('%s', (_id, gen
         expect(track.volume).toBeLessThanOrEqual(1)
       }
     })
+  })
+})
+
+describe('salsa soft strokes', () => {
+  // Every file is normalized; heel, toe and the bell necks get their level
+  // from the sample map, below the full strokes around them.
+  it.each([['congas', 'heel'], ['congas', 'toe'], ['cowbell', 'neck'], ['timbalebell', 'neck']])('%s %s is played softer', (instrument, stroke) => {
+    const takes = [salsaSamples[instrument]![stroke]!].flat()
+    for (const take of takes) {
+      expect(typeof take === 'object' && take.gain, `${instrument} ${stroke}`).toBeGreaterThan(0)
+      expect(typeof take === 'object' && take.gain, `${instrument} ${stroke}`).toBeLessThan(1)
+    }
   })
 })
 

@@ -1,13 +1,17 @@
 import type { Chord, PitchedInstrument, Voice, Zone } from '~/core/harmony'
 import { chordTones, noteFrom } from '~/core/harmony'
-import type { SampleMap } from '~/core/resolve'
+import type { Sample, SampleMap } from '~/core/resolve'
+
+/** Takes of a soft stroke, each played at `gain`. */
+const soft = (gain: number, ...urls: string[]): Sample[] => urls.map((url) => ({ url, gain }))
 
 /**
  * Sample maps for the Salsa percussion, in grid order.
  * Paths point into /public/audio/salsa, built by `npm run samples` (which
  * reads the paths from this file). A list of paths is several takes of the
- * same stroke, played in turn. New strokes go at the end of a map: shared
- * links store each step as its position in the map.
+ * same stroke, played in turn; `soft` sets a quiet stroke's level. New
+ * strokes go at the end of a map: shared links store each step as its
+ * position in the map.
  *
  * Bass and piano are pitched instruments that follow the chords (see the
  * end of this file).
@@ -22,8 +26,8 @@ export const salsaSamples: Record<string, SampleMap> = {
     low: '/audio/salsa/congas/low.wav',
     slap: '/audio/salsa/congas/slap.wav',
     open: '/audio/salsa/congas/open.wav',
-    heel: '/audio/salsa/congas/heel.wav',
-    toe: '/audio/salsa/congas/toe.wav',
+    heel: soft(0.35, '/audio/salsa/congas/heel.wav', '/audio/salsa/congas/heel-2.wav'),
+    toe: soft(0.3, '/audio/salsa/congas/toe.wav', '/audio/salsa/congas/toe-2.wav'),
   },
   bongos: {
     low: ['/audio/salsa/bongos/low.wav', '/audio/salsa/bongos/low-2.wav'],
@@ -39,13 +43,13 @@ export const salsaSamples: Record<string, SampleMap> = {
   // bell, and a short, dull stroke near the neck.
   cowbell: {
     hit: '/audio/salsa/cowbell/hit.wav',
-    neck: '/audio/salsa/cowbell/neck.wav',
+    neck: soft(0.5, '/audio/salsa/cowbell/neck.wav'),
   },
   // The bell mounted on the timbales: mambo bell in the montuno, cha-cha
   // bell in cha-cha-chá. A different, higher bell than the bongo bell.
   timbalebell: {
     open: '/audio/salsa/timbalebell/open.wav',
-    neck: '/audio/salsa/timbalebell/neck.wav',
+    neck: soft(0.5, '/audio/salsa/timbalebell/neck.wav'),
   },
   maracas: {
     hit: '/audio/salsa/maracas/hit.wav',
