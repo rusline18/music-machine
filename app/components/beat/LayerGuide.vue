@@ -40,7 +40,7 @@ const emit = defineEmits<{
         <span
           v-for="instrument in layers.order.slice(0, layers.added)"
           :key="instrument"
-          class="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-amber-300"
+          class="inline-flex items-center gap-1 rounded-full bg-accent-500/15 px-2.5 py-1 text-accent-300"
         >
           <UiIcon :name="instrument" />
           {{ $t(`instruments.${instrument}`) }}
@@ -56,7 +56,7 @@ const emit = defineEmits<{
         <template v-if="layers.added < layers.order.length">
           <button
             type="button"
-            class="inline-flex items-center gap-2 rounded-md bg-amber-500 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-amber-400"
+            class="inline-flex items-center gap-2 rounded-md bg-accent-500 px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-accent-400"
             @click="emit('add')"
           >
             <UiIcon :name="layers.order[layers.added]!" />

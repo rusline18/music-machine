@@ -28,6 +28,10 @@ export default defineNuxtConfig({
           'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
         },
       },
+      // Checked on every visit, so a new deploy's worker is picked up at once.
+      '/sw.js': {
+        headers: { 'Cache-Control': 'no-cache' },
+      },
       // Built by `npm run samples` and rarely changed; revalidate after a week.
       '/audio/**': {
         headers: { 'Cache-Control': 'public, max-age=604800, stale-while-revalidate=86400' },
@@ -39,6 +43,23 @@ export default defineNuxtConfig({
   // server for SEO; audio only starts in the browser.
   ssr: true,
   devtools: { enabled: true },
+
+  app: {
+    head: {
+      // viewport-fit=cover: the page runs under the notch and the home bar,
+      // and the practice bar keeps clear of them with env(safe-area-inset-*).
+      viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
+      // Installable on a phone's home screen (public/manifest.webmanifest).
+      link: [
+        { rel: 'manifest', href: '/manifest.webmanifest' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+      ],
+      meta: [{ name: 'theme-color', content: '#0a0a0a' }],
+    },
+    // Pages fade into each other, so salsa's amber turning into bachata's
+    // sky reads as one app changing color (main.css).
+    pageTransition: { name: 'page', mode: 'out-in' },
+  },
 
   // Overridable by env vars at runtime.
   runtimeConfig: {
@@ -61,6 +82,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
 
   nitro: {
+    // Pre-compressed .gz/.br copies of the build, served by Nitro's own
+    // server when the browser accepts them (no CDN needed for that).
+    compressPublicAssets: true,
     // Where /api/feedback keeps what users send. Files under .data/ (git-ignored)
     // by default; swap the driver (redis, s3, cloudflare-kv-binding, …) to
     // keep it elsewhere: https://unstorage.unjs.io/drivers
@@ -75,7 +99,8 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
     // Also errors on unknown components and props in templates.
-    tsConfig: { vueCompilerOptions: { strictTemplates: true } },
+    // data-* attributes are allowed: the playhead finds elements by them.
+    tsConfig: { vueCompilerOptions: { strictTemplates: true, dataAttributes: ['data-*'] } },
   },
 
   // ESLint does both linting and formatting (no Prettier). Style options

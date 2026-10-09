@@ -9,8 +9,11 @@ const SCHEDULE_AHEAD_S = 0.1
 /** What a track plays at a step: none, one sample, or several (a chord). */
 export type StepResolver = (pattern: Pattern, track: Track, stepIndex: number) => Note[]
 
-/** Called as each step is scheduled, with the AudioContext time it will sound at. */
-export type StepCallback = (stepIndex: number, time: number) => void
+/**
+ * Called as each step is scheduled, with the AudioContext time it will
+ * sound at and the instruments that play on it.
+ */
+export type StepCallback = (stepIndex: number, time: number, instruments: string[]) => void
 
 export type Scheduler = ReturnType<typeof createScheduler>
 
@@ -36,13 +39,16 @@ export function createScheduler(engine: Pick<AudioEngine, 'now' | 'resume' | 'pl
   function scheduleStep(stepIndex: number, time: number) {
     if (!pattern) return
     const offbeat = stepIndex % pattern.stepsPerCount !== 0
+    const playing: string[] = []
     for (const track of pattern.tracks) {
       if (track.muted) continue
-      for (const note of resolve(pattern, track, stepIndex)) {
+      const notes = resolve(pattern, track, stepIndex)
+      if (notes.length) playing.push(track.instrument)
+      for (const note of notes) {
         engine.playNote(track.instrument, humanizeNote(note, feel, offbeat), time)
       }
     }
-    onStep?.(stepIndex, time)
+    onStep?.(stepIndex, time, playing)
   }
 
   function tick() {

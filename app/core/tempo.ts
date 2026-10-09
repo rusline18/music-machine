@@ -13,3 +13,8 @@ export function tempoFor(choice: TempoChoice, presetBpm: number, [min, max]: rea
 export function tempoChoice(bpm: number, presetBpm: number, range: readonly [number, number]): TempoChoice | undefined {
   return TEMPO_CHOICES.find((choice) => tempoFor(choice, presetBpm, range) === bpm)
 }
+
+/** `bpm` moved by `delta`, kept to whole beats inside the genre's range. */
+export function nudgeBpm(bpm: number, delta: number, [min, max]: readonly [number, number]): number {
+  return Math.min(max, Math.max(min, Math.round(bpm + delta)))
+}

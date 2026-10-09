@@ -18,7 +18,8 @@ app/
     harmony.ts           Chords, chord tones, pitch-shifting notes onto recorded zones
     resolve.ts           Turns a step into the notes to play: samples, chord-following
                          notes, or the counting voice
-    tempo.ts             Slow / Normal / Fast, relative to a preset's own tempo
+    tempo.ts             Slow / Normal / Fast, relative to a preset's own tempo; −/+ steps
+    motion.ts            How each instrument's icon moves when it plays
     layers.ts            Order for "layer by layer"
     links.ts             Checks configured external links (https only)
     share.ts             Pattern ⇄ short link code; incoming links are checked and rebuilt
@@ -26,6 +27,8 @@ app/
       engine.ts          AudioContext, per-instrument gain, sample loading (Opus with
                          WAV fallback, prefetch before the first click), playback, reverb
       scheduler.ts       Lookahead scheduler — sample-accurate timing, live pattern edits
+      playhead.ts        Hands each step over on the animation frame it's heard in
+      prefetch.ts        Downloads a genre's sounds ahead of time (home page, offline)
       humanize.ts        "Feel": small timing/volume/pitch variations
   genres/              Data: one folder per genre, plus the registry
     index.ts             `genres` list and `findGenre(id)`
@@ -39,13 +42,22 @@ app/
     useBeatMachine.ts    Vue state for one genre page: wires pattern + engine + scheduler
     useUiMode.ts         Simple / advanced mode, remembered in the browser
     useNarrowScreen.ts   Phone-sized screen, for the one-bar-at-a-time grid
+    useBeatEffects.ts    Playhead and beat animations, by toggling classes (no re-render)
+    useBeatView.ts       Phone: practice view or grid editor
+    useMotion.ts         Animation on/off (switch + prefers-reduced-motion)
+    useWakeLock.ts       Keeps the screen on while playing
+    useHotkeys.ts        Space, ←/→, 1–9
+    useSilentModeHint.ts One-time hint about the iPhone silent switch (old iOS)
   components/
     beat/                BeatMachine (the whole trainer), BeatGrid, TrackRow,
-                         CountDisplay, LayerGuide, Transport, PresetSelector
+                         CountDisplay, PracticeBar, Transport, TempoStepper,
+                         InstrumentCards, LayerGuide, PresetSelector
     SiteFooter.vue       Feedback and donation links (hidden until configured)
     FeedbackDialog.vue   The feedback form
     ui/                  RangeControl, SegmentedControl, ControlLabel (icon + label
-                         + tooltip), Tooltip, Icon
+                         + tooltip), Tooltip, Icon, Sheet (modal / bottom sheet)
+  plugins/
+    service-worker.client.ts  Registers public/sw.js (production only)
   icons.ts             Line icons as SVG paths, keyed by instrument id or control
     LanguageSwitcher.vue
   pages/
@@ -56,11 +68,13 @@ server/                POST /api/feedback (rate-limited, off by default)
 shared/feedback.ts     Feedback limits and validation, used by the form and the server
 i18n/locales/          en.json, ru.json — every user-visible string
 public/audio/          Built one-shots (don't edit by hand — see below)
+public/sw.js           Offline: caches pages, scripts and sounds (see "Offline")
 audio-sources/         Raw recordings + credits
 scripts/
   generate-samples.mjs Builds public/audio from audio-sources, synth fallback
   encode-samples.mjs   Adds an Opus (.webm) copy of every WAV
   speak-counts.py      Speaks the counts with espeak-ng into audio-sources/voice
+  app-icon.svg         The app icon; render-icons.mjs turns it into public/*.png
 tests/                 Vitest unit tests
 e2e/                   Playwright: pages, grid editing, transport, sharing in a real browser
 docs/                  Plans
@@ -69,17 +83,30 @@ docs/                  Plans
 ### Simple and advanced mode
 
 The trainer opens in simple mode: pattern picker with a short description,
-Slow / Normal / Fast, the counting voice, Play, and a grid where a click turns
-a hit on or off (with the sound that track plays most). **Advanced features**
-adds the BPM slider, loop length, feel, reverb, chords, volumes, the voice
-track and every sound of each instrument. The mode only changes what's shown;
+Slow / Normal / Fast, the counting voice, Play with a −/+ tempo stepper (tap:
+1 BPM, hold: 5), and a grid where a click turns a hit on or off (with the
+sound that track plays most); a long press or right-click on a cell picks the
+sound from a menu. **Advanced features** adds loop length, feel, reverb,
+chords, volumes and the voice track. The mode only changes what's shown;
 the pattern stays the same. Every instrument and control has an icon and a
 tooltip (hover, tap or keyboard focus) explaining what it is for.
 
 Both modes have **Build it layer by layer** (starts from the genre's
 foundation instrument and adds one at a time, in `teachingOrder` from the
-genre definition) and a large 1–8 count display with 1 and 5 marked. On a
-phone the grid shows one bar (4 counts) at a time and follows the music.
+genre definition) and a large 1–8 count display with 1 and 5 marked. The
+count and Play/tempo stay in view: stuck to the top of the screen, or to the
+bottom on a phone. Keys: Space plays/stops, ←/→ change the tempo, 1–9 switch
+instruments. The screen stays on while playing (Wake Lock), and iOS plays
+with the silent switch on.
+
+A phone opens in a **practice** view: one big switch per instrument. **Edit
+grid** shows the grid one bar (4 counts) at a time: swipe or the arrows turn
+the bar, it follows the music unless **Follow** is off, and the instrument
+icon opens a sheet with its volume.
+
+Icons and the count move in time with the music (`useBeatEffects`, timed by
+the audio clock); `prefers-reduced-motion` or the **Animation** switch turns
+that off. Salsa is amber, bachata sky blue (CSS variables in `main.css`).
 
 ### Sharing and saving
 
@@ -90,6 +117,19 @@ code from the address bar; anything decoded is checked against the genre and
 rebuilt (`app/core/share.ts`). Edits are kept in the browser per genre
 (an untouched preset isn't, so preset fixes reach everyone); **Reset** goes
 back to the preset.
+
+### Offline
+
+In production `public/sw.js` caches every genre page in both languages with
+its scripts on install, and every genre's sounds in the background, so the
+trainer works in a hall with no signal; it can also be installed to a phone's
+home screen (`public/manifest.webmanifest`; the icon is drawn in
+`scripts/app-icon.svg`, and `node scripts/render-icons.mjs` renders the PNGs). Pages are network-first, so a
+deploy shows up at once (the worker is registered as `/sw.js?v=<build id>`).
+Sounds live in their own cache across deploys: after `npm run samples`, bump
+`AUDIO_VERSION` in `sw.js`. Add new genre pages to `PAGES` there (a test
+checks). The home page also starts downloading a genre's sounds when its link
+is on screen or pointed at, so the genre page plays on the first tap.
 
 ### Feedback
 

@@ -20,6 +20,15 @@ function canPlayOpus(): boolean {
   return typeof Audio !== 'undefined' && new Audio().canPlayType('audio/webm; codecs="opus"') !== ''
 }
 
+/**
+ * Samples are named by their .wav, the lossless master; each has a ~5×
+ * smaller Opus copy beside it (scripts/encode-samples.mjs). That's the file
+ * to download when the browser can play Opus.
+ */
+export function playableFile(url: string): string {
+  return url.endsWith('.wav') && canPlayOpus() ? `${url.slice(0, -'.wav'.length)}.webm` : url
+}
+
 interface RingingVoice {
   source: AudioBufferSourceNode
   gain: GainNode
@@ -73,6 +82,10 @@ export function createAudioEngine() {
 
   function getContext(): AudioContext {
     if (!ctx) {
+      // Music, not a notification sound: on iOS (Safari 16.4+) it then plays
+      // with the side switch on silent too.
+      const { audioSession } = navigator as Navigator & { audioSession?: { type: string } }
+      if (audioSession) audioSession.type = 'playback'
       ctx = new AudioContext()
       masterGain = ctx.createGain()
       masterGain.connect(ctx.destination)
@@ -135,15 +148,6 @@ export function createAudioEngine() {
   /** Samples being decoded, so two callers never load the same one twice. */
   const decoding = new Map<string, Promise<AudioBuffer>>()
 
-  /**
-   * Samples are named by their .wav, the lossless master; each has a ~5×
-   * smaller Opus copy beside it (scripts/encode-samples.mjs). That's the file
-   * to download when the browser can play Opus.
-   */
-  function fileFor(url: string): string {
-    return url.endsWith('.wav') && canPlayOpus() ? `${url.slice(0, -'.wav'.length)}.webm` : url
-  }
-
   function download(file: string): Promise<ArrayBuffer> {
     let bytes = downloads.get(file)
     if (!bytes) {
@@ -167,7 +171,7 @@ export function createAudioEngine() {
 
   /** The Opus copy where the browser plays Opus, else (or if it won't decode) the WAV. */
   async function decodeSample(url: string): Promise<AudioBuffer> {
-    const file = fileFor(url)
+    const file = playableFile(url)
     if (file !== url) {
       try {
         return await decode(file)
@@ -198,7 +202,7 @@ export function createAudioEngine() {
    * finishes or fails (loadSample retries those).
    */
   function prefetchSamples(urls: string[], onSettled?: (url: string, ok: boolean) => void): Promise<void> {
-    return Promise.all(urls.map((url) => (bufferCache.has(url) ? Promise.resolve() : download(fileFor(url))).then(
+    return Promise.all(urls.map((url) => (bufferCache.has(url) ? Promise.resolve() : download(playableFile(url))).then(
       () => onSettled?.(url, true),
       () => onSettled?.(url, false),
     ))).then(() => {})
@@ -271,6 +275,12 @@ export function createAudioEngine() {
     return getContext().currentTime
   }
 
+  /** Seconds between a sample being scheduled and it leaving the speakers (0 where unknown). */
+  function outputLatency(): number {
+    const context = getContext()
+    return (context.baseLatency || 0) + (context.outputLatency || 0)
+  }
+
   function dispose() {
     instrumentGains.clear()
     instrumentVolumes.clear()
@@ -295,6 +305,7 @@ export function createAudioEngine() {
     playNote,
     setReverb,
     now,
+    outputLatency,
     dispose,
   }
 }

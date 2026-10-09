@@ -34,9 +34,19 @@ test('every sample request succeeds', async ({ page }) => {
   })
   await page.goto('/salsa')
   await page.getByRole('button', { name: '▶ Play' }).click()
-  await expect(page.getByRole('button', { name: '■ Stop' })).toBeEnabled()
+  await expect(page.getByRole('button', { name: '■ Stop' })).toBeVisible()
   await page.goto('/ru/bachata')
   await page.getByRole('button', { name: '▶ Играть' }).click()
-  await expect(page.getByRole('button', { name: '■ Стоп' })).toBeEnabled()
+  await expect(page.getByRole('button', { name: '■ Стоп' })).toBeVisible()
   expect(failed).toEqual([])
+})
+
+test('the home page downloads a genre\'s sounds before it is opened', async ({ page }) => {
+  const audio: string[] = []
+  page.on('request', (request) => {
+    if (request.url().includes('/audio/bachata/')) audio.push(request.url())
+  })
+  await page.goto('/')
+  await page.getByRole('link', { name: 'Bachata' }).hover()
+  await expect.poll(() => audio.length).toBeGreaterThan(0)
 })

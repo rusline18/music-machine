@@ -41,7 +41,7 @@ onUnmounted(() => clearTimeout(resetTimer))
   <div class="flex flex-wrap items-center gap-3">
     <button
       type="button"
-      class="inline-flex items-center gap-1.5 rounded-md bg-amber-500/20 px-4 py-2 text-sm font-medium text-amber-400 hover:bg-amber-500/30"
+      class="inline-flex min-h-11 items-center gap-1.5 rounded-md bg-accent-500/20 px-4 py-2 sm:min-h-0 text-sm font-medium text-accent-400 hover:bg-accent-500/30"
       :title="$t('help.controls.share')"
       @click="share"
     >

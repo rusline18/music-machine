@@ -9,6 +9,9 @@ const route = useRoute()
 const { t } = useI18n()
 const genre = computed(() => findGenre(String(route.params.genre))!)
 
+// Picks the genre's accent color (main.css).
+useHead({ htmlAttrs: { 'data-genre': () => genre.value.id } })
+
 useSeoMeta({
   title: () => t(`genres.${genre.value.id}.title`),
   description: () => t(`genres.${genre.value.id}.description`),

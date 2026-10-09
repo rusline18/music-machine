@@ -29,8 +29,8 @@ const model = defineModel<T | undefined>({ required: true })
         v-for="option in options"
         :key="option.value"
         type="button"
-        class="whitespace-nowrap px-3 py-1.5 font-mono text-sm transition"
-        :class="option.value === model ? 'bg-amber-500 text-neutral-900' : 'bg-neutral-900 text-neutral-300 hover:bg-neutral-800'"
+        class="min-h-11 whitespace-nowrap px-3 py-1.5 font-mono text-sm transition sm:min-h-0"
+        :class="option.value === model ? 'bg-accent-500 text-neutral-900' : 'bg-neutral-900 text-neutral-300 hover:bg-neutral-800'"
         :aria-pressed="option.value === model"
         @click="model = option.value"
       >
