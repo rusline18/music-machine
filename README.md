@@ -243,7 +243,9 @@ script.
 - Audio only starts client-side, on user interaction (browsers require a user
   gesture to start an `AudioContext`); pages still render fully server-side.
 - Presets: Salsa verse/montuno in 3-2 and 2-3 son clave, cha-cha-chá (2-3)
-  and rumba guaguancó (3-2 rumba clave); Bachata derecho, majao and mambo over
+  and rumba guaguancó (3-2 rumba clave), with bass tumbao and piano montuno
+  over C–G7 (both anticipate the next chord) and, in the montuno, bongo and
+  timbales bells; Bachata derecho, majao and mambo over
   an Am–E loop; plus a verse → montuno/chorus chain. Every preset starts at
   8 counts. They follow documented references but still need sign-off from a
   player.

@@ -22,9 +22,10 @@ export const bachataSamples: Record<string, SampleMap> = {
   },
   campana: {
     // The bongo player's hand bell in the mambo: open (mouth) and a short,
-    // dull stroke near the neck.
+    // dull stroke near the neck. The neck carries 2 and 4, so it's softer
+    // than the mouth but not by much.
     open: '/audio/bachata/campana/open.wav',
-    neck: '/audio/bachata/campana/neck.wav',
+    neck: { url: '/audio/bachata/campana/neck.wav', gain: 0.6 },
   },
 }
 

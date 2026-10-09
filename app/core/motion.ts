@@ -50,10 +50,12 @@ export const INSTRUMENT_MOTION: Record<string, Motion> = {
   timbales: thump,
   cowbell: swing,
   campana: swing,
+  timbalebell: swing,
   maracas: shake,
   guiro: scrape,
   guira: scrape,
   bass: pluck,
+  piano: pluck,
   requinto: pluck,
   segunda: pluck,
 }

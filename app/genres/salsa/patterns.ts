@@ -1,18 +1,26 @@
-import type { Step } from '~/core/pattern'
+import type { Pattern, Step } from '~/core/pattern'
 import { chainPatterns, definePattern, rotateFigure } from '~/core/pattern'
 import { voiceTrack } from '../voice'
 
 // Figures are eighth notes; one 8-count block = one two-bar clave cycle
 // (cells 0–7 = counts 1–4, cells 8–15 = counts 5–8). Built from documented
-// references, but still needs sign-off from a salsa player.
+// references, but still needs sign-off from a salsa player. The clave is the
+// anchor: every part that isn't the same in both bars (cáscara, bells,
+// piano) is written for 3-2 and turned with the clave for 2-3.
+
+/** I–V7, a chord per bar; bass and piano follow it. */
+const PROGRESSION = ['C', 'G7']
 
 /** 3-2 son clave: 1, &2, 4 | 2, 3 */
 const CLAVE_3_2: Step[] = [
   'hit', null, null, 'hit', null, null, 'hit', null,
   null, null, 'hit', null, 'hit', null, null, null,
 ]
-/** Tumbao (one bar): slap on 2, open tones on 4 and &4 */
-const TUMBAO: Step[] = [null, null, 'slap', null, null, null, 'open', 'open']
+/**
+ * Tumbao (one bar), the full hand pattern: heel and toe rock on the drum
+ * through 1 and 3, slap on 2, open tones on 4 and &4.
+ */
+const TUMBAO: Step[] = ['heel', 'toe', 'slap', 'toe', 'heel', 'toe', 'open', 'open']
 /** Martillo (one bar): eighths on the macho, hembra on 4 */
 const MARTILLO: Step[] = ['high', 'high', 'high', 'high', 'high', 'high', 'low', null]
 /** Cáscara (3-2) on the timbal shell */
@@ -20,57 +28,104 @@ const CASCARA_3_2: Step[] = [
   'rim', null, 'rim', null, 'rim', 'rim', null, 'rim',
   null, 'rim', 'rim', null, 'rim', null, 'rim', null,
 ]
+/**
+ * Mambo bell (3-2) on the timbales bell: the mouth on every beat, the neck
+ * on the cáscara's off-beat strokes, so the bell keeps the clave's shape.
+ */
+const MAMBO_BELL_3_2: Step[] = CASCARA_3_2.map((step, i) => (i % 2 === 0 ? 'open' : step && 'neck'))
+/** Bongo bell (one count): the mouth on the beat, the neck on the &. */
+const BONGO_BELL: Step[] = ['hit', 'neck']
 /** Güiro (one count): long on the beat, two short scrapes after */
 const GUIRO: Step[] = ['long', null, 'short', 'short']
+/**
+ * Bass tumbao (one bar): the fifth on &2, then the next bar's root on 4,
+ * held over the bar line — the bass doesn't play the 1.
+ */
+const BASS_TUMBAO: Step[] = [null, null, null, '5th', null, null, 'push', null]
+/**
+ * Piano montuno (3-2): octaves on the chord tones over short chord stabs,
+ * the next chord pushed on &4 of each bar and left ringing over the 1.
+ */
+const MONTUNO_3_2: Step[] = [
+  null, 'chord', '3rd', null, 'chord', '5th', null, 'push',
+  null, 'chord', 'root', 'chord', null, '3rd', 'chord', 'push',
+]
+/** Timbales fill (the last two counts of a block): macho, then down to the hembra. */
+const TIMBALES_FILL: Step[] = ['high', 'high', 'high', 'low']
 
 // 2-3 is the same two-bar cycle started from the other bar. Only the parts
-// that follow the clave turn; tumbao, martillo and the bells repeat every
-// bar, and the voice keeps counting from the dancer's 1.
+// that follow the clave turn; tumbao, martillo, bongo bell and bass repeat
+// every bar, and the voice keeps counting from the dancer's 1.
 /** 2-3 son clave: 2, 3 | 1, &2, 4 */
 const CLAVE_2_3 = rotateFigure(CLAVE_3_2, 8)
 /** Cáscara (2-3) */
 const CASCARA_2_3 = rotateFigure(CASCARA_3_2, 8)
+/** Mambo bell (2-3) */
+const MAMBO_BELL_2_3 = rotateFigure(MAMBO_BELL_3_2, 8)
+/** Piano montuno (2-3) */
+const MONTUNO_2_3 = rotateFigure(MONTUNO_3_2, 8)
 /** 3-2 rumba clave: like son clave, but the third stroke moves from 4 to &4. */
 const RUMBA_CLAVE_3_2: Step[] = [
   'hit', null, null, 'hit', null, null, null, 'hit',
   null, null, 'hit', null, 'hit', null, null, null,
 ]
 
-/** Verse feel in 3-2 son clave: tumbao, martillo, cáscara. */
+/**
+ * The same block with `instrument`'s last steps replaced by `ending` — a
+ * fill that leads into the next section.
+ */
+function endWith(pattern: Pattern, instrument: string, ending: Step[]): Pattern {
+  return {
+    ...pattern,
+    tracks: pattern.tracks.map((track) => track.instrument !== instrument
+      ? track
+      : { ...track, steps: [...track.steps.slice(0, -ending.length), ...ending], muted: false }),
+  }
+}
+
+/** Verse feel in 3-2 son clave: tumbao, martillo, cáscara, bass and piano montuno. */
 export const salsaVerse = definePattern({
   id: 'salsa-verse-3-2',
   counts: 8,
   bpm: 180,
+  chords: PROGRESSION,
   tracks: [
     voiceTrack,
     { instrument: 'clave', figure: CLAVE_3_2 },
     { instrument: 'congas', figure: TUMBAO },
     { instrument: 'bongos', figure: MARTILLO, volume: 0.8 },
     { instrument: 'timbales', figure: CASCARA_3_2, volume: 0.7 },
-    { instrument: 'cowbell', volume: 0.8 },
+    { instrument: 'cowbell', volume: 0.7 },
+    { instrument: 'timbalebell', volume: 0.7 },
     { instrument: 'maracas', figure: ['hit'], volume: 0.5 },
     { instrument: 'guiro', figure: GUIRO, volume: 0.6, muted: true },
+    { instrument: 'bass', figure: BASS_TUMBAO, volume: 0.9 },
+    { instrument: 'piano', figure: MONTUNO_3_2, volume: 0.6 },
   ],
 })
 
 /**
- * Montuno feel: the bongocero switches to the bongo bell (quarter notes)
- * and the güiro comes in. The timbalero would play mambo bell here, which
- * needs its own sample — the track is left empty for now.
+ * Montuno feel: the bongocero puts the bongos down for the bongo bell, the
+ * timbalero leaves the shell for the mambo bell, and the güiro comes in.
+ * Bass and piano keep their tumbao and montuno.
  */
 export const salsaMontuno = definePattern({
   id: 'salsa-montuno-3-2',
   counts: 8,
   bpm: 190,
+  chords: PROGRESSION,
   tracks: [
     voiceTrack,
     { instrument: 'clave', figure: CLAVE_3_2 },
     { instrument: 'congas', figure: TUMBAO },
     { instrument: 'bongos', volume: 0.8 },
     { instrument: 'timbales', volume: 0.7 },
-    { instrument: 'cowbell', figure: ['hit', null], volume: 0.7 },
+    { instrument: 'cowbell', figure: BONGO_BELL, volume: 0.7 },
+    { instrument: 'timbalebell', figure: MAMBO_BELL_3_2, volume: 0.6 },
     { instrument: 'maracas', figure: ['hit'], volume: 0.4, muted: true },
     { instrument: 'guiro', figure: GUIRO, volume: 0.6 },
+    { instrument: 'bass', figure: BASS_TUMBAO, volume: 0.9 },
+    { instrument: 'piano', figure: MONTUNO_3_2, volume: 0.6 },
   ],
 })
 
@@ -79,15 +134,19 @@ export const salsaVerse23 = definePattern({
   id: 'salsa-verse-2-3',
   counts: 8,
   bpm: 180,
+  chords: PROGRESSION,
   tracks: [
     voiceTrack,
     { instrument: 'clave', figure: CLAVE_2_3 },
     { instrument: 'congas', figure: TUMBAO },
     { instrument: 'bongos', figure: MARTILLO, volume: 0.8 },
     { instrument: 'timbales', figure: CASCARA_2_3, volume: 0.7 },
-    { instrument: 'cowbell', volume: 0.8 },
+    { instrument: 'cowbell', volume: 0.7 },
+    { instrument: 'timbalebell', volume: 0.7 },
     { instrument: 'maracas', figure: ['hit'], volume: 0.5 },
     { instrument: 'guiro', figure: GUIRO, volume: 0.6, muted: true },
+    { instrument: 'bass', figure: BASS_TUMBAO, volume: 0.9 },
+    { instrument: 'piano', figure: MONTUNO_2_3, volume: 0.6 },
   ],
 })
 
@@ -96,15 +155,19 @@ export const salsaMontuno23 = definePattern({
   id: 'salsa-montuno-2-3',
   counts: 8,
   bpm: 190,
+  chords: PROGRESSION,
   tracks: [
     voiceTrack,
     { instrument: 'clave', figure: CLAVE_2_3 },
     { instrument: 'congas', figure: TUMBAO },
     { instrument: 'bongos', volume: 0.8 },
     { instrument: 'timbales', volume: 0.7 },
-    { instrument: 'cowbell', figure: ['hit', null], volume: 0.7 },
+    { instrument: 'cowbell', figure: BONGO_BELL, volume: 0.7 },
+    { instrument: 'timbalebell', figure: MAMBO_BELL_2_3, volume: 0.6 },
     { instrument: 'maracas', figure: ['hit'], volume: 0.4, muted: true },
     { instrument: 'guiro', figure: GUIRO, volume: 0.6 },
+    { instrument: 'bass', figure: BASS_TUMBAO, volume: 0.9 },
+    { instrument: 'piano', figure: MONTUNO_2_3, volume: 0.6 },
   ],
 })
 
@@ -114,13 +177,16 @@ export const salsaMontuno23 = definePattern({
  * the name: long on the beat, two shorts after — the shorts on "4 &" plus
  * the long on "1" are the dancer's "cha-cha-chá". The timbalero keeps
  * quarter notes on the cha-cha bell, clicks the shell on 2 and opens the
- * hembra on 4; congas keep the tumbao. Charangas have no bongó. Assembled
- * from common descriptions of the style; check by ear against recordings.
+ * hembra on 4; congas keep the tumbao. Charangas have no bongó, so no
+ * bongo bell either. The bass stays on 1 and 3, and the piano plays the
+ * montuno softly. Assembled from common descriptions of the style; check
+ * by ear against recordings.
  */
 export const salsaChachacha = definePattern({
   id: 'salsa-chachacha-2-3',
   counts: 8,
   bpm: 120,
+  chords: PROGRESSION,
   tracks: [
     voiceTrack,
     { instrument: 'clave', figure: CLAVE_2_3, volume: 0.7 },
@@ -128,9 +194,12 @@ export const salsaChachacha = definePattern({
     { instrument: 'bongos', volume: 0.8 },
     // Shell click on 2, open hembra on 4
     { instrument: 'timbales', figure: [null, null, 'rim', null, null, null, 'low', null], volume: 0.7 },
-    { instrument: 'cowbell', figure: ['hit', null], volume: 0.7 },
+    { instrument: 'cowbell', volume: 0.7 },
+    { instrument: 'timbalebell', figure: ['open', null], volume: 0.7 },
     { instrument: 'maracas', volume: 0.5 },
     { instrument: 'guiro', figure: GUIRO, volume: 0.8 },
+    { instrument: 'bass', figure: ['root', null, null, null, '5th', null, null, null], volume: 0.9 },
+    { instrument: 'piano', figure: MONTUNO_2_3, volume: 0.45 },
   ],
 })
 
@@ -141,7 +210,8 @@ export const salsaChachacha = definePattern({
  * the beat — a muffled slap on 2 and 6, open tones on 4 and 5 — and the
  * tumba (low) answers off the beat on "4 &", "7 &" and 8. The palitos play
  * the guagua pattern on the timbal shell (the figure salsa calls cáscara).
- * The quinto improvises, so it isn't written. A simplified, one-player
+ * The quinto improvises, so it isn't written. Rumba has no bells, bass or
+ * piano. A simplified, one-player
  * version of a part that varies between Havana and Matanzas styles: needs
  * sign-off from a rumbero before it's treated as reference.
  */
@@ -149,6 +219,8 @@ export const salsaGuaguanco = definePattern({
   id: 'salsa-guaguanco-3-2',
   counts: 8,
   bpm: 190,
+  // For the bass and piano if they're switched on.
+  chords: PROGRESSION,
   tracks: [
     voiceTrack,
     { instrument: 'clave', figure: RUMBA_CLAVE_3_2 },
@@ -162,19 +234,23 @@ export const salsaGuaguanco = definePattern({
     { instrument: 'bongos', volume: 0.8 },
     { instrument: 'timbales', figure: CASCARA_3_2, volume: 0.7 },
     { instrument: 'cowbell', volume: 0.7 },
+    { instrument: 'timbalebell', volume: 0.6 },
     // Shekere-like pulse; off by default, rumba is mostly drums and voices
     { instrument: 'maracas', figure: ['hit'], volume: 0.4, muted: true },
     { instrument: 'guiro', volume: 0.6 },
+    { instrument: 'bass', volume: 0.9 },
+    { instrument: 'piano', volume: 0.6 },
   ],
 })
 
+// Going into the montuno, the timbalero ends the verse with a fill.
 export const salsaPresets = [
   salsaVerse,
   salsaMontuno,
-  chainPatterns('salsa-verse-montuno', salsaVerse, salsaMontuno),
+  chainPatterns('salsa-verse-montuno', endWith(salsaVerse, 'timbales', TIMBALES_FILL), salsaMontuno),
   salsaVerse23,
   salsaMontuno23,
-  chainPatterns('salsa-verse-montuno-2-3', salsaVerse23, salsaMontuno23),
+  chainPatterns('salsa-verse-montuno-2-3', endWith(salsaVerse23, 'timbales', TIMBALES_FILL), salsaMontuno23),
   salsaChachacha,
   salsaGuaguanco,
 ]

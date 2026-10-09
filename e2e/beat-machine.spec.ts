@@ -24,16 +24,16 @@ test.describe('salsa beat machine', () => {
   })
 
   test('right-click picks the sound from a menu', async ({ page }) => {
-    const step = page.getByRole('button', { name: 'Congas step 1', exact: true })
+    const step = page.getByRole('button', { name: 'Bongos step 8', exact: true })
     await expect(step).toHaveText('')
     await step.click({ button: 'right' })
-    const menu = page.getByRole('dialog', { name: 'Congas step 1' })
-    await menu.getByRole('menuitemradio', { name: 'open' }).click()
+    const menu = page.getByRole('dialog', { name: 'Bongos step 8' })
+    await menu.getByRole('menuitemradio', { name: 'slap' }).click()
     await expect(menu).toBeHidden()
-    await expect(step).toHaveText('open')
+    await expect(step).toHaveText('slap')
 
     await step.click({ button: 'right' })
-    await expect(menu.getByRole('menuitemradio', { name: 'open' })).toHaveAttribute('aria-checked', 'true')
+    await expect(menu.getByRole('menuitemradio', { name: 'slap' })).toHaveAttribute('aria-checked', 'true')
     await menu.getByRole('menuitemradio', { name: 'Silence' }).click()
     await expect(step).toHaveText('')
   })

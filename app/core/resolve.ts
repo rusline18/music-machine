@@ -3,10 +3,20 @@ import type { StepResolver } from './audio/scheduler'
 import type { PitchedInstrument } from './harmony'
 import { parseChord, voicesToNotes } from './harmony'
 import type { Step } from './pattern'
-import { chordAt, countInBlock } from './pattern'
+import { chordAt, COUNTS_PER_BAR, countInBlock, patternLength } from './pattern'
 
-/** Step name → sample URL, or several takes of it to rotate through. */
-export type SampleMap = Record<string, string | string[]>
+/**
+ * A recorded stroke: its URL, or its URL and how loud to play it (1 = as
+ * recorded). Every file is normalized, so a soft stroke — a heel on the
+ * conga, the neck of a bell — sets its level here.
+ */
+export type Sample = string | { url: string, gain: number }
+
+/** Step name → a sample, or several takes of it to rotate through. */
+export type SampleMap = Record<string, Sample | Sample[]>
+
+const urlOf = (sample: Sample) => (typeof sample === 'string' ? sample : sample.url)
+const noteOf = (sample: Sample): Note => (typeof sample === 'string' ? { url: sample } : { url: sample.url, gain: sample.gain })
 
 /**
  * A voice counting the dance: per locale, `counts[i]` is the sample saying
@@ -58,7 +68,7 @@ export function stepNames(set: InstrumentSet, instrument: string): string[] {
 /** Every sample file the instruments can play in `locale`, for preloading. */
 export function sampleUrls(set: InstrumentSet, locale: string): Set<string> {
   return new Set([
-    ...Object.values(set.samples).flatMap((map) => Object.values(map).flat()),
+    ...Object.values(set.samples).flatMap((map) => Object.values(map).flat().map(urlOf)),
     ...Object.values(set.pitched).flatMap((pitched) => pitched.zones.map((zone) => zone.url)),
     ...Object.values(set.spoken).flatMap((voice) => {
       const words = wordsIn(voice, locale)
@@ -73,15 +83,15 @@ export function sampleUrls(set: InstrumentSet, locale: string): Set<string> {
  * sound like the same recording over and over.
  */
 export function sampleResolver(samples: Record<string, SampleMap>): StepResolver {
-  const nextTake = new Map<string[], number>()
+  const nextTake = new Map<Sample[], number>()
   return (_pattern, track, stepIndex) => {
     const name = track.steps[stepIndex]
     const entry = name ? samples[track.instrument]?.[name] : undefined
     if (!entry) return []
-    if (typeof entry === 'string') return [{ url: entry }]
+    if (!Array.isArray(entry)) return [noteOf(entry)]
     const take = nextTake.get(entry) ?? 0
     nextTake.set(entry, (take + 1) % entry.length)
-    return [{ url: entry[take]! }]
+    return [noteOf(entry[take]!)]
   }
 }
 
@@ -107,6 +117,8 @@ export function stepResolver(set: InstrumentSet, locale: () => string): StepReso
     const name = track.steps[stepIndex]
     const articulation = name ? pitched.articulations[name] : undefined
     if (!articulation) return []
-    return voicesToNotes(pitched, articulation(parseChord(chordAt(pattern, stepIndex) ?? DEFAULT_CHORD)))
+    const chord = (step: number) => parseChord(chordAt(pattern, step) ?? DEFAULT_CHORD)
+    const nextBar = (stepIndex + pattern.stepsPerCount * COUNTS_PER_BAR) % patternLength(pattern)
+    return voicesToNotes(pitched, articulation(chord(stepIndex), chord(nextBar)))
   }
 }

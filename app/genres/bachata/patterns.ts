@@ -5,18 +5,23 @@ import { voiceTrack } from '../voice'
 // Figures are eighth notes: a bar is 8 cells (counts 1–4), an 8-count block
 // 16. Each section is one block, like salsa's, over the two-bar i–V loop
 // (Am–E). Every part repeats each block, so Counts can stretch it, and the
-// chord picker can turn it into the longer i–iv–V–i (Am Dm E Am). Built
-// from documented references, but still needs sign-off from a bachata
-// musician.
+// chord picker can turn it into the longer i–iv–V–i (Am Dm E Am).
+//
+// Checked against written breakdowns — see docs/bachata-rhythms.md for each
+// part, its sources and what is still unconfirmed. Still needs sign-off
+// from a bachata musician by ear.
 
 const PROGRESSION = ['Am', 'E']
 
-/** Güira: long scrape on the beat, short on the & */
-const GUIRA: Step[] = ['long', 'short']
+/** Güira, derecho: every eighth, evenly — short strokes */
+const GUIRA_DERECHO: Step[] = ['short']
 /** Bass (one bar): root on 1 and 3, fifth on 2& and 4 */
 const BASS: Step[] = ['root', null, null, '5th', 'root', null, '5th', null]
-/** Segunda (one bar): alternating bass, treble arpeggios, a muted chuck on 4 */
-const SEGUNDA: Step[] = ['bass', 'chord', 'chord', 'chord', '5th', 'chord', 'mute', 'chord']
+/**
+ * Segunda (one bar): a bass note on 1, 3 and 4 following the bass guitar
+ * (minus its 2& pickup), strums on every eighth in between
+ */
+const SEGUNDA: Step[] = ['bass', 'chord', 'chord', 'chord', 'bass', 'chord', '5th', 'chord']
 
 /** The parts that change between sections; bongos and campana are silent if left out. */
 interface SectionSpec {
@@ -47,35 +52,27 @@ function bachataSection(spec: SectionSpec) {
 }
 
 /**
- * Derecho (verse): bongo martillo — eighths on the macho, hembra on 4 and
- * 8 — and the güira on every eighth. The requinto stays out of the singer's
- * way and only answers with a pickup run on 7 & 8 &.
+ * Derecho (verse): bongo martillo — every eighth on the macho, the hembra
+ * on 4 (and 8) — and the güira on every eighth, evenly. The requinto plays
+ * a chord arpeggio up and down, one note per eighth.
  */
 export const bachataDerecho = bachataSection({
   id: 'bachata-derecho',
-  guira: { instrument: 'guira', figure: GUIRA, volume: 0.8 },
+  guira: { instrument: 'guira', figure: GUIRA_DERECHO, volume: 0.8 },
   bongos: { instrument: 'bongos', figure: ['high', 'high', 'high', 'high', 'high', 'high', 'low', 'high'] },
-  requinto: {
-    instrument: 'requinto',
-    figure: [
-      null, null, null, null, null, null, null, null,
-      null, null, null, null, 'root', '3rd', '5th', '3rd',
-    ],
-    volume: 0.8,
-  },
+  requinto: { instrument: 'requinto', figure: ['root', '3rd', '5th', '3rd'], volume: 0.6 },
 })
 
 /**
- * Majao (usually the chorus): a step up in energy. The bongo leaves the
- * even martillo for a syncopated bar — a slap on 1&, open hembra tones
- * through 3, 4 and 4& — the güira digs in harder, and the requinto answers
- * the singers: a dyad on 4, then a run down on 7 & 8 &. This one especially
- * needs a bachata musician's ear.
+ * Majao (usually the chorus): the bongo and güira drop the upbeats. The
+ * bongo plays only the four beats — 1, 2, 3 on the macho, the hembra still
+ * on 4 — and the güira scrapes long on each beat. The requinto answers the
+ * singers: a dyad on 4, then a run down on 7 & 8 & (unconfirmed).
  */
 export const bachataMajao = bachataSection({
   id: 'bachata-majao',
-  guira: { instrument: 'guira', figure: GUIRA, volume: 0.95 },
-  bongos: { instrument: 'bongos', figure: ['high', 'slap', 'high', 'high', 'low', 'high', 'low', 'low'] },
+  guira: { instrument: 'guira', figure: ['long', null], volume: 0.95 },
+  bongos: { instrument: 'bongos', figure: ['high', null, 'high', null, 'high', null, 'low', null] },
   requinto: {
     instrument: 'requinto',
     figure: [
@@ -87,14 +84,14 @@ export const bachataMajao = bachataSection({
 })
 
 /**
- * Mambo (the instrumental climax): the bongo player puts the bongos down
- * and picks up the campana — open on 1 and 3, neck on 2 and 4; the bell is
- * how dancers recognize the mambo. The güira scrapes long on every eighth,
- * and the requinto repeats a riff: a dyad, a run down, a turn back up.
+ * Mambo (the instrumental climax): the güira plays its strict mambo figure
+ * — 1, 2&, 3, 4& — and the requinto takes the lead with a repeating riff.
+ * The bongo player picks up the campana (its rhythm here — open on 1 and 3,
+ * neck on 2 and 4 — is unconfirmed).
  */
 export const bachataMambo = bachataSection({
   id: 'bachata-mambo',
-  guira: { instrument: 'guira', figure: ['long'] },
+  guira: { instrument: 'guira', figure: ['long', null, null, 'short', 'long', null, null, 'short'] },
   campana: { instrument: 'campana', figure: ['open', null, 'neck', null], volume: 0.8 },
   requinto: { instrument: 'requinto', figure: ['dyad', '5th', '3rd', 'root', '3rd', '5th', 'dyad', null], volume: 0.9 },
 })

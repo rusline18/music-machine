@@ -13,8 +13,17 @@ Any sample whose source is missing is synthesized instead.
 ## vcsl/
 
 From the [Versilian Community Sample Library](https://github.com/sgossner/VCSL)
-by Versilian Studios (CC0 1.0). Used for clave, congas, bongos, cowbell,
-maracas (small shaker) and güiro.
+by Versilian Studios (CC0 1.0). Used for clave, congas, bongos, both salsa
+bells (bongo bell: `Cowbell1`, timbales bell: `Cowbell2`), maracas (small
+shaker), güiro and the salsa piano.
+
+The piano notes (`Chordophones/Zithers/Grand Piano, Kawai - Legacy/Sustains/`)
+are ~14 MB, so they're **not committed** (`.gitignore`d) — only the 8 trimmed
+notes in `public/audio/salsa/piano/` are. To rebuild those, put these files
+from that folder into `audio-sources/vcsl/` (names unchanged):
+`GrandPno_Main_Sus_{C3,E3,G3,B3,D4,F4,A4,C5}_v3_rr1.wav`. VCSL names its
+notes an octave low — its "C3" sounds as C4 — and the script measures and
+retunes each one, so the names in `public/` are the real pitches.
 
 ## uiowa/
 
@@ -66,6 +75,6 @@ sound ID.
 | salsa/timbales/low | [Timbales Low (Hembra)](https://freesound.org/people/Sassaby/sounds/533094/) | Sassaby |
 | salsa/timbales/high | [Timbales - High (Macho)](https://freesound.org/people/Sassaby/sounds/533095/) | Sassaby |
 | salsa/timbales/rim | [Timbales High Rimshot (Macho)](https://freesound.org/people/Sassaby/sounds/533089/) | Sassaby |
-| bachata/bass/a2 | [bass A2](https://freesound.org/people/mat_the_glad/sounds/43938/) | mat_the_glad |
+| salsa/bass/a2, bachata/bass/a2 | [bass A2](https://freesound.org/people/mat_the_glad/sounds/43938/) | mat_the_glad |
 
 All of these were checked as CC0 on their sound pages (October 2026).
