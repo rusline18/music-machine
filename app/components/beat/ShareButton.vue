@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { SHARE_PARAM } from '~/composables/useBeatMachine'
+import { sendLink } from '~/core/sendLink'
 
 const props = defineProps<{
   /** Pattern code from useBeatMachine().shareCode. */
@@ -19,14 +20,15 @@ async function share() {
   link.value = url.toString()
 
   clearTimeout(resetTimer)
-  try {
-    await navigator.clipboard.writeText(link.value)
+  const touch = window.matchMedia('(pointer: coarse)').matches
+  const result = await sendLink(link.value, navigator, touch)
+  if (result === 'copied') {
     status.value = 'copied'
     resetTimer = setTimeout(() => (status.value = 'idle'), 2500)
-  } catch {
-    // No clipboard (insecure origin, permission denied): show the link
-    // for copying by hand.
+  } else if (result === 'manual') {
     status.value = 'manual'
+  } else {
+    status.value = 'idle'
   }
 }
 

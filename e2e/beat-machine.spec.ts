@@ -216,6 +216,22 @@ test.describe('on a phone', () => {
     await expect(page.getByRole('button', { name: 'Mute Clave' })).toHaveAttribute('aria-pressed', 'true')
   })
 
+  test('Share opens the system share menu', async ({ page }) => {
+    // Headless Chromium has no share sheet: stand one in that records the call.
+    await page.addInitScript(() => {
+      Object.assign(navigator, {
+        share: (data: ShareData) => {
+          (window as unknown as { shared: ShareData }).shared = data
+          return Promise.resolve()
+        },
+      })
+    })
+    await page.goto('/salsa')
+    await page.getByRole('button', { name: 'Share' }).tap()
+    await expect.poll(() => page.evaluate(() => (window as unknown as { shared?: ShareData }).shared?.url)).toMatch(/\/salsa\?p=[\w-]+$/)
+    await expect(page.getByText('Link copied')).toBeHidden()
+  })
+
   test('a long press on a cell opens the sound menu', async ({ page }) => {
     await page.goto('/salsa')
     await page.getByRole('button', { name: 'Edit grid' }).tap()

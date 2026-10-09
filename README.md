@@ -25,6 +25,7 @@ app/
     share.ts             Pattern ⇄ short link code; incoming links are checked and rebuilt
     song.ts              Songs built from presets: which sections fit together (clave,
                          tempo, length) and joining them with a fill between sections
+    sendLink.ts          Share sheet on touch screens, clipboard elsewhere
     audio/
       engine.ts          AudioContext, per-instrument gain, sample loading (Opus with
                          WAV fallback, prefetch before the first click), playback, reverb
@@ -80,7 +81,9 @@ scripts/
   app-icon.svg         The app icon; render-icons.mjs turns it into public/*.png
 tests/                 Vitest unit tests
 e2e/                   Playwright: pages, grid editing, transport, sharing in a real browser
-docs/                  Plans
+deploy/                VPS setup: systemd unit, Caddyfile, setup and release scripts
+docs/                  Roadmap, deploy guide and research notes
+CHANGELOG.md           What's done
 ```
 
 ### Simple and advanced mode
@@ -125,7 +128,8 @@ like any other (`app/core/song.ts`).
 
 ### Sharing and saving
 
-**Share** copies a link like `/salsa?p=…` to the exact pattern: tempo, length,
+**Share** sends a link like `/salsa?p=…` to the exact pattern: on a touch
+screen through the system share menu, elsewhere it's copied. The link holds tempo, length,
 mutes, volumes, chords and the voice. Each step is one letter, so a 32-count
 pattern stays well under 2 KB. Opening a link loads the pattern and drops the
 code from the address bar; anything decoded is checked against the genre and
@@ -220,6 +224,14 @@ every pull request and push to `main`; when e2e fails, download the
 For correct `hreflang` links in production, set the site's public URL:
 `NUXT_PUBLIC_I18N_BASE_URL=https://example.com`.
 
+## Deploy
+
+The site runs on a VPS: Node behind Caddy (HTTPS). After CI passes on
+`main`, `.github/workflows/deploy.yml` builds the app and ships it over SSH;
+the server keeps the last 5 releases and rolls back if a new one doesn't
+answer. One-time server setup and the GitHub secrets it needs:
+[docs/deploy.md](docs/deploy.md).
+
 ## Audio samples
 
 `public/audio/**` is built by `npm run samples`
@@ -267,8 +279,7 @@ script.
   an Am–E loop. Every preset starts at
   8 counts. They follow documented references but still need sign-off from a
   player.
-- What's next: [docs/roadmap.md](docs/roadmap.md). Earlier reviews:
-  [security and performance audit](docs/security-performance-audit.md),
-  [UX plan](docs/ux-plan.md).
+- What's next: [docs/roadmap.md](docs/roadmap.md); what's done:
+  [CHANGELOG.md](CHANGELOG.md).
 - Patterns are 8, 16, 24 or 32 dance counts long, shown as 8-count blocks.
   Each count is two cells ("1 &"); BPM is counts per minute.

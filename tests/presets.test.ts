@@ -117,6 +117,10 @@ describe('rhythm reference', () => {
     'salsa-montuno-2-3': SON_CLAVE_2_3,
     'salsa-chachacha-2-3': SON_CLAVE_2_3,
     'salsa-guaguanco-3-2': RUMBA_CLAVE_3_2,
+    'salsa-on2-3-2': SON_CLAVE_3_2,
+    'salsa-son-2-3': SON_CLAVE_2_3,
+    'salsa-bolero': SON_CLAVE_2_3,
+    'salsa-pachanga-2-3': SON_CLAVE_2_3,
   }
 
   it.each(salsaPresets.map((p) => [p.id, p] as const))('%s plays its clave in every block', (id, pattern) => {
@@ -139,7 +143,9 @@ describe('rhythm reference', () => {
     }
   })
 
-  it.each(salsaPresets.filter((p) => p.id !== 'salsa-guaguanco-3-2' && p.id !== 'salsa-chachacha-2-3').map((p) => [p.id, p] as const))(
+  // Rumba, cha-cha-chá, pachanga and bolero have their own conga and bass parts.
+  const OWN_GROOVE = ['salsa-guaguanco-3-2', 'salsa-chachacha-2-3', 'salsa-pachanga-2-3', 'salsa-bolero']
+  it.each(salsaPresets.filter((p) => !OWN_GROOVE.includes(p.id)).map((p) => [p.id, p] as const))(
     '%s: full tumbao on the congas, bass on 2& and 4 and never on the 1',
     (_id, pattern) => {
       const bars = pattern.counts / COUNTS_PER_BAR
@@ -214,6 +220,43 @@ describe('rhythm reference', () => {
     const guiro = chachacha.tracks.find((t) => t.instrument === 'guiro')!.steps
     expect(guiro.slice(6, 9)).toEqual(['short', 'short', 'long'])
     expect(chachacha.bpm).toBeLessThan(130)
+  })
+
+  const salsaPreset = (id: string) => salsaPresets.find((p) => p.id === id)!
+  const plays = (pattern: Pattern, instrument: string) => {
+    const track = pattern.tracks.find((t) => t.instrument === instrument)!
+    return !track.muted && track.steps.some(Boolean)
+  }
+
+  it('on2: the voice says only 2 and 6, the congas slap on them at full volume', () => {
+    const on2 = salsaPreset('salsa-on2-3-2')
+    expect(onsets(on2, 'voice')).toEqual([2, 10])
+    expect(on2.tracks.find((t) => t.instrument === 'congas')!.steps[2]).toBe('slap')
+    expect(on2.tracks.find((t) => t.instrument === 'congas')!.steps[10]).toBe('slap')
+    expect(on2.tracks.find((t) => t.instrument === 'congas')!.volume).toBe(1)
+  })
+
+  it('son: a septeto — bongó, maracas, tres and bass, no congas, timbales or piano; slower than salsa', () => {
+    const son = salsaPreset('salsa-son-2-3')
+    for (const instrument of ['bongos', 'maracas', 'tres', 'bass']) expect(plays(son, instrument), instrument).toBe(true)
+    for (const instrument of ['congas', 'timbales', 'piano']) expect(plays(son, instrument), instrument).toBe(false)
+    expect(son.bpm).toBeLessThanOrEqual(120)
+  })
+
+  it('bolero: slow, maracas on every eighth, bass on 1 and 3', () => {
+    const bolero = salsaPreset('salsa-bolero')
+    expect(bolero.bpm).toBeLessThanOrEqual(90)
+    expect(onsets(bolero, 'maracas')).toHaveLength(16)
+    expect(onsets(bolero, 'bass')).toEqual([0, 4, 8, 12])
+  })
+
+  it('pachanga: a slap on 1 and 3, two open tones after each; a charanga with no bongó, tres or brass', () => {
+    const pachanga = salsaPreset('salsa-pachanga-2-3')
+    const congas = pachanga.tracks.find((t) => t.instrument === 'congas')!.steps
+    expect(congas.slice(0, 8)).toEqual(['slap', null, 'open', 'open', 'slap', null, 'open', 'open'])
+    for (const instrument of ['bongos', 'tres', 'trumpet', 'trombone']) expect(plays(pachanga, instrument), instrument).toBe(false)
+    expect(pachanga.bpm).toBeGreaterThan(salsaPreset('salsa-chachacha-2-3').bpm)
+    expect(pachanga.bpm).toBeLessThan(salsaPreset('salsa-verse-3-2').bpm)
   })
 
   it.each(bachataPresets.map((p) => [p.id, p] as const))('%s keeps the bass on 1, 2&, 3, 4 of each bar', (_id, pattern) => {

@@ -135,6 +135,10 @@
     "salsa-mambo-2-3": "Mambo in 2-3 clave",
     "salsa-chachacha-2-3": "Cha-cha-chá — slower, \"cha-cha-chá\" on 4 & 1",
     "salsa-guaguanco-3-2": "Rumba guaguancó — drums and clave",
+    "salsa-on2-3-2": "On2 — the tumbao on 2 and 6",
+    "salsa-son-2-3": "Son montuno — where salsa comes from",
+    "salsa-bolero": "Bolero — slow and romantic",
+    "salsa-pachanga-2-3": "Pachanga — the bouncing congas",
     "song": "Your song",
     "custom": "Pattern from a link"
   },
@@ -151,6 +155,10 @@
       "salsa-mambo-2-3": "The mambo with the clave started from its \"2\" side.",
       "salsa-chachacha-2-3": "Around 120 BPM. Listen to the güiro: two short scrapes and a long one are the \"cha-cha-chá\" you step on 4 & 1.",
       "salsa-guaguanco-3-2": "The street rumba salsa bands quote in \"rumba\" breaks. Rumba clave: the third stroke comes half a beat later than in son clave. Simplified for one conga player.",
+      "salsa-on2-3-2": "For dancing \"on 2\": the voice counts only 2 and 6, where you break, and the congas lead — their slap lands on the same counts.",
+      "salsa-son-2-3": "Slower Cuban son, as a septeto plays it: bongó, maracas, tres and bass, no congas or piano. Good for hearing the clave and tres clearly.",
+      "salsa-bolero": "Around 80 BPM, each count a real beat. Soft maracas and bongó, bass on 1 and 3: for slow, close dancing.",
+      "salsa-pachanga-2-3": "Early-1960s charanga craze, between cha-cha-chá and salsa in tempo. The congas slap on the beat and bounce with two open tones after it.",
       "song": "A song you put together from the presets below. Change its sections in the song panel; Reset throws away grid edits.",
       "custom": "Someone shared this pattern with you. Edit it freely; Reset goes back to the first preset."
     },
@@ -186,7 +194,7 @@
       "advancedMode": "Loop length, feel, reverb, volumes and chords.",
       "simpleMode": "Hide the extra controls. Your rhythm and settings stay as they are.",
       "count": "The count the music is on right now. 1 and 5 start each half of the 8 counts: listen for them.",
-      "share": "Copies a link to this exact pattern — tempo, length, mutes and all. Send it to a partner or your students.",
+      "share": "A link to this exact pattern — tempo, length, mutes and all. On a phone it opens the share menu, on a computer it copies the link. Send it to a partner or your students.",
       "reset": "Throws away your changes and goes back to the preset.",
       "stepper": "Tap for 1 BPM, hold to change by 5.",
       "animation": "Icons and counts move in time with the music. Switch it off if it distracts you."
