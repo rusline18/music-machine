@@ -5,10 +5,12 @@ import { parseChord } from '~/core/harmony'
 import type { Pattern } from '~/core/pattern'
 import { COUNT_OPTIONS, COUNTS_PER_BAR, COUNTS_PER_BLOCK, patternLength } from '~/core/pattern'
 import { sampleUrls, stepNames } from '~/core/resolve'
-import { genres } from '~/genres'
+import { findGenre, genres } from '~/genres'
 import { bachataPresets } from '~/genres/bachata/patterns'
 import { salsaPresets } from '~/genres/salsa/patterns'
 import { salsaSamples } from '~/genres/salsa/samples'
+
+const salsa = findGenre('salsa')!
 
 const publicDir = fileURLToPath(new URL('../public', import.meta.url))
 
@@ -109,10 +111,8 @@ describe('rhythm reference', () => {
   const CLAVE_BY_PRESET: Record<string, number[]> = {
     'salsa-verse-3-2': SON_CLAVE_3_2,
     'salsa-montuno-3-2': SON_CLAVE_3_2,
-    'salsa-verse-montuno': SON_CLAVE_3_2,
     'salsa-verse-2-3': SON_CLAVE_2_3,
     'salsa-montuno-2-3': SON_CLAVE_2_3,
-    'salsa-verse-montuno-2-3': SON_CLAVE_2_3,
     'salsa-chachacha-2-3': SON_CLAVE_2_3,
     'salsa-guaguanco-3-2': RUMBA_CLAVE_3_2,
   }
@@ -185,10 +185,8 @@ describe('rhythm reference', () => {
     expect(bell.flatMap((step, i) => (step === 'neck' ? [i] : []))).toEqual([5, 7, 9])
   })
 
-  it.each(['salsa-verse-montuno', 'salsa-verse-montuno-2-3'])('%s: the timbales fill into the montuno', (id) => {
-    const timbales = salsaPresets.find((p) => p.id === id)!.tracks.find((t) => t.instrument === 'timbales')!.steps
-    expect(timbales.slice(12, 16)).toEqual(['high', 'high', 'high', 'low'])
-    expect(timbales.slice(16).every((step) => step === null)).toBe(true)
+  it('every salsa preset says which clave it is in, so songs only join matching ones', () => {
+    for (const preset of salsaPresets) expect(salsa.clave?.[preset.id], preset.id).toBeDefined()
   })
 
   it('cha-cha-chá: güiro long on the beat, two shorts after — the "cha-cha-chá" on 4 & 1', () => {

@@ -33,6 +33,11 @@ export interface Pattern {
    * tracks leave it out.
    */
   chords?: string[]
+  /**
+   * For a song built from presets (see core/song.ts): the preset ids it
+   * was put together from, one per 8-count block. Presets leave it out.
+   */
+  sections?: string[]
   tracks: Track[]
 }
 
@@ -99,11 +104,19 @@ export function definePattern({ stepsPerCount = 2, tracks, ...rest }: PatternSpe
   }
 }
 
+/** The volume of the loudest of these tracks that plays at all. */
+function loudest(tracks: (Track | undefined)[]): number | undefined {
+  const playing = tracks.filter((track) => track && !track.muted && track.steps.some(Boolean)).map((track) => track!.volume)
+  return playing.length ? Math.max(...playing) : undefined
+}
+
 /**
  * Join patterns end to end — e.g. an 8-count verse block followed by a
  * montuno block. A track muted in one block plays silence there, and is
- * only muted overall if it's muted in every block. Tempo comes from the
- * first pattern; chords are joined like the steps.
+ * only muted overall if it's muted in every block. A loop has one volume
+ * per track: the loudest of the blocks it plays in, so brass that comes in
+ * louder in a later block isn't held back by the first. Tempo comes from
+ * the first pattern; chords are joined like the steps.
  */
 export function chainPatterns(id: string, first: Pattern, ...rest: Pattern[]): Pattern {
   const blocks = [first, ...rest]
@@ -120,12 +133,27 @@ export function chainPatterns(id: string, first: Pattern, ...rest: Pattern[]): P
     chords: first.chords && blocks.flatMap((block) => block.chords ?? Array(block.counts / COUNTS_PER_BAR).fill(first.chords![0])),
     tracks: first.tracks.map((track) => ({
       ...track,
+      volume: loudest(blocks.map((block) => trackIn(block, track.instrument))) ?? track.volume,
       steps: blocks.flatMap((block) => {
         const blockTrack = trackIn(block, track.instrument)
         return !blockTrack || blockTrack.muted ? Array(patternLength(block)).fill(null) : blockTrack.steps
       }),
       muted: blocks.every((block) => trackIn(block, track.instrument)?.muted ?? true),
     })),
+  }
+}
+
+/**
+ * The same block with `instrument`'s last steps replaced by `ending` — a
+ * fill that leads into the next section. Switches the track on, so the
+ * fill is heard even where the instrument otherwise sits out.
+ */
+export function endWith(pattern: Pattern, instrument: string, ending: readonly Step[]): Pattern {
+  return {
+    ...pattern,
+    tracks: pattern.tracks.map((track) => track.instrument !== instrument
+      ? track
+      : { ...track, steps: [...track.steps.slice(0, -ending.length), ...ending], muted: false }),
   }
 }
 
@@ -140,6 +168,9 @@ export function setPatternCounts(pattern: Pattern, counts: number): void {
   if (chords?.length) {
     pattern.chords = resizeSteps(chords, counts / COUNTS_PER_BAR).map((chord) => chord ?? chords[0]!)
   }
+  // A song's sections repeat along with its steps, one per 8-count block.
+  const { sections } = pattern
+  if (sections?.length) pattern.sections = resizeSteps(sections, counts / COUNTS_PER_BLOCK).map((id) => id ?? sections[0]!)
   pattern.counts = counts
 }
 

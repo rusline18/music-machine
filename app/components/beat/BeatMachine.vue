@@ -13,6 +13,11 @@ const {
   selectedPresetId,
   selectPreset,
   reset,
+  song,
+  sectionFits,
+  startSong,
+  addSection,
+  removeSection,
   shareCode,
   isPlaying,
   isLoading,
@@ -169,6 +174,16 @@ const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(active
 
     <!-- On a phone the guide and the buttons below go after the cards or
          the grid (order-1), so what's practised is on the first screen. -->
+    <BeatSongBuilder
+      class="mb-6 max-sm:order-1"
+      :genre="genre"
+      :song="song"
+      :fits="sectionFits"
+      @start="startSong"
+      @add="addSection"
+      @remove="removeSection"
+    />
+
     <BeatLayerGuide
       class="mb-6 max-sm:order-1"
       :layers="layers"

@@ -1,6 +1,6 @@
 import type { Genre } from '../types'
 import { countingVoice } from '../voice'
-import { salsaPresets } from './patterns'
+import { salsaClave, salsaPresets, TIMBALES_FILL } from './patterns'
 import { salsaPitched, salsaSamples } from './samples'
 
 export const salsa: Genre = {
@@ -15,4 +15,7 @@ export const salsa: Genre = {
   // and the bass's tumbao sits on it. Bells, piano and the rest come after.
   teachingOrder: ['clave', 'congas', 'bass', 'bongos', 'maracas', 'timbales', 'cowbell', 'timbalebell', 'guiro', 'piano', 'tres', 'trumpet', 'trombone'],
   presets: salsaPresets,
+  clave: salsaClave,
+  // Going into the next section of a song, the timbalero plays a fill.
+  transitionFill: { instrument: 'timbales', steps: TIMBALES_FILL },
 }

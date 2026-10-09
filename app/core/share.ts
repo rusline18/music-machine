@@ -3,6 +3,7 @@ import { COUNT_OPTIONS, COUNTS_PER_BAR, resizeSteps } from './pattern'
 import { parseChord } from './harmony'
 import type { InstrumentSet } from './resolve'
 import { stepNames } from './resolve'
+import { SONG_PATTERN_ID } from './song'
 
 /**
  * Patterns travel in links (`/salsa?p=…`) and in localStorage as a short
@@ -17,7 +18,7 @@ export interface ShareGenre extends InstrumentSet {
   id: string
   instruments: readonly string[]
   bpmRange: readonly [min: number, max: number]
-  presets: readonly { id: string }[]
+  presets: readonly { id: string, counts: number }[]
 }
 
 /** Id of a pattern that isn't one of the genre's presets (i18n `presets.custom`). */
@@ -42,6 +43,8 @@ interface SharedPattern {
   s: number
   b: number
   h?: string[]
+  /** A song's sections (preset ids), in order. */
+  p?: string[]
   /** [instrument, steps, volume, muted] */
   t: Array<[string, string, number, 0 | 1]>
 }
@@ -65,6 +68,7 @@ export function encodePattern(pattern: Pattern, genre: ShareGenre): string {
     s: pattern.stepsPerCount,
     b: pattern.bpm,
     ...(pattern.chords ? { h: pattern.chords } : {}),
+    ...(pattern.sections ? { p: pattern.sections } : {}),
     t: pattern.tracks.map((track) => {
       const names = stepNames(genre, track.instrument)
       const steps = track.steps.map((step) => {
@@ -79,6 +83,14 @@ export function encodePattern(pattern: Pattern, genre: ShareGenre): string {
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 const isNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value)
+
+/** A song's sections, if they're all this genre's presets and add up to the pattern's length. */
+function songSections(sections: unknown, counts: number, genre: ShareGenre): string[] | undefined {
+  if (!Array.isArray(sections) || sections.length === 0) return undefined
+  const presets = sections.map((id) => genre.presets.find((preset) => preset.id === id))
+  if (presets.some((preset) => !preset)) return undefined
+  return presets.reduce((sum, preset) => sum + preset!.counts, 0) === counts ? presets.map((preset) => preset!.id) : undefined
+}
 
 /** The pattern a code describes, or null if it's broken or for another genre. */
 export function decodePattern(code: string, genre: ShareGenre): Pattern | null {
@@ -112,8 +124,10 @@ export function decodePattern(code: string, genre: ShareGenre): Pattern | null {
     }
   })
 
+  const sections = songSections(shared.p, counts!, genre)
   const pattern: Pattern = {
-    id: genre.presets.some((preset) => preset.id === shared.i) ? shared.i! : CUSTOM_PATTERN_ID,
+    id: sections ? SONG_PATTERN_ID : genre.presets.some((preset) => preset.id === shared.i) ? shared.i! : CUSTOM_PATTERN_ID,
+    ...(sections ? { sections } : {}),
     counts: counts!,
     stepsPerCount: stepsPerCount!,
     bpm: Math.round(clamp(shared.b, ...genre.bpmRange)),

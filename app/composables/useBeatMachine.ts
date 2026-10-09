@@ -7,6 +7,8 @@ import type { Pattern } from '~/core/pattern'
 import { patternLength, resizeSteps, setPatternCounts, switchStep } from '~/core/pattern'
 import type { CountingMode } from '~/core/resolve'
 import { decodePattern, encodePattern } from '~/core/share'
+import type { SectionFit } from '~/core/song'
+import { buildSong, sectionFit, songBpm } from '~/core/song'
 import { COUNTING_MODES, countingFigure, sampleUrls, stepNames, stepResolver } from '~/core/resolve'
 import type { TempoChoice } from '~/core/tempo'
 import { nudgeBpm, tempoChoice, tempoFor } from '~/core/tempo'
@@ -123,9 +125,42 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     if (preset) loadPattern(structuredClone(preset))
   }
 
-  /** Undo edits: back to the preset this pattern started from (or the first one). */
+  /** Undo edits: back to the preset (or the song) this pattern started from, or the first preset. */
   function reset() {
-    selectPreset(genre.presets.some((p) => p.id === pattern.value.id) ? pattern.value.id : genre.presets[0]!.id)
+    if (pattern.value.sections) loadSong(pattern.value.sections, { keepTempo: false })
+    else selectPreset(genre.presets.some((p) => p.id === pattern.value.id) ? pattern.value.id : genre.presets[0]!.id)
+  }
+
+  /** The sections of the song being played, or null when it's a single preset. */
+  const song = computed(() => pattern.value.sections ?? null)
+
+  /**
+   * Builds the song and loads it. A change to a song that's already
+   * loaded keeps the tempo the user set; grid edits start over.
+   */
+  function loadSong(sections: readonly string[], { keepTempo = true } = {}) {
+    const next = buildSong(genre, sections)
+    if (keepTempo && song.value) next.bpm = pattern.value.bpm
+    loadPattern(next)
+  }
+
+  /** Starts a song from the current preset (or the first one, if this pattern isn't a preset). */
+  function startSong() {
+    const id = pattern.value.id
+    loadSong([genre.presets.some((p) => p.id === id) ? id : genre.presets[0]!.id])
+  }
+
+  /** For each preset: whether it can be added to the song now, or why not. */
+  const sectionFits = computed(() => new Map<string, SectionFit>(
+    genre.presets.map((preset) => [preset.id, sectionFit(genre, song.value ?? [], preset.id)]),
+  ))
+
+  function addSection(id: string) {
+    if (song.value && sectionFits.value.get(id) === 'ok') loadSong([...song.value, id])
+  }
+
+  function removeSection(index: number) {
+    if (song.value && song.value.length > 1) loadSong(song.value.filter((_, i) => i !== index))
   }
 
   /** Code for a link to the current pattern (see core/share.ts). */
@@ -250,8 +285,10 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     if (track.steps[stepIndex] && track.muted) setMuted(instrument, false)
   }
 
-  /** The tempo the selected preset is written at; the tempo buttons are relative to it. */
-  const presetBpm = computed(() => genre.presets.find((p) => p.id === selectedPresetId.value)?.bpm ?? pattern.value.bpm)
+  /** The tempo the selected preset (or song) is written at; the tempo buttons are relative to it. */
+  const presetBpm = computed(() => (song.value && songBpm(genre, song.value))
+    ?? genre.presets.find((p) => p.id === selectedPresetId.value)?.bpm
+    ?? pattern.value.bpm)
   const tempo = computed(() => tempoChoice(pattern.value.bpm, presetBpm.value, genre.bpmRange))
 
   function setTempo(choice: TempoChoice) {
@@ -348,10 +385,16 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
   return {
     /** Edit freely: the scheduler reads it live, so changes (tempo included) apply while playing. */
     pattern,
-    /** The preset the pattern started from, or CUSTOM_PATTERN_ID for one from a link. */
+    /** The preset the pattern started from, SONG_PATTERN_ID for a song, or CUSTOM_PATTERN_ID for one from a link. */
     selectedPresetId: readonly(selectedPresetId),
     selectPreset,
     reset,
+    /** The song's sections (preset ids), or null when a single preset is loaded. */
+    song,
+    sectionFits,
+    startSong,
+    addSection,
+    removeSection,
     shareCode,
     isPlaying: readonly(isPlaying),
     isLoading: readonly(isLoading),

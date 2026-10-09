@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { chainPatterns } from '~/core/pattern'
 import { stepNames } from '~/core/resolve'
 import { CUSTOM_PATTERN_ID, decodePattern, encodePattern } from '~/core/share'
+import { buildSong } from '~/core/song'
 import { findGenre, genres } from '~/genres'
 
 const salsa = findGenre('salsa')!
@@ -50,6 +51,20 @@ describe('pattern links', () => {
     const code = encodePattern(longest, bachata)
     expect(code).toMatch(/^[\w-]+$/)
     expect(code.length).toBeLessThan(2000)
+  })
+
+  it('keeps the sections of a song, and drops ones that are not presets or do not add up', () => {
+    const song = buildSong(salsa, ['salsa-verse-3-2', 'salsa-montuno-3-2'])
+    expect(decodePattern(encodePattern(song, salsa), salsa)).toEqual(song)
+    const tampered = (sections: unknown) => {
+      const payload = payloadOf(encodePattern(song, salsa))
+      return decodePattern(codeFor({ ...payload, p: sections }), salsa)!
+    }
+    for (const sections of [['nope', 'salsa-montuno-3-2'], ['salsa-verse-3-2'], 'salsa-verse-3-2', []]) {
+      const decoded = tampered(sections)
+      expect(decoded.sections, JSON.stringify(sections)).toBeUndefined()
+      expect(decoded.id).toBe(CUSTOM_PATTERN_ID)
+    }
   })
 
   it('marks a pattern that is not one of the presets as custom', () => {

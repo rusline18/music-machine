@@ -1,5 +1,5 @@
 import type { Step, TrackSpec } from '~/core/pattern'
-import { chainPatterns, definePattern } from '~/core/pattern'
+import { definePattern } from '~/core/pattern'
 import { voiceTrack } from '../voice'
 
 // Figures are eighth notes: a bar is 8 cells (counts 1–4), an 8-count block
@@ -100,5 +100,4 @@ export const bachataPresets = [
   bachataDerecho,
   bachataMajao,
   bachataMambo,
-  chainPatterns('bachata-derecho-majao', bachataDerecho, bachataMajao),
 ]

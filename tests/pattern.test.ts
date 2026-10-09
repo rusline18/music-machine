@@ -4,6 +4,7 @@ import {
   chordAt,
   countInBlock,
   definePattern,
+  endWith,
   patternLength,
   resizeSteps,
   setPatternCounts,
@@ -20,6 +21,8 @@ function block(id: string, tracks: Array<[string, Array<string | null>, boolean?
     tracks: tracks.map(([instrument, steps, muted = false]) => ({ instrument, steps, volume: 1, muted })),
   }
 }
+
+const verse0 = block('verse', [['clave', ['hit', null, null, 'hit']], ['bell', [null, null, null, null], true]])
 
 describe('resizeSteps', () => {
   it('repeats the existing steps when growing', () => {
@@ -59,6 +62,15 @@ describe('chainPatterns', () => {
       steps: [null, null, null, null, 'hit', null, 'hit', null],
       muted: false,
     })
+  })
+
+  it('gives each track the volume of the loudest block it plays in', () => {
+    const quiet = { ...verse, tracks: verse.tracks.map((t) => ({ ...t, volume: 0.6 })) }
+    const loud = { ...montuno, tracks: montuno.tracks.map((t) => ({ ...t, volume: 0.8 })) }
+    expect(chainPatterns('both', quiet, loud).tracks.map((t) => t.volume)).toEqual([0.8, 0.8])
+    // A block where the track sits out doesn't count, even if it's set louder.
+    const mutedLoud = { ...verse, tracks: verse.tracks.map((t) => ({ ...t, volume: 1 })) }
+    expect(chainPatterns('both', mutedLoud, loud).tracks[1]!.volume).toBe(0.8)
   })
 
   it('takes the id from the arguments, tempo from the first block', () => {
@@ -130,6 +142,23 @@ describe('setPatternCounts', () => {
     setPatternCounts(pattern, 8)
     expect(pattern.tracks[0]!.steps).toHaveLength(16)
     expect(pattern.chords).toEqual(['Am', 'Dm'])
+  })
+
+  it('repeats or cuts the sections of a song with its blocks', () => {
+    const pattern = { ...block('song', [['bass', Array(32).fill(null)]]), counts: 16, sections: ['verse', 'montuno'] }
+    setPatternCounts(pattern, 32)
+    expect(pattern.sections).toEqual(['verse', 'montuno', 'verse', 'montuno'])
+    setPatternCounts(pattern, 8)
+    expect(pattern.sections).toEqual(['verse'])
+  })
+})
+
+describe('endWith', () => {
+  it('replaces the last steps of one track and switches it on', () => {
+    const ended = endWith(verse0, 'bell', ['fill'])
+    expect(ended.tracks[1]).toMatchObject({ steps: [null, null, null, 'fill'], muted: false })
+    expect(ended.tracks[0]).toBe(verse0.tracks[0])
+    expect(verse0.tracks[1]!.steps).toEqual([null, null, null, null])
   })
 })
 
