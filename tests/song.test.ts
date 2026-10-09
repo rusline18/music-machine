@@ -16,6 +16,8 @@ describe('sectionFit', () => {
   it('joins sections in the same clave written at close tempos', () => {
     expect(sectionFit(salsa, ['salsa-verse-3-2'], 'salsa-montuno-3-2')).toBe('ok')
     expect(sectionFit(salsa, ['salsa-verse-2-3'], 'salsa-montuno-2-3')).toBe('ok')
+    expect(sectionFit(salsa, ['salsa-verse-3-2', 'salsa-montuno-3-2'], 'salsa-mambo-3-2')).toBe('ok')
+    expect(sectionFit(salsa, ['salsa-montuno-3-2'], 'salsa-mambo-2-3')).toBe('clave')
     // The same section again is fine: verse ×2 → montuno ×2.
     expect(sectionFit(salsa, ['salsa-verse-3-2'], 'salsa-verse-3-2')).toBe('ok')
   })
