@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { genres } from '~/genres'
 import { ICON_ACCENTS, ICONS } from '~/icons'
-import { ACCENT_MOTION, INSTRUMENT_MOTION } from '~/core/motion'
+import { INSTRUMENT_MOTION } from '~/core/motion'
 
 describe('icons', () => {
   it.each(genres.flatMap((genre) => genre.instruments))('has an icon for %s', (instrument) => {
@@ -18,7 +18,14 @@ describe('icons', () => {
   })
 
   it.each(genres.flatMap((genre) => genre.instruments))('has an accent motion for %s', (instrument) => {
-    expect(ACCENT_MOTION[instrument]?.length).toBeGreaterThan(0)
+    expect(INSTRUMENT_MOTION[instrument]?.accent.length).toBeGreaterThan(0)
+  })
+
+  it.each(Object.entries(INSTRUMENT_MOTION))('%s comes to rest where it started', (_, motion) => {
+    // Hits are added on top of each other, so each must end at rest.
+    for (const keyframes of [motion.keyframes, motion.accent, motion.base ?? []]) {
+      expect(keyframes.at(-1)?.transform ?? 'none').toBe('none')
+    }
   })
 
   it('stays small', () => {

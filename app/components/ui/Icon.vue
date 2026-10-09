@@ -24,11 +24,14 @@ const layer = computed(() => ICON_ACCENTS[props.name])
     aria-hidden="true"
     class="size-5 shrink-0"
   >
-    <path
-      v-for="(d, i) in ICONS[name]"
-      :key="i"
-      :d="d"
-    />
+    <!-- In a group of its own so it can move against the accent (the held clave). -->
+    <g class="icon-base">
+      <path
+        v-for="(d, i) in ICONS[name]"
+        :key="i"
+        :d="d"
+      />
+    </g>
     <!-- Fill paths get a thin stroke: at 1.75 the sound holes and the
          piano's keys close up. -->
     <g

@@ -12,8 +12,8 @@ export const ICONS: Record<string, readonly string[]> = {
   // Instruments — the neutral line layer; the accent layer is in ICON_ACCENTS
   /** A speech bubble: the counting voice. */
   voice: ['M4 4h16v11H10l-4 4v-4H4z'],
-  /** Two wooden sticks; the one that strikes is the accent. */
-  clave: ['M3 14 14 3'],
+  /** Two wooden sticks, crossed as they are played: the held one; the one that strikes is the accent. */
+  clave: ['M3 18 19 8'],
   /** A tall barrel drum with a hoop; the skin is the accent. */
   congas: ['M7 4.5c-1.5 6-1.5 10.5 1 16.5h8c2.5-6 2.5-10.5 1-16.5', 'M6.2 12c3 1.2 8.6 1.2 11.6 0'],
   /** Two small drums joined in the middle, the second one larger. */
@@ -78,13 +78,13 @@ export const ICONS: Record<string, readonly string[]> = {
 
 /**
  * The accent layer of each instrument icon, drawn over ICONS in the genre's
- * accent color and animated on its own on every hit (ACCENT_MOTION in
+ * accent color and animated on its own on every hit (INSTRUMENT_MOTION in
  * core/motion.ts). `fill` paths are closed shapes, filled (even-odd, so a
  * second subpath cuts a hole); `line` paths are strokes like ICONS.
  */
 export const ICON_ACCENTS: Record<string, { fill?: readonly string[], line?: readonly string[] }> = {
   voice: { line: ['M9 9.5h.01M12 9.5h.01M15 9.5h.01'] },
-  clave: { line: ['M10 21 21 10'] },
+  clave: { line: ['M7 6 17 20'] },
   congas: { fill: ['M7 4.5a5 1.7 0 0 0 10 0a5 1.7 0 0 0 -10 0'] },
   bongos: { fill: ['M2.5 8a3.5 1.4 0 0 0 7 0a3.5 1.4 0 0 0 -7 0', 'M13 8.5a4.5 1.6 0 0 0 9 0a4.5 1.6 0 0 0 -9 0'] },
   timbales: { fill: ['M2 7a4.5 1.5 0 0 0 9 0a4.5 1.5 0 0 0 -9 0', 'M13 7a4.5 1.5 0 0 0 9 0a4.5 1.5 0 0 0 -9 0'] },

@@ -96,8 +96,9 @@ body {
   will-change: transform;
 }
 
-/* The accent layer animates about its own center, not the icon's corner. */
-.icon-accent {
+/* An icon's layers animate about their own center, not the icon's corner. */
+.icon-accent,
+.icon-base {
   transform-box: fill-box;
   transform-origin: center;
 }

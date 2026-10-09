@@ -2,6 +2,14 @@
 
 What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
+## 2026-10-10
+
+- Instrument icons move like the instruments: a hit gives each part a kick,
+  then it rings at its own pitch and dies away (skins ripple, bells swing
+  and shimmer, maraca heads lag behind the handles, the scraper catches on
+  the ridges), and fast runs build up instead of restarting. The claves are
+  drawn crossed, and the striker falls onto the held stick and bounces off.
+
 ## 2026-10-09
 
 - Two-tone instrument icons: neutral lines plus the part that sounds or
