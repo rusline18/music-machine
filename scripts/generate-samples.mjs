@@ -242,6 +242,16 @@ const pianoNote = (freq) => () => {
   return out
 }
 
+// Short brass notes: harmonics that open up after the attack and die fast.
+const brassNote = (freq) => () => {
+  const out = buffer(0.6)
+  for (let n = 1; n <= 8; n++) {
+    drumTone(out, { startFreq: freq * n, decay: 0.25 / Math.sqrt(n), gain: 1 / n })
+  }
+  for (let i = 0; i < Math.min(out.length, 0.02 * SAMPLE_RATE); i++) out[i] *= i / (0.02 * SAMPLE_RATE)
+  return out
+}
+
 // Single guitar notes; the app pitch-shifts them, so they must sit exactly
 // on the pitch named in app/genres/bachata/samples.ts.
 const guitarNote = ({ freq, seed }) => () => {
@@ -286,6 +296,16 @@ const generators = {
   '/audio/salsa/timbalebell/open.wav': () => cowbell(TIMBALE_BELL),
   '/audio/salsa/timbalebell/neck.wav': cowbellNeck(TIMBALE_BELL),
   '/audio/salsa/bass/a2.wav': bass,
+  '/audio/salsa/trumpet/g4.wav': brassNote(392),
+  '/audio/salsa/trumpet/bb4.wav': brassNote(466.16),
+  '/audio/salsa/trumpet/d5.wav': brassNote(587.33),
+  '/audio/salsa/trumpet/f5.wav': brassNote(698.46),
+  '/audio/salsa/trumpet/a5.wav': brassNote(880),
+  '/audio/salsa/trombone/bb2.wav': brassNote(116.54),
+  '/audio/salsa/trombone/f3.wav': brassNote(174.61),
+  '/audio/salsa/trombone/bb3.wav': brassNote(233.08),
+  '/audio/salsa/trombone/d4.wav': brassNote(293.66),
+  '/audio/salsa/trombone/f4.wav': brassNote(349.23),
   '/audio/salsa/piano/c4.wav': pianoNote(261.63),
   '/audio/salsa/piano/e4.wav': pianoNote(329.63),
   '/audio/salsa/piano/g4.wav': pianoNote(392),
@@ -331,6 +351,8 @@ const generators = {
 //
 // `vcsl`: file in audio-sources/vcsl, from the Versilian Community Sample
 //   Library (https://github.com/sgossner/VCSL).
+// `vsco`: file in audio-sources/vsco, from VSCO 2 Community Edition
+//   (https://github.com/sgossner/VSCO-2-CE), by the same author as VCSL.
 // `wikimedia`: file in audio-sources/wikimedia (Wikimedia Commons).
 // `voice`: file in audio-sources/voice, one spoken word per file, used
 //   whole (see scripts/speak-counts.py).
@@ -371,6 +393,18 @@ const recordings = {
   '/audio/salsa/timbalebell/open.wav': { vcsl: 'Cowbell2_Normal_v3_rr1_Mid.wav', maxLength: 0.5 },
   '/audio/salsa/timbalebell/neck.wav': { vcsl: 'Cowbell2_Muted_v2_rr1_Mid.wav', maxLength: 0.15 },
   '/audio/salsa/bass/a2.wav': { freesound: 43938, maxLength: 0.9 },
+  // VSCO 2 staccato trumpet and tenor trombone. Like VCSL, VSCO names its
+  // notes an octave low: its trumpet "F4" sounds as F5.
+  '/audio/salsa/trumpet/g4.wav': { vsco: 'Sum_SHTrumpet_stac_G3_v2_rr1.wav', midi: 67, maxLength: 0.6 },
+  '/audio/salsa/trumpet/bb4.wav': { vsco: 'Sum_SHTrumpet_stac_A#3_v2_rr1.wav', midi: 70, maxLength: 0.6 },
+  '/audio/salsa/trumpet/d5.wav': { vsco: 'Sum_SHTrumpet_stac_D4_v2_rr1.wav', midi: 74, maxLength: 0.6 },
+  '/audio/salsa/trumpet/f5.wav': { vsco: 'Sum_SHTrumpet_stac_F4_v2_rr1.wav', midi: 77, maxLength: 0.6 },
+  '/audio/salsa/trumpet/a5.wav': { vsco: 'Sum_SHTrumpet_stac_A4_v2_rr1.wav', midi: 81, maxLength: 0.6 },
+  '/audio/salsa/trombone/bb2.wav': { vsco: 'tenortbn_stac_A#1_v2_rr1.wav', midi: 46, maxLength: 0.5 },
+  '/audio/salsa/trombone/f3.wav': { vsco: 'tenortbn_stac_F2_v2_rr1.wav', midi: 53, maxLength: 0.5 },
+  '/audio/salsa/trombone/bb3.wav': { vsco: 'tenortbn_stac_A#2_v2_rr1.wav', midi: 58, maxLength: 0.5 },
+  '/audio/salsa/trombone/d4.wav': { vsco: 'tenortbn_stac_D3_v2_rr1.wav', midi: 62, maxLength: 0.5 },
+  '/audio/salsa/trombone/f4.wav': { vsco: 'tenortbn_stac_F3_v2_rr1.wav', midi: 65, maxLength: 0.5 },
   // VCSL grand piano (Kawai), sustained notes; not committed, see
   // audio-sources/README.md. VCSL names them an octave low: its "C3" is C4.
   '/audio/salsa/piano/c4.wav': { vcsl: 'GrandPno_Main_Sus_C3_v3_rr1.wav', midi: 60, maxLength: 1.5 },
@@ -420,9 +454,9 @@ const recordings = {
 
 const SOURCES = join(ROOT, 'audio-sources')
 
-function findRecording({ vcsl, wikimedia, uiowa, voice, freesound }) {
-  const named = (vcsl && ['vcsl', vcsl]) || (wikimedia && ['wikimedia', wikimedia]) || (uiowa && ['uiowa', uiowa])
-    || (voice && ['voice', voice])
+function findRecording({ vcsl, vsco, wikimedia, uiowa, voice, freesound }) {
+  const named = (vcsl && ['vcsl', vcsl]) || (vsco && ['vsco', vsco]) || (wikimedia && ['wikimedia', wikimedia])
+    || (uiowa && ['uiowa', uiowa]) || (voice && ['voice', voice])
   if (named) {
     const file = join(SOURCES, ...named)
     return existsSync(file) ? file : null

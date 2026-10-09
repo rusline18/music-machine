@@ -95,6 +95,8 @@
     "bass": "Bass",
     "piano": "Piano",
     "tres": "Tres",
+    "trumpet": "Trumpets",
+    "trombone": "Trombones",
     "requinto": "Requinto",
     "segunda": "Segunda"
   },
@@ -167,6 +169,8 @@
       "bass": "Plays the low notes of the chords. In bachata it marks the 1; in salsa it plays the next chord early, on 4, and skips the 1 (the tumbao).",
       "piano": "The montuno: a repeating, syncopated piano figure locked to the clave. \"push\" plays the next chord ahead of the bar.",
       "tres": "The Cuban tres: three pairs of strings struck with a pick. It plays the guajeo, a repeating figure locked to the clave. Played here from guitar recordings.",
+      "trumpet": "The trumpets: in the montuno they play the moña, a short riff that ends by pushing the next chord early. \"hit\" is a short stab on the whole chord.",
+      "trombone": "The trombones: lower and darker than the trumpets. In the montuno they answer the trumpets’ riff with stabs on the other side of the clave.",
       "requinto": "The lead guitar: high melodies and runs between the singer's lines.",
       "segunda": "The rhythm guitar: plays the chords in a steady, rolling pattern."
     },

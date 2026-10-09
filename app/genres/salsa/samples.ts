@@ -163,4 +163,58 @@ const tres: PitchedInstrument = {
   },
 }
 
-export const salsaPitched: Record<string, PitchedInstrument> = { bass, piano, tres }
+/**
+ * Brass: short (staccato) notes from VSCO 2, tuned exactly by `npm run
+ * samples`. Single chord tones for the riff (moña), `hit` for a short
+ * section stab on the chord, `push` for the same stab on the next bar's
+ * chord, early. Each new note damps the last, so a riff stays one line.
+ */
+const brassNote = (midi: number): Voice[] => [{ midi, group: '*' }]
+/** A short stab: the chord tones from `low` up, at most `voices` of them. */
+const brassHit = (chord: Chord, low: number, voices: number): Voice[] =>
+  chordTones(chord, low, low + 12).slice(0, voices).map((midi, i) => ({
+    midi,
+    gain: 0.75,
+    duration: 0.22,
+    ...(i === 0 ? { group: '*' } : { group: `h${i}` }),
+  }))
+
+/** Trumpets: the lead line between G4 and F#5, hits on three chord tones from G4. */
+const trumpetNote = (chord: Chord, degree: number) => noteFrom(67, chord.root + chord.intervals[degree]!)
+const trumpet: PitchedInstrument = {
+  zones: [
+    { url: '/audio/salsa/trumpet/g4.wav', midi: 67 },
+    { url: '/audio/salsa/trumpet/bb4.wav', midi: 70 },
+    { url: '/audio/salsa/trumpet/d5.wav', midi: 74 },
+    { url: '/audio/salsa/trumpet/f5.wav', midi: 77 },
+    { url: '/audio/salsa/trumpet/a5.wav', midi: 81 },
+  ],
+  articulations: {
+    root: (chord) => brassNote(trumpetNote(chord, 0)),
+    '3rd': (chord) => brassNote(trumpetNote(chord, 1)),
+    '5th': (chord) => brassNote(trumpetNote(chord, 2)),
+    hit: (chord) => brassHit(chord, 67, 3),
+    push: (_chord, next) => brassHit(next, 67, 3),
+  },
+}
+
+/** Trombones: the line between F3 and E4, hits on two chord tones from D3, under the trumpets. */
+const tromboneNote = (chord: Chord, degree: number) => noteFrom(53, chord.root + chord.intervals[degree]!)
+const trombone: PitchedInstrument = {
+  zones: [
+    { url: '/audio/salsa/trombone/bb2.wav', midi: 46 },
+    { url: '/audio/salsa/trombone/f3.wav', midi: 53 },
+    { url: '/audio/salsa/trombone/bb3.wav', midi: 58 },
+    { url: '/audio/salsa/trombone/d4.wav', midi: 62 },
+    { url: '/audio/salsa/trombone/f4.wav', midi: 65 },
+  ],
+  articulations: {
+    root: (chord) => brassNote(tromboneNote(chord, 0)),
+    '3rd': (chord) => brassNote(tromboneNote(chord, 1)),
+    '5th': (chord) => brassNote(tromboneNote(chord, 2)),
+    hit: (chord) => brassHit(chord, 50, 2),
+    push: (_chord, next) => brassHit(next, 50, 2),
+  },
+}
+
+export const salsaPitched: Record<string, PitchedInstrument> = { bass, piano, tres, trumpet, trombone }

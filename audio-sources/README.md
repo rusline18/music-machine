@@ -49,6 +49,15 @@ note by pitch and retunes it exactly (the player's strings are 5–40 cents
 flat) while resampling 96 kHz to 44.1 kHz. Without these files, `npm run
 samples` synthesizes the guitar notes instead.
 
+## vsco/
+
+From [VSCO 2 Community Edition](https://github.com/sgossner/VSCO-2-CE) by
+Versilian Studios, the authors of VCSL (CC0 1.0): staccato trumpet
+(`Brass/Trumpet/stac/`) and tenor trombone (`Brass/Tenor Trombone/stac/`)
+notes for the salsa brass, v2 round-robin 1. Like VCSL, VSCO names its notes
+an octave low (its trumpet "F4" sounds as F5); the script measures and
+retunes each one.
+
 ## wikimedia/
 
 - `Guira_Tim_Ross.wav` (bachata/guira/short, long): metal güira by Tim Ross,

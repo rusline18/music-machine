@@ -150,7 +150,7 @@ describe('salsa pitched tracks', () => {
   const resolve = stepResolver(salsa, () => 'en')
   // The bass has a single recorded A2; piano and guitar (tres) zones are
   // 3–4 semitones apart, plus the tres's few cents of course detuning.
-  const MAX_SHIFT: Record<string, number> = { bass: 7, piano: 2, tres: 2.05 }
+  const MAX_SHIFT: Record<string, number> = { bass: 7, piano: 2, tres: 2.05, trumpet: 2, trombone: 3 }
 
   /** Notes for `step` on count 4 of the first bar, over `chords` (a chord per bar). */
   function notesOn4(instrument: string, step: string, chords: string[]) {
@@ -206,7 +206,25 @@ describe('salsa pitched tracks', () => {
     expect(notesOn4('tres', 'push', ['C', 'G7']).map(pitchOf)).toEqual([71, 71, 74, 74])
   })
 
-  it.each(['bass', 'piano', 'tres'])('%s stays close to a recorded note for every chord', (instrument) => {
+  it('plays brass hits as short stabs on the chord, the push on the next one', () => {
+    const hit = notesOn4('trumpet', 'hit', ['C', 'G7'])
+    // C major from G4: G4 C5 E5
+    expect(hit.map(pitchOf)).toEqual([67, 72, 76])
+    expect(hit.every((n) => n.duration !== undefined && n.duration < 0.3)).toBe(true)
+    expect(hit[0]!.group).toBe('*')
+    // G7 from D3: D3 F3, under the trumpets
+    expect(notesOn4('trombone', 'push', ['C', 'G7']).map(pitchOf)).toEqual([50, 53])
+  })
+
+  it('keeps the trombone line below the trumpet line', () => {
+    for (const degree of ['root', '3rd', '5th']) {
+      const [trumpet] = notesOn4('trumpet', degree, ['F', 'C']).map(pitchOf)
+      const [trombone] = notesOn4('trombone', degree, ['F', 'C']).map(pitchOf)
+      expect(trombone!, degree).toBeLessThan(trumpet!)
+    }
+  })
+
+  it.each(['bass', 'piano', 'tres', 'trumpet', 'trombone'])('%s stays close to a recorded note for every chord', (instrument) => {
     for (const chord of CHORD_NAMES) {
       for (const next of ['C', 'F#m7', 'B7']) {
         for (const step of stepNames(salsa, instrument)) {
