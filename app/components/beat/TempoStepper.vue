@@ -46,13 +46,13 @@ onBeforeUnmount(stopHold)
 
 <template>
   <div
-    class="flex items-center rounded-md border border-neutral-700"
+    class="flex items-center justify-between gap-1 rounded-2xl bg-neutral-800 p-1 max-sm:flex-1"
     role="group"
     :aria-label="$t('controls.bpm')"
   >
     <button
       type="button"
-      class="flex size-11 touch-none select-none items-center justify-center text-xl text-neutral-200 transition hover:bg-neutral-800 active:scale-90"
+      class="flex size-11 touch-none select-none items-center justify-center rounded-xl bg-neutral-700 text-xl text-neutral-100 transition hover:bg-neutral-600 active:scale-90"
       :aria-label="$t('controls.slower')"
       :title="$t('help.controls.stepper')"
       @pointerdown="startHold(-1)"
@@ -64,13 +64,13 @@ onBeforeUnmount(stopHold)
     >
       −
     </button>
-    <output class="w-16 text-center font-mono leading-tight text-neutral-100">
-      <span class="block text-lg tabular-nums">{{ bpm }}</span>
-      <span class="block text-[10px] uppercase tracking-wide text-neutral-500">{{ $t('controls.bpm') }}</span>
+    <output class="w-20 text-center font-mono leading-none text-neutral-100">
+      <span class="block text-2xl font-bold tabular-nums">{{ bpm }}</span>
+      <span class="mt-1 block text-[10px] uppercase tracking-[0.14em] text-neutral-400">{{ $t('controls.bpm') }}</span>
     </output>
     <button
       type="button"
-      class="flex size-11 touch-none select-none items-center justify-center text-xl text-neutral-200 transition hover:bg-neutral-800 active:scale-90"
+      class="flex size-11 touch-none select-none items-center justify-center rounded-xl bg-neutral-700 text-xl text-neutral-100 transition hover:bg-neutral-600 active:scale-90"
       :aria-label="$t('controls.faster')"
       :title="$t('help.controls.stepper')"
       @pointerdown="startHold(1)"
