@@ -1,4 +1,6 @@
 import { createAudioEngine } from '~/core/audio/engine'
+import type { Beat } from '~/core/audio/playhead'
+import { createPlayhead } from '~/core/audio/playhead'
 import { createScheduler } from '~/core/audio/scheduler'
 import { layerOrder } from '~/core/layers'
 import type { Pattern } from '~/core/pattern'
@@ -83,8 +85,13 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
   }
 
   onMounted(prefetch)
-  /** Playhead updates waiting for their step to sound. */
-  const playheadTimers = new Set<ReturnType<typeof setTimeout>>()
+
+  /** Called with each step as it's heard, and with null on stop. */
+  const beatListeners = new Set<(beat: Beat | null) => void>()
+  const playhead = createPlayhead(() => engine.now() - engine.outputLatency(), (beat) => {
+    activeStep.value = beat.step
+    for (const listener of beatListeners) listener(beat)
+  })
 
   watch(feel, scheduler.setFeel, { immediate: true })
   watch(reverb, (amount) => {
@@ -160,12 +167,19 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
   const findTrack = (instrument: string) => pattern.value.tracks.find((t) => t.instrument === instrument)
 
   /** Moves the playhead when a scheduled step actually sounds, not when it's queued. */
-  function showStep(stepIndex: number, time: number) {
-    const timer = setTimeout(() => {
-      playheadTimers.delete(timer)
-      activeStep.value = stepIndex
-    }, Math.max(0, (time - engine.now()) * 1000))
-    playheadTimers.add(timer)
+  function showStep(step: number, time: number, instruments: string[]) {
+    playhead.push({ step, time, instruments })
+  }
+
+  /**
+   * Run `listener` on every step as it's heard (on an animation frame, in
+   * time with the sound) and with null on stop. For effects that touch the
+   * DOM directly, so the grid isn't re-rendered on every step. Returns the
+   * unsubscribe function; listeners are also dropped on unmount.
+   */
+  function onBeat(listener: (beat: Beat | null) => void) {
+    beatListeners.add(listener)
+    return () => beatListeners.delete(listener)
   }
 
   /** Bumped by every play/stop/unmount, so a play still waiting on samples knows it was superseded. */
@@ -205,10 +219,10 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     playRequest++
     isLoading.value = false
     scheduler.stop()
-    for (const timer of playheadTimers) clearTimeout(timer)
-    playheadTimers.clear()
+    playhead.clear()
     isPlaying.value = false
     activeStep.value = -1
+    for (const listener of beatListeners) listener(null)
   }
 
   function setChord(bar: number, chord: string) {
@@ -318,6 +332,7 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
 
   onBeforeUnmount(() => {
     stop()
+    beatListeners.clear()
     engine.dispose()
   })
 
@@ -333,7 +348,9 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     isLoading: readonly(isLoading),
     loadProgress,
     failedSamples: readonly(failedSamples),
+    /** Changes on every step: read it only where that's cheap; `onBeat` is for the rest. */
     activeStep: readonly(activeStep),
+    onBeat,
     feel,
     reverb,
     play,

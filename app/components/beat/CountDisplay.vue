@@ -1,16 +1,8 @@
 <script setup lang="ts">
-import { COUNTS_PER_BLOCK, countInBlock } from '~/core/pattern'
+import { COUNTS_PER_BLOCK } from '~/core/pattern'
 
-const props = defineProps<{
-  /** The step sounding now, or -1 when stopped. */
-  activeStep: number
-  stepsPerCount: number
-}>()
-
-/** The count sounding now, 0–7, or -1 when stopped. */
-const current = computed(() => (props.activeStep < 0 ? -1 : countInBlock(props.activeStep, props.stepsPerCount)))
-/** On the count itself rather than its "&". */
-const onBeat = computed(() => props.activeStep % props.stepsPerCount === 0)
+// The box sounding now is lit by useBeatEffects (classes is-now and
+// is-on-beat), so this never re-renders while playing.
 </script>
 
 <template>
@@ -28,13 +20,9 @@ const onBeat = computed(() => props.activeStep % props.stepsPerCount === 0)
       <span
         v-for="count in COUNTS_PER_BLOCK"
         :key="count"
-        class="flex h-10 items-center justify-center rounded-md font-mono text-lg font-bold transition-colors duration-75 sm:h-12 sm:text-xl"
-        :class="[
-          current === count - 1
-            ? onBeat ? 'bg-amber-400 text-neutral-950' : 'bg-amber-500/50 text-neutral-950'
-            : 'bg-neutral-900 text-neutral-500',
-          { 'ring-1 ring-inset ring-amber-500/60': count === 1 || count === 5 },
-        ]"
+        class="count-box flex h-10 items-center justify-center rounded-md bg-neutral-900 font-mono text-lg font-bold text-neutral-500 transition-colors duration-75 sm:h-12 sm:text-xl"
+        :class="{ 'ring-1 ring-inset ring-amber-500/60': count === 1 || count === 5 }"
+        :data-count-box="count - 1"
       >
         {{ count }}
       </span>

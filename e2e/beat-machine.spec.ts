@@ -75,10 +75,13 @@ test.describe('salsa beat machine', () => {
     await play.click()
     await expect(stop).toBeEnabled()
     await expect(play).toBeDisabled()
+    // The playhead lights the cells of the step being heard.
+    await expect(page.locator('.step-cell.is-now').first()).toBeVisible()
 
     await stop.click()
     await expect(play).toBeEnabled()
     await expect(stop).toBeDisabled()
+    await expect(page.locator('.is-now')).toHaveCount(0)
   })
 
   test('a shared link opens the same pattern, and Reset undoes it', async ({ page, context, browser }) => {

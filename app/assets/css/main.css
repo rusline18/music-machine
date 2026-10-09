@@ -7,3 +7,22 @@ body {
   background-color: theme('colors.neutral.950');
   color: theme('colors.neutral.100');
 }
+
+/* The playhead: classes toggled by useBeatEffects, not by Vue. */
+@layer components {
+  .step-cell.is-now {
+    @apply ring-2 ring-white;
+  }
+
+  .count-label.is-now {
+    @apply text-amber-400;
+  }
+
+  .count-box.is-now {
+    @apply bg-amber-500/50 text-neutral-950;
+  }
+
+  .count-box.is-now.is-on-beat {
+    @apply bg-amber-400;
+  }
+}

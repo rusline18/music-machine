@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { COUNT_OPTIONS } from '~/core/pattern'
+import { COUNT_OPTIONS, COUNTS_PER_BAR } from '~/core/pattern'
 import { COUNTING_MODES, stepNames } from '~/core/resolve'
 import { TEMPO_CHOICES } from '~/core/tempo'
 import type { Genre } from '~/genres'
@@ -19,6 +19,7 @@ const {
   loadProgress,
   failedSamples,
   activeStep,
+  onBeat,
   feel,
   reverb,
   play,
@@ -56,8 +57,15 @@ const presetIds = computed(() => {
 })
 /** Simple mode leaves these off the grid: the voice has its own switch above it. */
 const simpleHides = props.genre.instruments.filter((instrument) => props.genre.spoken[instrument])
-const stepNamesFor = (instrument: string) => stepNames(props.genre, instrument)
+/** Worked out once: a fresh array on each render would re-render every row. */
+const namesByInstrument = new Map(props.genre.instruments.map((instrument) => [instrument, stepNames(props.genre, instrument)]))
+const stepNamesFor = (instrument: string) => namesByInstrument.get(instrument) ?? []
 const percent = (value: number) => `${Math.round(value * 100)}%`
+
+const root = useTemplateRef('root')
+useBeatEffects(root, onBeat, () => pattern.value.stepsPerCount)
+/** Changes once a bar rather than every step, so the grid isn't re-rendered while playing. */
+const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(activeStep.value / (COUNTS_PER_BAR * pattern.value.stepsPerCount))))
 
 /** A cell click: on/off in simple mode, cycling through the sounds in advanced. */
 function clickStep(instrument: string, stepIndex: number) {
@@ -67,7 +75,7 @@ function clickStep(instrument: string, stepIndex: number) {
 </script>
 
 <template>
-  <div>
+  <div ref="root">
     <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
         <NuxtLinkLocale
@@ -192,16 +200,12 @@ function clickStep(instrument: string, stepIndex: number) {
       </div>
     </div>
 
-    <BeatCountDisplay
-      class="mb-4"
-      :active-step="activeStep"
-      :steps-per-count="pattern.stepsPerCount"
-    />
+    <BeatCountDisplay class="mb-4" />
 
     <BeatGrid
       :pattern="pattern"
       :step-names="stepNamesFor"
-      :active-step="activeStep"
+      :playing-bar="playingBar"
       :advanced="advanced"
       :simple-hides="simpleHides"
       @toggle-step="clickStep"

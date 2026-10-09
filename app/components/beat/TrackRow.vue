@@ -6,7 +6,6 @@ const props = defineProps<{
   track: Track
   /** What a step can be set to; clicking a cell cycles through them. */
   stepNames: string[]
-  activeStep: number
   /** First step shown in this row (rows are 8-count blocks). */
   start: number
   length: number
@@ -78,11 +77,12 @@ function stepLabel(stepIndex: number): string {
         v-for="(stepIndex, i) in stepIndices"
         :key="stepIndex"
         type="button"
-        class="h-9 min-w-0 flex-1 overflow-hidden rounded font-mono text-[10px] transition"
+        class="step-cell h-9 min-w-0 flex-1 overflow-hidden rounded font-mono text-[10px] transition"
         :class="[
           track.steps[stepIndex] ? 'bg-amber-500 text-neutral-900' : 'bg-neutral-800 text-neutral-600 hover:bg-neutral-700',
-          { 'ring-2 ring-white': activeStep === stepIndex, 'ml-1.5': i % stepsPerCount === 0 && i > 0 },
+          { 'ml-1.5': i % stepsPerCount === 0 && i > 0 },
         ]"
+        :data-step="stepIndex"
         :title="cellHint"
         :aria-label="t('grid.step', { instrument: instrumentName, n: stepIndex + 1 })"
         @click="emit('toggle-step', stepIndex)"

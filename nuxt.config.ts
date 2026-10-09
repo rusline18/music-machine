@@ -61,6 +61,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
 
   nitro: {
+    // Pre-compressed .gz/.br copies of the build, served by Nitro's own
+    // server when the browser accepts them (no CDN needed for that).
+    compressPublicAssets: true,
     // Where /api/feedback keeps what users send. Files under .data/ (git-ignored)
     // by default; swap the driver (redis, s3, cloudflare-kv-binding, …) to
     // keep it elsewhere: https://unstorage.unjs.io/drivers
@@ -75,7 +78,8 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
     // Also errors on unknown components and props in templates.
-    tsConfig: { vueCompilerOptions: { strictTemplates: true } },
+    // data-* attributes are allowed: the playhead finds elements by them.
+    tsConfig: { vueCompilerOptions: { strictTemplates: true, dataAttributes: ['data-*'] } },
   },
 
   // ESLint does both linting and formatting (no Prettier). Style options

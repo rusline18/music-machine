@@ -7,8 +7,8 @@ const props = defineProps<{
   pattern: Pattern
   /** What each step of an instrument can be set to. */
   stepNames: (instrument: string) => string[]
-  /** The step sounding now, or -1 when stopped. */
-  activeStep: number
+  /** The bar (4 counts) playing now, or -1 when stopped; a phone follows it. */
+  playingBar: number
   /** Advanced mode: chords, volumes and every track. */
   advanced: boolean
   /** Tracks left off the grid in simple mode (the voice has its own switch). */
@@ -42,8 +42,8 @@ const shownSections = computed(() => (narrow.value
   ? [Math.min(page.value, sectionCount.value - 1)]
   : Array.from({ length: sectionCount.value }, (_, i) => i)))
 
-watch(() => props.activeStep, (step) => {
-  if (narrow.value && step >= 0) page.value = Math.floor(step / stepsPerSection.value)
+watch(() => props.playingBar, (bar) => {
+  if (narrow.value && bar >= 0) page.value = bar
 })
 
 /** Which 8-count block a section is in, from 1. On a phone the header numbers (5 6 7 8) show which half. */
@@ -64,12 +64,8 @@ function cellLabel(section: number, cellIndex: number): string {
   return position * 2 === stepsPerCount ? t('grid.and') : ''
 }
 
-function isActiveCount(section: number, cellIndex: number): boolean {
-  if (props.activeStep < 0) return false
-  const { stepsPerCount } = props.pattern
-  const countStart = section * stepsPerSection.value + cellIndex - (cellIndex % stepsPerCount)
-  return props.activeStep >= countStart && props.activeStep < countStart + stepsPerCount
-}
+/** The count a header cell sits on, from the pattern's start; the playhead lights it up. */
+const countOf = (section: number, cellIndex: number) => Math.floor((section * stepsPerSection.value + cellIndex) / props.pattern.stepsPerCount)
 </script>
 
 <template>
@@ -112,14 +108,12 @@ function isActiveCount(section: number, cellIndex: number): boolean {
           <span
             v-for="cell in stepsPerSection"
             :key="cell"
-            class="flex-1 text-center font-mono text-xs"
+            class="count-label flex-1 text-center font-mono text-xs"
             :class="[
               (cell - 1) % pattern.stepsPerCount === 0 ? 'text-neutral-300' : 'text-neutral-600',
-              {
-                'ml-1.5': (cell - 1) % pattern.stepsPerCount === 0 && cell > 1,
-                'text-amber-400': isActiveCount(section, cell - 1),
-              },
+              { 'ml-1.5': (cell - 1) % pattern.stepsPerCount === 0 && cell > 1 },
             ]"
+            :data-count="countOf(section, cell - 1)"
           >
             {{ cellLabel(section, cell - 1) }}
           </span>
@@ -167,7 +161,6 @@ function isActiveCount(section: number, cellIndex: number): boolean {
         :key="track.instrument"
         :track="track"
         :step-names="stepNames(track.instrument)"
-        :active-step="activeStep"
         :start="section * stepsPerSection"
         :length="stepsPerSection"
         :steps-per-count="pattern.stepsPerCount"

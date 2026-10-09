@@ -271,6 +271,12 @@ export function createAudioEngine() {
     return getContext().currentTime
   }
 
+  /** Seconds between a sample being scheduled and it leaving the speakers (0 where unknown). */
+  function outputLatency(): number {
+    const context = getContext()
+    return (context.baseLatency || 0) + (context.outputLatency || 0)
+  }
+
   function dispose() {
     instrumentGains.clear()
     instrumentVolumes.clear()
@@ -295,6 +301,7 @@ export function createAudioEngine() {
     playNote,
     setReverb,
     now,
+    outputLatency,
     dispose,
   }
 }
