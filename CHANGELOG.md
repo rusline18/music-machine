@@ -4,6 +4,8 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-10
 
+- Dependabot: weekly PRs for npm packages (minor and patch bumps grouped
+  into one, majors separately) and GitHub Actions.
 - Instrument icons move like the instruments: a hit gives each part a kick,
   then it rings at its own pitch and dies away (skins ripple, bells swing
   and shimmer, maraca heads lag behind the handles, the scraper catches on
