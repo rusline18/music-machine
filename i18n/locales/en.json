@@ -1,7 +1,12 @@
 {
   "app": {
     "name": "Latin Beat Machine",
-    "tagline": "Build. Listen. Remove. Practice. Understand. Dance.",
+    "tagline": {
+      "build": "Build a beat and listen.",
+      "practice": "Strip it back and practice.",
+      "dance": "Get it — and {dance}",
+      "danceWord": "dance."
+    },
     "description": "An interactive Salsa & Bachata rhythm trainer. Build your own beat from real percussion, practice at your own tempo, and train your ear."
   },
   "nav": {

@@ -67,9 +67,24 @@ const CLAVE = [0, 3, 6, 10, 12]
       <h1 class="text-5xl font-extrabold leading-none tracking-tight text-neutral-50 sm:text-7xl">
         {{ t('app.name') }}
       </h1>
-      <p class="mt-5 text-lg text-neutral-400">
-        {{ t('app.tagline') }}
-      </p>
+      <!-- A crescendo: each line a step bigger and brighter, up to the dance. -->
+      <div class="mt-6 flex flex-col gap-1 tracking-tight">
+        <p class="text-base font-medium text-neutral-500 sm:text-lg">
+          {{ t('app.tagline.build') }}
+        </p>
+        <p class="text-lg font-semibold text-neutral-300 sm:text-[1.375rem] sm:leading-8">
+          {{ t('app.tagline.practice') }}
+        </p>
+        <i18n-t
+          keypath="app.tagline.dance"
+          tag="p"
+          class="text-xl font-extrabold text-neutral-50 sm:text-[1.75rem] sm:leading-9"
+        >
+          <template #dance>
+            <span class="text-salsa-400">{{ t('app.tagline.danceWord') }}</span>
+          </template>
+        </i18n-t>
+      </div>
     </div>
 
     <div class="grid gap-3 sm:grid-cols-2 sm:gap-4">
