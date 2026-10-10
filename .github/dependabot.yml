@@ -1,0 +1,31 @@
+# Weekly dependency update PRs; CI checks each one before it can merge.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: deps
+    groups:
+      # Minor and patch bumps of everything land as one PR; majors come one
+      # by one, since they are the ones that break things.
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Node types follow the Node version CI and the server run (22).
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        patterns: ["*"]
