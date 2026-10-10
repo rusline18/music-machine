@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 import { useBeatMachine } from '~/composables/useBeatMachine'
-import { sampleUrls } from '~/core/resolve'
+import { patternSampleUrls, sampleUrls } from '~/core/resolve'
 import { findGenre } from '~/genres'
 
 class FakeNode {
@@ -17,6 +17,8 @@ class FakeNode {
 
 const salsa = findGenre('salsa')!
 const sampleCount = sampleUrls(salsa, 'en').size
+/** What the first preset plays: all Play waits for. */
+const presetSampleCount = patternSampleUrls(salsa, salsa.presets[0]!, 'en').size
 const machineFor = () => useBeatMachine(salsa, ref('en'))
 
 describe('useBeatMachine loading', () => {
@@ -79,6 +81,27 @@ describe('useBeatMachine loading', () => {
     machine.stop()
   })
 
+  it('starts once the pattern\'s samples are in, and loads the rest after', async () => {
+    const needed = patternSampleUrls(salsa, salsa.presets[0]!, 'en')
+    const isNeeded = (file: string) => [...needed].some((url) => file.startsWith(url.slice(0, -'.wav'.length)))
+    // Samples the pattern doesn't play never finish decoding.
+    const decoded: string[] = []
+    const context = AudioContext.prototype as unknown as { decodeAudioData: (data: string) => Promise<unknown> }
+    vi.spyOn(context, 'decodeAudioData').mockImplementation(async (data: string) => {
+      if (!isNeeded(data)) await new Promise(() => {})
+      decoded.push(data)
+      return { from: data }
+    })
+    const machine = machineFor()
+    const playing = machine.play()
+    release()
+    await playing
+    expect(machine.isPlaying.value).toBe(true)
+    expect(needed.size).toBeLessThan(sampleCount)
+    expect(decoded).toHaveLength(needed.size)
+    machine.stop()
+  })
+
   it('does not start if Stop is pressed while loading', async () => {
     const machine = machineFor()
     const playing = machine.play()
@@ -96,7 +119,7 @@ describe('useBeatMachine loading', () => {
     const first = machine.play()
     release()
     await first
-    expect(machine.failedSamples.value).toBe(sampleCount)
+    expect(machine.failedSamples.value).toBe(presetSampleCount)
     // Nothing loaded, so there's nothing to play.
     expect(machine.isPlaying.value).toBe(false)
 

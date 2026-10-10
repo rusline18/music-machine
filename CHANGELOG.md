@@ -4,6 +4,10 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-10
 
+- Faster first Play: it waits only for the sounds the pattern uses (the rest
+  load while it plays), and the room reverb is worked out while they load.
+  Grid cells share one set of pointer listeners per row instead of eight
+  each; the scheduler reads the pattern without Vue's reactive wrapper.
 - Lighter playback: the playhead finds the cells and icons it lights up once
   and reuses them until the grid changes, instead of searching the page on
   every step; chords are parsed once, and step names and preset share codes

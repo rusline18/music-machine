@@ -2,7 +2,7 @@ import type { Note } from './audio/engine'
 import type { StepResolver } from './audio/scheduler'
 import type { PitchedInstrument } from './harmony'
 import { parseChord, voicesToNotes } from './harmony'
-import type { Step } from './pattern'
+import type { Pattern, Step } from './pattern'
 import { chordAt, COUNTS_PER_BAR, countInBlock, patternLength } from './pattern'
 
 /**
@@ -88,6 +88,33 @@ export function sampleUrls(set: InstrumentSet, locale: string): Set<string> {
       return [...words.counts, words.and]
     }),
   ])
+}
+
+/**
+ * The sample files a pattern plays, for loading those before the rest.
+ * Muted tracks count too, so switching one on is heard at once; tracks
+ * with no hits, and sounds no step uses, don't.
+ */
+export function patternSampleUrls(set: InstrumentSet, pattern: Pick<Pattern, 'tracks'>, locale: string): Set<string> {
+  const urls = new Set<string>()
+  for (const { instrument, steps } of pattern.tracks) {
+    const used = new Set(steps.filter((step) => step !== null))
+    if (used.size === 0) continue
+    const voice = set.spoken[instrument]
+    const pitched = set.pitched[instrument]
+    if (voice) {
+      const words = wordsIn(voice, locale)
+      for (const url of [...words.counts, words.and]) urls.add(url)
+    } else if (pitched) {
+      for (const zone of pitched.zones) urls.add(zone.url)
+    } else {
+      for (const name of used) {
+        const entry = set.samples[instrument]?.[name]
+        if (entry) for (const sample of [entry].flat()) urls.add(urlOf(sample))
+      }
+    }
+  }
+  return urls
 }
 
 /**

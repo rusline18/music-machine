@@ -42,15 +42,55 @@ function spokenLabel(stepIndex: number): string {
   return name === 'and' ? t('grid.and') : ''
 }
 
+// The cells' pointer events are handled once for the row rather than on
+// every cell (eight listeners each, a few hundred cells): the cell is found
+// from the event's target.
+function cellAt(event: Event): HTMLElement | null {
+  return (event.target as Element | null)?.closest<HTMLElement>('[data-step]') ?? null
+}
+const stepOf = (cell: HTMLElement) => Number(cell.dataset.step)
+
+/** The cell under the mouse or finger, so moving within it isn't a new arrival. */
+let hovered: HTMLElement | null = null
+function cellOver(event: PointerEvent) {
+  const cell = cellAt(event)
+  if (cell === hovered) return
+  // Leaving a cell (for the next one, or the gap between them).
+  pressCancel()
+  hintOut()
+  hovered = cell
+  if (cell) hintIn(event, cell)
+}
+function rowLeave() {
+  hovered = null
+  pressCancel()
+  hintOut()
+}
+function cellDown(event: PointerEvent) {
+  const cell = cellAt(event)
+  if (cell) pressDown(event, stepOf(cell))
+}
+function cellClick(event: MouseEvent) {
+  const cell = cellAt(event)
+  if (cell) click(stepOf(cell))
+}
+function cellMenu(event: MouseEvent) {
+  const cell = cellAt(event)
+  if (!cell) return
+  event.preventDefault()
+  contextMenu(stepOf(cell))
+}
+
 // The hint under a cell, for the mouse: what's in it and what the two
 // buttons do. A short delay, so sweeping across the grid doesn't flash one
 // bubble after another; fixed to the screen like UiTooltip.
 const HINT_DELAY_MS = 400
 const hint = ref<{ stepIndex: number, top: number, left: number } | null>(null)
 let hintTimer: ReturnType<typeof setTimeout> | undefined
-function hintIn(event: PointerEvent, stepIndex: number) {
+function hintIn(event: PointerEvent, cell: HTMLElement) {
   if (event.pointerType !== 'mouse') return
-  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+  const stepIndex = stepOf(cell)
+  const rect = cell.getBoundingClientRect()
   clearTimeout(hintTimer)
   hintTimer = setTimeout(() => {
     hint.value = { stepIndex, top: rect.bottom + 8, left: rect.left + rect.width / 2 }
@@ -189,6 +229,14 @@ onBeforeUnmount(() => {
     <div
       class="flex min-w-0 flex-1 gap-1"
       :class="{ 'opacity-50': track.muted }"
+      @pointerdown="cellDown"
+      @pointermove="pressMove"
+      @pointerup="pressCancel"
+      @pointercancel="pressCancel"
+      @pointerover="cellOver"
+      @pointerleave="rowLeave"
+      @contextmenu="cellMenu"
+      @click="cellClick"
     >
       <button
         v-for="(stepIndex, i) in stepIndices"
@@ -203,14 +251,6 @@ onBeforeUnmount(() => {
         :data-sound="track.steps[stepIndex] ?? undefined"
         :aria-label="t('grid.step', { instrument: instrumentName, n: stepIndex + 1 })"
         aria-haspopup="menu"
-        @pointerdown="pressDown($event, stepIndex)"
-        @pointermove="pressMove"
-        @pointerup="pressCancel"
-        @pointerenter="hintIn($event, stepIndex)"
-        @pointerleave="pressCancel(); hintOut()"
-        @pointercancel="pressCancel"
-        @contextmenu.prevent="contextMenu(stepIndex)"
-        @click="click(stepIndex)"
       >
         <template v-if="isSpoken(track.steps[stepIndex])">
           {{ spokenLabel(stepIndex) }}
