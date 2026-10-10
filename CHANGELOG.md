@@ -4,6 +4,12 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-10
 
+- The claves strike instead of twitching: at rest the striker is raised
+  (a gap shows the held stick passing under it); on the hit they meet,
+  hold together for a moment with a spark where they cross, and the
+  striker bounces off. The guitars, tres and bass get three strings over
+  the body that are strummed one after another and ring out, slower and
+  wider on the bass, quicker on the requinto.
 - Salsa ↔ bachata straight from a genre page: the switch next to Back (now
   on phones too) grows a circle of the other genre's color out of the tapped
   name, and the new page rises in under it. Music that's playing fades out

@@ -140,6 +140,13 @@ body {
   transform-origin: center;
 }
 
+/* The flash where the clave's sticks meet: hidden until a hit, scaled
+   about a point on the icon's grid (set from the motion). */
+.icon-spark {
+  opacity: 0;
+  transform-box: view-box;
+}
+
 /* Volume sliders: a thin track filled in the genre's color up to the
    value (--v, set inline) and a light round thumb. range-lg is the
    bigger, thumb-sized one for phones. The padding (outside the painted
