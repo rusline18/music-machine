@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { prefetchSamples } from '~/core/audio/prefetch'
 import { COUNTS_PER_BAR } from '~/core/pattern'
-import { COUNTING_MODES, stepNames } from '~/core/resolve'
+import { COUNTING_MODES, sampleUrls, stepNames } from '~/core/resolve'
 import { TEMPO_CHOICES } from '~/core/tempo'
 import type { Genre } from '~/genres'
 import { genres } from '~/genres'
@@ -52,12 +53,12 @@ const {
 
 const { advanced, setMode } = useUiMode()
 
-// The other genre opens behind a curtain of its color grown out of the
-// tapped switch (plugins/curtain.client.ts; client only, hence the `?.`).
-const { $curtain } = useNuxtApp()
-const aim = (event: MouseEvent) => $curtain?.aim(event.currentTarget as HTMLElement)
+const { t, locale } = useI18n()
 
-const { t } = useI18n()
+// The other genre's sounds start downloading once its switch is pointed at
+// or touched, so its page plays on the first tap.
+const prefetchGenre = (other: Genre) => other.id !== props.genre.id && prefetchSamples(sampleUrls(other, locale.value))
+
 const countingOptions = computed(() => COUNTING_MODES.map((mode) => ({ value: mode, label: t(`controls.counting.${mode}`) })))
 const tempoOptions = computed(() => TEMPO_CHOICES.map((choice) => ({ value: choice, label: t(`controls.tempo.${choice}`) })))
 
@@ -117,30 +118,42 @@ const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(active
         <div class="flex flex-wrap items-center gap-4">
           <NuxtLinkLocale
             to="/"
-            class="text-sm text-neutral-500 hover:text-neutral-300"
+            class="genre-back text-sm text-neutral-500 hover:text-neutral-300"
           >
             {{ $t('nav.back') }}
           </NuxtLinkLocale>
-          <!-- The other genres, one tap away; each in its own color (data-genre). -->
+          <!-- The other genres, one tap away; each in its own color (data-genre).
+               Going to one slides the pill over and the page across
+               (plugins/genre-slide.client.ts, the names in main.css). -->
           <nav
-            class="flex gap-1 rounded-full bg-neutral-900 p-1"
+            class="genre-switch flex gap-1 rounded-full bg-neutral-900 p-1"
             :aria-label="$t('nav.genres')"
           >
             <NuxtLinkLocale
               v-for="other in genres"
               :key="other.id"
               :to="`/${other.id}`"
-              class="rounded-full px-4 py-1.5 text-sm transition"
-              :class="other.id === genre.id ? 'bg-accent-500 font-bold text-neutral-950' : 'font-semibold text-neutral-400 hover:text-accent-400'"
+              class="relative isolate rounded-full px-4 py-1.5 text-sm transition"
+              :class="other.id === genre.id ? 'font-bold text-neutral-950' : 'font-semibold text-neutral-400 hover:text-accent-400'"
               :data-genre="other.id"
               :aria-current="other.id === genre.id ? 'page' : undefined"
-              @click="other.id !== genre.id && aim($event)"
+              @pointerenter="prefetchGenre(other)"
+              @focus="prefetchGenre(other)"
+              @touchstart.passive="prefetchGenre(other)"
             >
-              {{ $t(`genres.${other.id}.name`) }}
+              <span
+                v-if="other.id === genre.id"
+                class="genre-pill absolute inset-0 -z-10 rounded-full bg-accent-500"
+                aria-hidden="true"
+              />
+              <span
+                class="genre-label block"
+                :style="{ viewTransitionName: `genre-label-${other.id}` }"
+              >{{ $t(`genres.${other.id}.name`) }}</span>
             </NuxtLinkLocale>
           </nav>
         </div>
-        <h1 class="mt-2 text-4xl font-extrabold tracking-tight text-neutral-50 sm:text-6xl">
+        <h1 class="genre-title mt-2 text-4xl font-extrabold tracking-tight text-neutral-50 sm:text-6xl">
           {{ $t(`genres.${genre.id}.name`) }}
         </h1>
       </div>

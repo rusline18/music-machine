@@ -109,6 +109,57 @@ body {
   }
 }
 
+/* The slide between genres (plugins/genre-slide.client.ts): the page goes
+   out toward the genre picked and the new one comes in from the other side
+   (--slide-direction: 1 to the left, -1 to the right); Back and the switch
+   stay put while the pill moves over; everything else just swaps. The
+   names only matter during the slide. */
+.genre-page { view-transition-name: genre-page; }
+.genre-back { view-transition-name: genre-back; }
+.genre-switch { view-transition-name: genre-switch; }
+.genre-pill { view-transition-name: genre-pill; }
+.genre-title { view-transition-name: genre-title; }
+
+::view-transition-group(*) {
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.2, 0.7, 0.1, 1);
+}
+
+/* These stay in place: no resizing between the two pages, only the stills sliding. */
+::view-transition-group(genre-page),
+::view-transition-group(genre-title),
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+::view-transition-old(genre-page),
+::view-transition-old(genre-title) {
+  animation: slide-out 180ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+::view-transition-new(genre-page) {
+  animation: slide-in 360ms cubic-bezier(0.2, 0.7, 0.1, 1) 140ms both;
+}
+
+::view-transition-new(genre-title) {
+  animation: slide-in 360ms cubic-bezier(0.2, 0.7, 0.1, 1) 100ms both;
+}
+
+@keyframes slide-out {
+  to {
+    opacity: 0;
+    transform: translateX(calc(var(--slide-direction, 1) * -48px));
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--slide-direction, 1) * 48px));
+  }
+}
+
 /* Motion off, by the system or the switch on the page (useMotion): no
    transitions or CSS animations; the scripted ones check it themselves. */
 @media (prefers-reduced-motion: reduce) {

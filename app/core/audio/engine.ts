@@ -350,6 +350,9 @@ export function createAudioEngine() {
     return (context.baseLatency || 0) + (context.outputLatency || 0)
   }
 
+  /** AudioContext time a fadeAll reaches silence; dispose lets it get there. */
+  let fadeEnd = 0
+
   /** Fades the whole mix to silence over `seconds`; for leaving the page while it plays. */
   function fadeAll(seconds: number) {
     if (!ctx || !masterGain) return
@@ -357,6 +360,7 @@ export function createAudioEngine() {
     gain.cancelScheduledValues(ctx.currentTime)
     gain.setValueAtTime(gain.value, ctx.currentTime)
     gain.linearRampToValueAtTime(0, ctx.currentTime + seconds)
+    fadeEnd = ctx.currentTime + seconds
   }
 
   function dispose() {
@@ -368,7 +372,12 @@ export function createAudioEngine() {
     downloads.clear()
     decoding.clear()
     ringing.clear()
-    ctx?.close()
+    // A fade still under way (the page was left while playing) finishes
+    // first, so the notes already sent ring out under it.
+    const closing = ctx
+    const fading = closing ? Math.max(0, fadeEnd - closing.currentTime) : 0
+    if (fading > 0) setTimeout(() => closing?.close(), fading * 1000)
+    else closing?.close()
     ctx = null
     masterGain = null
     reverbGain = null
