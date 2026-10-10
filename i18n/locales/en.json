@@ -79,7 +79,19 @@
     "playing": "Playing",
     "volumeLabel": "Volume",
     "listenAlone": "▶ Listen alone",
-    "listenAll": "■ Whole band"
+    "listenAll": "■ Whole band",
+    "hint": {
+      "add": "add {sound}",
+      "remove": "remove",
+      "choose": "other sound"
+    },
+    "brush": {
+      "hint": "Tap a cell: the instrument's sounds show up here",
+      "puts": "a tap puts in:",
+      "close": "Close the sounds",
+      "sounds": "{instrument} sounds"
+    },
+    "key": "Sound marks"
   },
   "instruments": {
     "voice": "Voice",
@@ -197,10 +209,6 @@
       "reset": "Throws away your changes and goes back to the preset.",
       "stepper": "Tap for 1 BPM, hold to change by 5.",
       "animation": "Icons and counts move in time with the music. Switch it off if it distracts you."
-    },
-    "grid": {
-      "cell": "Click to add or remove a hit",
-      "cellSounds": "Click to add or remove a hit; hold or right-click to choose the sound: {sounds}"
     },
     "hotkeys": "Keys: Space — play/stop · ← → — tempo (Shift: by 5) · 1–9 — switch instruments on and off"
   },
