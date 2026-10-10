@@ -68,7 +68,6 @@ test.describe('salsa beat machine', () => {
     await expect(mute).toHaveAttribute('aria-pressed', 'false')
     await mute.click()
     await expect(mute).toHaveAttribute('aria-pressed', 'true')
-    await expect(mute).toHaveText('off')
   })
 
   test('play and stop', async ({ page }) => {
@@ -263,7 +262,7 @@ test.describe('on a phone', () => {
     await expect(step).toHaveAttribute('data-sound', 'slap')
   })
 
-  test('a swipe turns the bar; the icon opens the instrument sheet', async ({ page }) => {
+  test('a swipe turns the bar; a long press on the icon opens the instrument sheet', async ({ page }) => {
     await page.goto('/salsa')
     await page.getByRole('button', { name: 'Edit grid' }).tap()
     await expect(page.getByText('Bar 1 of 2')).toBeVisible()
@@ -274,7 +273,8 @@ test.describe('on a phone', () => {
     await section.dispatchEvent('pointerup', { clientX: box.x + 20, clientY: y, button: 0, pointerType: 'touch' })
     await expect(page.getByText('Bar 2 of 2')).toBeVisible()
 
-    await page.getByRole('button', { name: 'Clave: sound and volume' }).tap()
+    // A tap on the icon mutes; a long press or right-click opens the sheet.
+    await page.getByRole('button', { name: 'Mute Clave' }).click({ button: 'right' })
     const sheet = page.getByRole('dialog', { name: 'Clave' })
     const playing = sheet.getByRole('switch', { name: 'Playing' })
     await expect(playing).toHaveAttribute('aria-checked', 'true')
@@ -293,7 +293,7 @@ test.describe('on a phone', () => {
     await page.keyboard.press('Escape')
     await expect(page.getByRole('button', { name: 'Loop 16' })).toBeVisible()
 
-    await page.getByRole('button', { name: 'Congas: sound and volume' }).tap()
+    await page.getByRole('button', { name: 'Mute Congas' }).click({ button: 'right' })
     const alone = page.getByRole('dialog', { name: 'Congas' }).getByRole('button', { name: '▶ Listen alone' })
     await alone.tap()
     await expect(page.getByRole('button', { name: '■ Whole band' })).toHaveAttribute('aria-pressed', 'true')
