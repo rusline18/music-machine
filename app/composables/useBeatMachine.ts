@@ -4,7 +4,7 @@ import { createPlayhead } from '~/core/audio/playhead'
 import { createScheduler } from '~/core/audio/scheduler'
 import { layerOrder } from '~/core/layers'
 import type { Pattern } from '~/core/pattern'
-import { patternLength, resizeSteps, setPatternCounts, switchStep } from '~/core/pattern'
+import { patternLength, resizeSteps, setPatternCounts, switchStep, trackOf } from '~/core/pattern'
 import type { CountingMode } from '~/core/resolve'
 import { decodePattern, encodePattern } from '~/core/share'
 import type { SectionFit } from '~/core/song'
@@ -190,17 +190,26 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     if (restored) loadPattern(restored)
   })
 
+  /** Presets never change (loading one clones it), so each one's code is worked out once. */
+  const presetCodes = new Map<string, string>()
+  function presetCode(id: string): string | undefined {
+    const preset = genre.presets.find((p) => p.id === id)
+    if (!preset) return undefined
+    let code = presetCodes.get(id)
+    if (code === undefined) presetCodes.set(id, (code = encodePattern(preset, genre)))
+    return code
+  }
+
   // Only edits are kept: an untouched preset isn't stored, so it picks up
   // fixes to the preset data on the next visit.
   watch(shareCode, (code) => {
-    const preset = genre.presets.find((p) => p.id === pattern.value.id)
     try {
-      if (preset && encodePattern(preset, genre) === code) localStorage.removeItem(storageKey(genre.id))
+      if (presetCode(pattern.value.id) === code) localStorage.removeItem(storageKey(genre.id))
       else localStorage.setItem(storageKey(genre.id), code)
     } catch { /* storage full or blocked: nothing to save to */ }
   })
 
-  const findTrack = (instrument: string) => pattern.value.tracks.find((t) => t.instrument === instrument)
+  const findTrack = (instrument: string) => trackOf(pattern.value, instrument)
 
   /** Moves the playhead when a scheduled step actually sounds, not when it's queued. */
   function showStep(step: number, time: number, instruments: string[]) {

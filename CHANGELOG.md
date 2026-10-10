@@ -4,6 +4,11 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-10
 
+- Lighter playback: the playhead finds the cells and icons it lights up once
+  and reuses them until the grid changes, instead of searching the page on
+  every step; chords are parsed once, and step names and preset share codes
+  are worked out once each. Shared `trackOf` lookup in place of copies.
+
 - Instrument icons move like the instruments: a hit gives each part a kick,
   then it rings at its own pitch and dies away (skins ripple, bells swing
   and shimmer, maraca heads lag behind the handles, the scraper catches on

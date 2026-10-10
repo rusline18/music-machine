@@ -5,7 +5,7 @@ import { countInBlock, switchStep } from '~/core/pattern'
 const props = defineProps<{
   track: Track
   /** What a step can be set to; a long press on a cell offers them. */
-  stepNames: string[]
+  stepNames: readonly string[]
   /** First step shown in this row (rows are 8-count blocks). */
   start: number
   length: number

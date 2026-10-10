@@ -2,12 +2,12 @@
 import { CHORD_NAMES } from '~/core/harmony'
 import { STEP_GLYPHS } from '~/icons'
 import type { Pattern } from '~/core/pattern'
-import { COUNTS_PER_BAR, COUNTS_PER_BLOCK, countInBlock } from '~/core/pattern'
+import { COUNTS_PER_BAR, COUNTS_PER_BLOCK, countInBlock, trackOf } from '~/core/pattern'
 
 const props = defineProps<{
   pattern: Pattern
   /** What each step of an instrument can be set to. */
-  stepNames: (instrument: string) => string[]
+  stepNames: (instrument: string) => readonly string[]
   /** The bar (4 counts) playing now, or -1 when stopped; a phone follows it. */
   playingBar: number
   /** Advanced mode: chords, volumes and every track. */
@@ -78,7 +78,7 @@ function swipeUp(event: PointerEvent) {
 
 /** The cell whose sound menu is open. */
 const menu = ref<{ instrument: string, stepIndex: number } | null>(null)
-const menuTrack = computed(() => props.pattern.tracks.find((track) => track.instrument === menu.value?.instrument))
+const menuTrack = computed(() => trackOf(props.pattern, menu.value?.instrument))
 function openMenu(instrument: string, stepIndex: number) {
   if (props.stepNames(instrument).length > 0) menu.value = { instrument, stepIndex }
 }
@@ -94,7 +94,7 @@ function pick(name: string | null) {
 // it's already there.
 /** The row the palette is for and the sound a tap puts in (null: silence), on a phone. */
 const brush = ref<{ instrument: string, name: string | null } | null>(null)
-const brushTrack = computed(() => props.pattern.tracks.find((track) => track.instrument === brush.value?.instrument))
+const brushTrack = computed(() => trackOf(props.pattern, brush.value?.instrument))
 watch(narrow, (isNarrow) => {
   if (!isNarrow) brush.value = null
 })
@@ -121,7 +121,7 @@ const keySounds = computed(() => [...new Set(shownTracks.value.flatMap((track) =
 
 /** The instrument whose sheet is open (phones). */
 const sheet = ref<string | null>(null)
-const sheetTrack = computed(() => props.pattern.tracks.find((track) => track.instrument === sheet.value))
+const sheetTrack = computed(() => trackOf(props.pattern, sheet.value))
 /** Closing the sheet brings the whole band back. */
 function closeSheet() {
   sheet.value = null
