@@ -271,7 +271,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
       @pointercancel="swipeStart = null"
     >
       <div class="flex items-center gap-2 pb-1 sm:gap-3">
-        <span class="w-[4.5rem] shrink-0 text-xs font-semibold uppercase tracking-wide text-neutral-500 sm:w-32">
+        <span class="w-11 shrink-0 whitespace-nowrap text-xs font-semibold uppercase text-neutral-500 sm:w-32 sm:tracking-wide">
           {{ t('grid.block', { n: blockOf(section) }) }}
         </span>
         <div class="flex min-w-0 flex-1 gap-1">
@@ -305,7 +305,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
         class="flex items-center gap-2 pb-1 sm:gap-3"
       >
         <UiControlLabel
-          class="w-[4.5rem] shrink-0 text-xs text-neutral-500 sm:w-32"
+          class="w-11 shrink-0 text-xs text-neutral-500 sm:w-32"
           :label="t('grid.chords')"
           icon="chords"
           :hint="t('help.controls.chords')"
