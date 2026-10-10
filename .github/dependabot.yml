@@ -18,6 +18,9 @@ updates:
       # Node types follow the Node version CI and the server run (22).
       - dependency-name: "@types/node"
         update-types: [version-update:semver-major]
+      # TypeScript 7 drops the JS API that vue-tsc and typescript-eslint use.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
     directory: /
