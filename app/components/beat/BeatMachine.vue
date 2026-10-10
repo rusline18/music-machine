@@ -86,9 +86,8 @@ useHotkeys({
   },
 })
 
-/** Worked out once: a fresh array on each render would re-render every row. */
-const namesByInstrument = new Map(props.genre.instruments.map((instrument) => [instrument, stepNames(props.genre, instrument)]))
-const stepNamesFor = (instrument: string) => namesByInstrument.get(instrument) ?? []
+/** The same array for an instrument every time (see stepNames), so rows aren't re-rendered for nothing. */
+const stepNamesFor = (instrument: string) => stepNames(props.genre, instrument)
 
 const root = useTemplateRef('root')
 const motion = useMotion()

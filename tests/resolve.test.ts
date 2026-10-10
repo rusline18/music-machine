@@ -33,6 +33,11 @@ describe('stepNames', () => {
     expect(stepNames(bachata, 'bass')).toEqual(['root', '5th'])
     expect(stepNames(bachata, 'unknown')).toEqual([])
   })
+
+  it('gives back the same array every time, so a prop made from it stays put', () => {
+    expect(stepNames(bachata, 'campana')).toBe(stepNames(bachata, 'campana'))
+    expect(stepNames(bachata, 'bass')).toBe(stepNames(bachata, 'bass'))
+  })
 })
 
 describe('sampleUrls', () => {

@@ -53,7 +53,34 @@ export function useBeatEffects(
     ringing.set(element, running)
   }
 
-  const all = (selector: string) => root.value?.querySelectorAll<HTMLElement>(selector) ?? []
+  // Each step looks up the same few selectors, ~7 times a second: they're
+  // remembered until the grid's markup changes (a page turn, an edit, a
+  // track shown or hidden). Our own class changes don't count.
+  const found = new Map<string, readonly HTMLElement[]>()
+  let observer: MutationObserver | undefined
+  onMounted(() => {
+    if (!root.value) return
+    observer = new MutationObserver(() => found.clear())
+    observer.observe(root.value, {
+      subtree: true,
+      childList: true,
+      attributeFilter: ['data-step', 'data-count', 'data-count-box', 'data-instrument'],
+    })
+  })
+  onBeforeUnmount(() => {
+    observer?.disconnect()
+    found.clear()
+  })
+
+  function all(selector: string): readonly HTMLElement[] {
+    let elements = found.get(selector)
+    if (!elements) {
+      elements = [...root.value?.querySelectorAll<HTMLElement>(selector) ?? []]
+      // Without an observer a change would go unnoticed: look up every time.
+      if (observer) found.set(selector, elements)
+    }
+    return elements
+  }
 
   function unmark() {
     for (const element of marked) element.classList.remove(NOW, ON_BEAT)
