@@ -52,6 +52,11 @@ const {
 
 const { advanced, setMode } = useUiMode()
 
+// The other genre opens behind a curtain of its color grown out of the
+// tapped switch (plugins/curtain.client.ts; client only, hence the `?.`).
+const { $curtain } = useNuxtApp()
+const aim = (event: MouseEvent) => $curtain?.aim(event.currentTarget as HTMLElement)
+
 const { t } = useI18n()
 const countingOptions = computed(() => COUNTING_MODES.map((mode) => ({ value: mode, label: t(`controls.counting.${mode}`) })))
 const tempoOptions = computed(() => TEMPO_CHOICES.map((choice) => ({ value: choice, label: t(`controls.tempo.${choice}`) })))
@@ -116,9 +121,9 @@ const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(active
           >
             {{ $t('nav.back') }}
           </NuxtLinkLocale>
-          <!-- The other genres, one tap away. -->
+          <!-- The other genres, one tap away; each in its own color (data-genre). -->
           <nav
-            class="flex gap-1 rounded-full bg-neutral-900 p-1 max-sm:hidden"
+            class="flex gap-1 rounded-full bg-neutral-900 p-1"
             :aria-label="$t('nav.genres')"
           >
             <NuxtLinkLocale
@@ -126,8 +131,10 @@ const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(active
               :key="other.id"
               :to="`/${other.id}`"
               class="rounded-full px-4 py-1.5 text-sm transition"
-              :class="other.id === genre.id ? 'bg-accent-500 font-bold text-neutral-950' : 'font-semibold text-neutral-400 hover:text-neutral-100'"
+              :class="other.id === genre.id ? 'bg-accent-500 font-bold text-neutral-950' : 'font-semibold text-neutral-400 hover:text-accent-400'"
+              :data-genre="other.id"
               :aria-current="other.id === genre.id ? 'page' : undefined"
+              @click="other.id !== genre.id && aim($event)"
             >
               {{ $t(`genres.${other.id}.name`) }}
             </NuxtLinkLocale>

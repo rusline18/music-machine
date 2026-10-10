@@ -22,6 +22,8 @@ const FEEL = 0.5
 const REVERB_WET = 0.21
 /** Chance that `randomize` puts a hit on a step. */
 const RANDOM_DENSITY = 0.25
+/** How long the music fades out when the page is left while it plays: about the curtain closing. */
+const LEAVE_FADE_SECONDS = 0.4
 
 /** Query parameter carrying a shared pattern: /salsa?p=… */
 export const SHARE_PARAM = 'p'
@@ -424,7 +426,18 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     layers.value = null
   }
 
+  // Leaving for home or the other genre: the music fades out while the
+  // curtain closes instead of cutting off when the page goes. A language
+  // change keeps the genre and the music.
+  let removeFadeGuard: (() => void) | undefined
+  onMounted(() => {
+    removeFadeGuard = router.beforeEach((to) => {
+      if (isPlaying.value && to.params.genre !== genre.id) engine.fadeAll(LEAVE_FADE_SECONDS)
+    })
+  })
+
   onBeforeUnmount(() => {
+    removeFadeGuard?.()
     stop()
     beatListeners.clear()
     engine.dispose()

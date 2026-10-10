@@ -20,3 +20,21 @@ test('a genre opens behind a curtain, and the curtain clears both ways', async (
   await expect(curtain).toBeHidden()
   await expect(page.getByRole('link', { name: 'Salsa' })).toBeVisible()
 })
+
+test('the genre switch crosses to the other genre behind a curtain, both ways', async ({ page }) => {
+  await page.goto('/bachata', { waitUntil: 'networkidle' })
+  const curtain = page.locator('.genre-curtain')
+  const genres = page.getByRole('navigation', { name: 'Genres' })
+
+  await genres.getByRole('link', { name: 'Salsa' }).click()
+  await expect(curtain).toBeVisible()
+  await expect(page).toHaveURL('/salsa')
+  await expect(curtain).toBeHidden()
+  await expect(page.getByRole('heading', { name: 'Salsa' })).toBeVisible()
+
+  await genres.getByRole('link', { name: 'Bachata' }).click()
+  await expect(curtain).toBeVisible()
+  await expect(page).toHaveURL('/bachata')
+  await expect(curtain).toBeHidden()
+  await expect(page.getByRole('heading', { name: 'Bachata' })).toBeVisible()
+})
