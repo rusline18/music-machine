@@ -45,6 +45,11 @@ export function patternLength(pattern: Pick<Pattern, 'counts' | 'stepsPerCount'>
   return pattern.counts * pattern.stepsPerCount
 }
 
+/** The track `instrument` plays on, if the pattern has one. */
+export function trackOf(pattern: Pick<Pattern, 'tracks'>, instrument: string | null | undefined): Track | undefined {
+  return pattern.tracks.find((track) => track.instrument === instrument)
+}
+
 /** Which count of its 8-count block a step falls on, 0–7 (0 = "1"). */
 export function countInBlock(stepIndex: number, stepsPerCount: number): number {
   return Math.floor(stepIndex / stepsPerCount) % COUNTS_PER_BLOCK
@@ -125,7 +130,6 @@ export function chainPatterns(id: string, first: Pattern, ...rest: Pattern[]): P
       throw new Error(`Can't chain ${block.id}: stepsPerCount differs from ${first.id}`)
     }
   }
-  const trackIn = (block: Pattern, instrument: string) => block.tracks.find((t) => t.instrument === instrument)
   return {
     ...first,
     id,
@@ -133,12 +137,12 @@ export function chainPatterns(id: string, first: Pattern, ...rest: Pattern[]): P
     chords: first.chords && blocks.flatMap((block) => block.chords ?? Array(block.counts / COUNTS_PER_BAR).fill(first.chords![0])),
     tracks: first.tracks.map((track) => ({
       ...track,
-      volume: loudest(blocks.map((block) => trackIn(block, track.instrument))) ?? track.volume,
+      volume: loudest(blocks.map((block) => trackOf(block, track.instrument))) ?? track.volume,
       steps: blocks.flatMap((block) => {
-        const blockTrack = trackIn(block, track.instrument)
+        const blockTrack = trackOf(block, track.instrument)
         return !blockTrack || blockTrack.muted ? Array(patternLength(block)).fill(null) : blockTrack.steps
       }),
-      muted: blocks.every((block) => trackIn(block, track.instrument)?.muted ?? true),
+      muted: blocks.every((block) => trackOf(block, track.instrument)?.muted ?? true),
     })),
   }
 }
@@ -178,7 +182,7 @@ export function setPatternCounts(pattern: Pattern, counts: number): void {
  * The simple-mode click: an empty cell gets the track's main sound (the one
  * it plays most, or the instrument's first), a filled one goes silent.
  */
-export function switchStep(current: Step, steps: readonly Step[], names: string[]): Step {
+export function switchStep(current: Step, steps: readonly Step[], names: readonly string[]): Step {
   if (current !== null) return null
   const uses = new Map<string, number>()
   for (const step of steps) if (step && names.includes(step)) uses.set(step, (uses.get(step) ?? 0) + 1)

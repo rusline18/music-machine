@@ -9,6 +9,7 @@ import {
   resizeSteps,
   setPatternCounts,
   switchStep,
+  trackOf,
 } from '~/core/pattern'
 import type { Pattern } from '~/core/pattern'
 
@@ -168,6 +169,19 @@ describe('countInBlock', () => {
     expect(countInBlock(3, 2)).toBe(1)
     expect(countInBlock(15, 2)).toBe(7)
     expect(countInBlock(16, 2)).toBe(0)
+  })
+})
+
+describe('trackOf', () => {
+  const tracks = [
+    { instrument: 'bongos', steps: [], volume: 1, muted: false },
+    { instrument: 'guira', steps: [], volume: 1, muted: false },
+  ]
+
+  it('finds the track an instrument plays on, or nothing', () => {
+    expect(trackOf({ tracks }, 'guira')).toBe(tracks[1])
+    expect(trackOf({ tracks }, 'bass')).toBeUndefined()
+    expect(trackOf({ tracks }, null)).toBeUndefined()
   })
 })
 

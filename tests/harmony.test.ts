@@ -16,6 +16,15 @@ describe('parseChord', () => {
   it('rejects nonsense', () => {
     expect(() => parseChord('H')).toThrow(/Unknown chord/)
   })
+
+  it('parses each chord once', () => {
+    expect(parseChord('Dm7')).toBe(parseChord('Dm7'))
+  })
+
+  it('keeps rejecting nonsense it has seen before', () => {
+    expect(() => parseChord('X')).toThrow(/Unknown chord/)
+    expect(() => parseChord('X')).toThrow(/Unknown chord/)
+  })
 })
 
 describe('chord tones', () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { CHORD_NAMES } from '~/core/harmony'
 import type { Pattern } from '~/core/pattern'
-import { countingFigure, sampleResolver, sampleUrls, stepNames, stepResolver } from '~/core/resolve'
+import { countingFigure, patternSampleUrls, sampleResolver, sampleUrls, stepNames, stepResolver } from '~/core/resolve'
 import { bachata } from '~/genres/bachata'
 import { salsa } from '~/genres/salsa'
 
@@ -32,6 +32,30 @@ describe('stepNames', () => {
     expect(stepNames(bachata, 'campana')).toEqual(['open', 'neck'])
     expect(stepNames(bachata, 'bass')).toEqual(['root', '5th'])
     expect(stepNames(bachata, 'unknown')).toEqual([])
+  })
+
+  it('gives back the same array every time, so a prop made from it stays put', () => {
+    expect(stepNames(bachata, 'campana')).toBe(stepNames(bachata, 'campana'))
+    expect(stepNames(bachata, 'bass')).toBe(stepNames(bachata, 'bass'))
+  })
+})
+
+describe('patternSampleUrls', () => {
+  const track = (instrument: string, steps: (string | null)[], muted = false) => ({ instrument, steps, volume: 1, muted })
+
+  it('lists only the sounds the steps use, muted tracks included', () => {
+    const urls = patternSampleUrls(bachata, { tracks: [track('campana', ['open', null], true), track('guira', [null, null])] }, 'en')
+    expect(urls.size).toBeGreaterThan(0)
+    expect([...urls].every((url) => sampleUrls(bachata, 'en').has(url))).toBe(true)
+    const open = [bachata.samples.campana!.open!].flat().map((sample) => (typeof sample === 'string' ? sample : sample.url))
+    expect([...urls].sort()).toEqual([...new Set(open)].sort())
+  })
+
+  it('takes every zone of a pitched track that plays, and the voice in the locale', () => {
+    const urls = patternSampleUrls(bachata, { tracks: [track('bass', ['root'])] }, 'en')
+    expect([...urls].sort()).toEqual([...new Set(bachata.pitched.bass!.zones.map((zone) => zone.url))].sort())
+    const voice = bachata.instruments.find((instrument) => bachata.spoken[instrument])
+    if (voice) expect(patternSampleUrls(bachata, { tracks: [track(voice, ['count'])] }, 'en').size).toBeGreaterThan(0)
   })
 })
 

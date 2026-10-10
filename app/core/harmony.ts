@@ -29,11 +29,19 @@ export interface Chord {
   intervals: number[]
 }
 
-export function parseChord(name: string): Chord {
-  const match = /^([A-G][#b]?)(m7|m|7)?$/.exec(name)
-  const root = match && PITCH_CLASS[match[1]!]
-  if (root === undefined || root === null) throw new Error(`Unknown chord: ${name}`)
-  return { name, root, intervals: QUALITIES[match![2] ?? '']! }
+/** Chords already parsed: pitched tracks look the chord up on every hit. */
+const parsedChords = new Map<string, Readonly<Chord>>()
+
+export function parseChord(name: string): Readonly<Chord> {
+  let chord = parsedChords.get(name)
+  if (!chord) {
+    const match = /^([A-G][#b]?)(m7|m|7)?$/.exec(name)
+    const root = match && PITCH_CLASS[match[1]!]
+    if (root === undefined || root === null) throw new Error(`Unknown chord: ${name}`)
+    chord = { name, root, intervals: QUALITIES[match![2] ?? '']! }
+    parsedChords.set(name, chord)
+  }
+  return chord
 }
 
 /** The lowest MIDI note >= `low` with pitch class `pitchClass`. */

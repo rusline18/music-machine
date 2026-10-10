@@ -8,6 +8,14 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
   on phones too) grows a circle of the other genre's color out of the tapped
   name, and the new page rises in under it. Music that's playing fades out
   instead of cutting off, here and on the way home.
+- Faster first Play: it waits only for the sounds the pattern uses (the rest
+  load while it plays), and the room reverb is worked out while they load.
+  Grid cells share one set of pointer listeners per row instead of eight
+  each; the scheduler reads the pattern without Vue's reactive wrapper.
+- Lighter playback: the playhead finds the cells and icons it lights up once
+  and reuses them until the grid changes, instead of searching the page on
+  every step; chords are parsed once, and step names and preset share codes
+  are worked out once each. Shared `trackOf` lookup in place of copies.
 - Dependabot: weekly PRs for npm packages (minor and patch bumps grouped
   into one, majors separately) and GitHub Actions.
 - Instrument icons move like the instruments: a hit gives each part a kick,

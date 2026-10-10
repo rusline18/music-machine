@@ -2,7 +2,7 @@ import type { Note } from './audio/engine'
 import type { StepResolver } from './audio/scheduler'
 import type { PitchedInstrument } from './harmony'
 import { parseChord, voicesToNotes } from './harmony'
-import type { Step } from './pattern'
+import type { Pattern, Step } from './pattern'
 import { chordAt, COUNTS_PER_BAR, countInBlock, patternLength } from './pattern'
 
 /**
@@ -25,7 +25,7 @@ const noteOf = (sample: Sample): Note => (typeof sample === 'string' ? { url: sa
 export type CountingVoice = Record<string, { counts: readonly string[], and: string }>
 
 /** Step names of a counting voice: the number of the count the step is on, or "and". */
-export const COUNTING_STEPS = ['count', 'and']
+export const COUNTING_STEPS: readonly string[] = ['count', 'and']
 
 /** Ways the voice can count, offered as one-click presets for its track. */
 export const COUNTING_MODES = ['off', 'counts', 'ands'] as const
@@ -58,11 +58,24 @@ function wordsIn(voice: CountingVoice, locale: string) {
 /** Played when a pattern with pitched tracks has no chords. */
 const DEFAULT_CHORD = 'Am'
 
-/** What a step on this instrument can be set to, in the order the grid cycles through. */
-export function stepNames(set: InstrumentSet, instrument: string): string[] {
-  if (set.spoken[instrument]) return COUNTING_STEPS
-  const pitched = set.pitched[instrument]
-  return Object.keys(pitched ? pitched.articulations : set.samples[instrument] ?? {})
+/** Step names already worked out, per instrument set. */
+const namesCache = new WeakMap<InstrumentSet, Map<string, readonly string[]>>()
+
+/**
+ * What a step on this instrument can be set to, in the order the grid
+ * cycles through. Worked out once per instrument: the same array comes back
+ * every time, so passing it to a component as a prop doesn't re-render it.
+ */
+export function stepNames(set: InstrumentSet, instrument: string): readonly string[] {
+  let cache = namesCache.get(set)
+  if (!cache) namesCache.set(set, (cache = new Map()))
+  let names = cache.get(instrument)
+  if (!names) {
+    const pitched = set.pitched[instrument]
+    names = set.spoken[instrument] ? COUNTING_STEPS : Object.keys(pitched ? pitched.articulations : set.samples[instrument] ?? {})
+    cache.set(instrument, names)
+  }
+  return names
 }
 
 /** Every sample file the instruments can play in `locale`, for preloading. */
@@ -75,6 +88,33 @@ export function sampleUrls(set: InstrumentSet, locale: string): Set<string> {
       return [...words.counts, words.and]
     }),
   ])
+}
+
+/**
+ * The sample files a pattern plays, for loading those before the rest.
+ * Muted tracks count too, so switching one on is heard at once; tracks
+ * with no hits, and sounds no step uses, don't.
+ */
+export function patternSampleUrls(set: InstrumentSet, pattern: Pick<Pattern, 'tracks'>, locale: string): Set<string> {
+  const urls = new Set<string>()
+  for (const { instrument, steps } of pattern.tracks) {
+    const used = new Set(steps.filter((step) => step !== null))
+    if (used.size === 0) continue
+    const voice = set.spoken[instrument]
+    const pitched = set.pitched[instrument]
+    if (voice) {
+      const words = wordsIn(voice, locale)
+      for (const url of [...words.counts, words.and]) urls.add(url)
+    } else if (pitched) {
+      for (const zone of pitched.zones) urls.add(zone.url)
+    } else {
+      for (const name of used) {
+        const entry = set.samples[instrument]?.[name]
+        if (entry) for (const sample of [entry].flat()) urls.add(urlOf(sample))
+      }
+    }
+  }
+  return urls
 }
 
 /**

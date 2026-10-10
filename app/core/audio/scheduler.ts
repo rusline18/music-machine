@@ -55,18 +55,20 @@ export function createScheduler(engine: Pick<AudioEngine, 'now' | 'resume' | 'pl
     if (!pattern) return
     // bpm counts quarter notes; each count is split into stepsPerCount cells.
     const step = 60 / pattern.bpm / pattern.stepsPerCount
+    const length = patternLength(pattern)
     // A negative step would never advance nextStepTime and hang the tab;
     // bpm 0 makes it Infinity and the loop silently stalls.
-    if (!(Number.isFinite(step) && step > 0 && patternLength(pattern) > 0)) {
+    if (!(Number.isFinite(step) && step > 0 && length > 0)) {
       stop()
       return
     }
-    while (nextStepTime < engine.now() + SCHEDULE_AHEAD_S) {
-      // The pattern can be shortened mid-play; wrap instead of running off the end.
-      if (currentStep >= patternLength(pattern)) currentStep = 0
+    // The pattern can be shortened mid-play; wrap instead of running off the end.
+    if (currentStep >= length) currentStep = 0
+    const horizon = engine.now() + SCHEDULE_AHEAD_S
+    while (nextStepTime < horizon) {
       scheduleStep(currentStep, nextStepTime)
       nextStepTime += step
-      currentStep = (currentStep + 1) % patternLength(pattern)
+      currentStep = (currentStep + 1) % length
     }
   }
 
