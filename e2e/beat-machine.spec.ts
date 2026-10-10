@@ -265,6 +265,29 @@ test.describe('on a phone', () => {
     await expect(sheet.getByRole('slider', { name: 'Volume' })).toBeVisible()
   })
 
+  test('advanced mode: the loop chip opens a sheet, the mixer is a third view, an instrument plays alone', async ({ page }) => {
+    await page.goto('/salsa')
+    await advanced(page)
+    await page.getByRole('button', { name: 'Edit grid' }).tap()
+
+    await page.getByRole('button', { name: 'Loop 8' }).tap()
+    await page.getByRole('dialog', { name: 'Loop length' }).getByRole('button', { name: '16', exact: true }).tap()
+    await page.keyboard.press('Escape')
+    await expect(page.getByRole('button', { name: 'Loop 16' })).toBeVisible()
+
+    await page.getByRole('button', { name: 'Congas: sound and volume' }).tap()
+    const alone = page.getByRole('dialog', { name: 'Congas' }).getByRole('button', { name: '▶ Listen alone' })
+    await alone.tap()
+    await expect(page.getByRole('button', { name: '■ Whole band' })).toHaveAttribute('aria-pressed', 'true')
+    await page.keyboard.press('Escape')
+
+    await page.getByRole('button', { name: 'Mixer' }).tap()
+    const clave = page.getByRole('switch', { name: 'Clave' })
+    await clave.tap()
+    await expect(clave).toHaveAttribute('aria-checked', 'false')
+    await expect(page.getByRole('slider', { name: 'Clave volume' })).toBeVisible()
+  })
+
   test('Play stays on screen at the bottom', async ({ page }) => {
     await page.goto('/salsa')
     const play = page.getByRole('button', { name: '▶ Play' })

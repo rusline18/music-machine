@@ -27,8 +27,6 @@
     "stop": "■ Stop",
     "bpm": "BPM",
     "counts": "Counts",
-    "feel": "Feel",
-    "reverb": "Reverb",
     "voice": "Voice",
     "counting": {
       "off": "Off",
@@ -79,7 +77,9 @@
     "settings": "{instrument}: sound and volume",
     "silence": "Silence",
     "playing": "Playing",
-    "volumeLabel": "Volume"
+    "volumeLabel": "Volume",
+    "listenAlone": "▶ Listen alone",
+    "listenAll": "■ Whole band"
   },
   "instruments": {
     "voice": "Voice",
@@ -187,12 +187,10 @@
       "speed": "How fast the music plays. Normal is the usual tempo for this rhythm; start slow while learning.",
       "voice": "A voice counting along: just the numbers, or with “and” between them.",
       "counts": "How many counts the loop lasts before it repeats. Dancers count in blocks of 8.",
-      "feel": "0% plays exactly on the grid; higher adds small timing, volume and pitch variations, like a live band.",
-      "reverb": "How much room sound is added to the mix.",
       "chords": "The chord for each bar. The bass, guitars and piano follow it.",
       "random": "Fills the grid with random hits. Fun for experimenting.",
       "clear": "Removes every hit, so you can build a rhythm from scratch.",
-      "advancedMode": "Loop length, feel, reverb, volumes and chords.",
+      "advancedMode": "Loop length, chords, volumes and a mixer.",
       "simpleMode": "Hide the extra controls. Your rhythm and settings stay as they are.",
       "count": "The count the music is on right now. 1 and 5 start each half of the 8 counts: listen for them.",
       "share": "A link to this exact pattern — tempo, length, mutes and all. On a phone it opens the share menu, on a computer it copies the link. Send it to a partner or your students.",
@@ -272,6 +270,19 @@
   "view": {
     "label": "View",
     "practice": "Practice",
-    "editor": "Edit grid"
+    "editor": "Edit grid",
+    "mixer": "Mixer"
+  },
+  "advanced": {
+    "loop": "Loop",
+    "loopTitle": "Loop length",
+    "counts": "counts",
+    "blocks": "Each bar is one block of 8 counts.",
+    "grid": "Grid",
+    "gridHelp": "“Random” fills the grid with random hits, for experimenting. “Clear” removes every hit so you can build a rhythm from scratch.",
+    "volume": "Volume",
+    "volumeHelp": "Turn up the instrument you are learning to hear, and turn the others down or off.",
+    "bar": "Bar {n}",
+    "more": "About: {name}"
   }
 }

@@ -13,6 +13,8 @@ const props = defineProps<{
   advanced: boolean
   /** Tracks left off the grid in simple mode (the voice has its own switch). */
   simpleHides?: readonly string[]
+  /** The instrument playing on its own, if any. */
+  solo?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -22,6 +24,8 @@ const emit = defineEmits<{
   'update:volume': [instrument: string, volume: number]
   'update:muted': [instrument: string, muted: boolean]
   'update:chord': [bar: number, chord: string]
+  /** Hear one instrument on its own, or null for the whole band. */
+  solo: [instrument: string | null]
 }>()
 
 const { t } = useI18n()
@@ -85,13 +89,19 @@ function pick(name: string | null) {
 /** The instrument whose sheet is open (phones). */
 const sheet = ref<string | null>(null)
 const sheetTrack = computed(() => props.pattern.tracks.find((track) => track.instrument === sheet.value))
+/** Closing the sheet brings the whole band back. */
+function closeSheet() {
+  sheet.value = null
+  if (props.solo) emit('solo', null)
+}
 
 /** Which 8-count block a section is in, from 1. On a phone the header numbers (5 6 7 8) show which half. */
 const blockOf = (section: number) => Math.floor((section * countsPerSection.value) / COUNTS_PER_BLOCK) + 1
 
 /** Bar indices (into pattern.chords) shown in a section, or none if the pattern has no chords. */
 function barsIn(section: number): number[] {
-  if (!props.advanced || !props.pattern.chords?.length) return []
+  // A phone sets the chords from a chip above the grid (AdvancedPanel).
+  if (!props.advanced || narrow.value || !props.pattern.chords?.length) return []
   const bars = countsPerSection.value / COUNTS_PER_BAR
   return Array.from({ length: bars }, (_, i) => section * bars + i)
 }
@@ -156,7 +166,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
         <span class="w-[4.5rem] shrink-0 text-xs font-semibold uppercase tracking-wide text-neutral-500 sm:w-32">
           {{ t('grid.block', { n: blockOf(section) }) }}
         </span>
-        <div class="flex flex-1 gap-1">
+        <div class="flex min-w-0 flex-1 gap-1">
           <span
             v-for="cell in stepsPerSection"
             :key="cell"
@@ -172,8 +182,14 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
         </div>
         <span
           v-if="advanced"
-          class="w-20 shrink-0 max-sm:hidden"
-        />
+          class="w-36 shrink-0 max-sm:hidden"
+        >
+          <UiHint
+            v-if="section === 0"
+            :label="t('advanced.volume')"
+            :text="t('advanced.volumeHelp')"
+          />
+        </span>
       </div>
 
       <div
@@ -187,7 +203,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
           :hint="t('help.controls.chords')"
           compact
         />
-        <div class="flex flex-1 gap-1.5">
+        <div class="flex min-w-0 flex-1 gap-1.5">
           <select
             v-for="bar in barsIn(section)"
             :key="bar"
@@ -205,7 +221,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
             </option>
           </select>
         </div>
-        <span class="w-20 shrink-0 max-sm:hidden" />
+        <span class="w-36 shrink-0 max-sm:hidden" />
       </div>
 
       <BeatTrackRow
@@ -263,15 +279,35 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
     <UiSheet
       :open="sheet !== null"
       :title="sheet ? t(`instruments.${sheet}`) : ''"
-      @close="sheet = null"
+      @close="closeSheet"
     >
       <div
         v-if="sheetTrack"
         class="space-y-4"
       >
-        <p class="text-sm text-neutral-400">
-          {{ t(`help.instruments.${sheetTrack.instrument}`) }}
-        </p>
+        <div class="flex items-start gap-3">
+          <span
+            class="instrument-icon flex size-14 shrink-0 items-center justify-center rounded-2xl bg-neutral-950 text-neutral-200 [&_svg]:size-8"
+            :data-instrument="sheetTrack.instrument"
+          >
+            <UiIcon
+              :name="sheetTrack.instrument"
+              :accent="!sheetTrack.muted"
+            />
+          </span>
+          <p class="text-sm leading-snug text-neutral-300">
+            {{ t(`help.instruments.${sheetTrack.instrument}`) }}
+          </p>
+        </div>
+        <button
+          type="button"
+          class="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition"
+          :class="solo === sheetTrack.instrument ? 'bg-neutral-100 text-neutral-950' : 'bg-accent-500 text-neutral-950 hover:bg-accent-400'"
+          :aria-pressed="solo === sheetTrack.instrument"
+          @click="emit('solo', solo === sheetTrack.instrument ? null : sheetTrack.instrument)"
+        >
+          {{ solo === sheetTrack.instrument ? t('grid.listenAll') : t('grid.listenAlone') }}
+        </button>
         <button
           type="button"
           role="switch"
@@ -299,7 +335,8 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
             max="1"
             step="0.05"
             :value="sheetTrack.volume"
-            class="h-11 flex-1 accent-accent-500"
+            class="range range-lg min-w-0 flex-1"
+            :style="{ '--v': `${sheetTrack.volume * 100}%` }"
             @input="emit('update:volume', sheetTrack.instrument, Number(($event.target as HTMLInputElement).value))"
           >
         </label>

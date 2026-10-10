@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { COUNT_OPTIONS, COUNTS_PER_BAR } from '~/core/pattern'
+import { COUNTS_PER_BAR } from '~/core/pattern'
 import { COUNTING_MODES, stepNames } from '~/core/resolve'
 import { TEMPO_CHOICES } from '~/core/tempo'
 import type { Genre } from '~/genres'
@@ -26,8 +26,8 @@ const {
   failedSamples,
   activeStep,
   onBeat,
-  feel,
-  reverb,
+  solo,
+  setSolo,
   play,
   stop,
   setCounts,
@@ -53,7 +53,6 @@ const {
 const { advanced, setMode } = useUiMode()
 
 const { t } = useI18n()
-const countOptions = COUNT_OPTIONS.map((counts) => ({ value: counts, label: String(counts) }))
 const countingOptions = computed(() => COUNTING_MODES.map((mode) => ({ value: mode, label: t(`controls.counting.${mode}`) })))
 const tempoOptions = computed(() => TEMPO_CHOICES.map((choice) => ({ value: choice, label: t(`controls.tempo.${choice}`) })))
 
@@ -68,7 +67,10 @@ const simpleHides = props.genre.instruments.filter((instrument) => props.genre.s
 const bandTracks = computed(() => pattern.value.tracks.filter((track) => !simpleHides.includes(track.instrument)))
 
 const { view, setView } = useBeatView()
-const viewOptions = computed(() => (['practice', 'editor'] as const).map((value) => ({ value, label: t(`view.${value}`) })))
+/** The mixer is an advanced-mode view; leaving advanced mode falls back to the grid. */
+const viewOptions = computed(() => (advanced.value ? ['practice', 'editor', 'mixer'] as const : ['practice', 'editor'] as const)
+  .map((value) => ({ value, label: t(`view.${value}`) })))
+const shownView = computed(() => (view.value === 'mixer' && !advanced.value ? 'editor' : view.value))
 
 /** The phone's voice button: off → counts → counts with "and" → off. */
 const nextCounting = () => setCounting(COUNTING_MODES[(COUNTING_MODES.indexOf(countingMode.value ?? 'off') + 1) % COUNTING_MODES.length]!)
@@ -87,7 +89,6 @@ useHotkeys({
 /** Worked out once: a fresh array on each render would re-render every row. */
 const namesByInstrument = new Map(props.genre.instruments.map((instrument) => [instrument, stepNames(props.genre, instrument)]))
 const stepNamesFor = (instrument: string) => namesByInstrument.get(instrument) ?? []
-const percent = (value: number) => `${Math.round(value * 100)}%`
 
 const root = useTemplateRef('root')
 const motion = useMotion()
@@ -153,7 +154,7 @@ const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(active
       class="mb-6 sm:hidden"
       :label="$t('view.label')"
       :options="viewOptions"
-      :model-value="view"
+      :model-value="shownView"
       @update:model-value="(next) => next && setView(next)"
     />
 
@@ -219,65 +220,31 @@ const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(active
         <!-- Practice view on a phone. Shown and hidden with CSS, so the server
              renders the right one and nothing jumps after loading. -->
         <BeatInstrumentCards
-          :class="view === 'practice' ? 'sm:hidden' : 'hidden'"
+          :class="shownView === 'practice' ? 'sm:hidden' : 'hidden'"
           :tracks="bandTracks"
           @update:muted="setMuted"
         />
+        <!-- The mixer, a phone's third view in advanced mode; wider screens
+             have the volumes in the grid. -->
+        <BeatMixer
+          v-if="advanced"
+          :class="shownView === 'mixer' ? 'sm:hidden' : 'hidden'"
+          :tracks="pattern.tracks"
+          @update:muted="setMuted"
+          @update:volume="setVolume"
+        />
 
-        <div :class="{ 'max-sm:hidden': view === 'practice' }">
-          <div
+        <div :class="{ 'max-sm:hidden': shownView !== 'editor' }">
+          <BeatAdvancedPanel
             v-if="advanced"
-            class="mb-6 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-3xl border border-neutral-800 bg-neutral-900 p-5"
-          >
-            <UiSegmentedControl
-              :label="$t('controls.counts')"
-              icon="counts"
-              :hint="$t('help.controls.counts')"
-              :options="countOptions"
-              :model-value="pattern.counts"
-              @update:model-value="(counts) => counts && setCounts(counts)"
-            />
-            <UiRangeControl
-              v-model="feel"
-              :label="$t('controls.feel')"
-              icon="feel"
-              :hint="$t('help.controls.feel')"
-              :min="0"
-              :max="1"
-              :step="0.05"
-              :format="percent"
-            />
-            <UiRangeControl
-              v-model="reverb"
-              :label="$t('controls.reverb')"
-              icon="reverb"
-              :hint="$t('help.controls.reverb')"
-              :min="0"
-              :max="1"
-              :step="0.05"
-              :format="percent"
-            />
-            <div class="flex gap-3">
-              <button
-                type="button"
-                class="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700 sm:min-h-0"
-                :title="$t('help.controls.random')"
-                @click="randomize"
-              >
-                <UiIcon name="random" />
-                {{ $t('controls.random') }}
-              </button>
-              <button
-                type="button"
-                class="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-neutral-800 px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-700 sm:min-h-0"
-                :title="$t('help.controls.clear')"
-                @click="clear"
-              >
-                <UiIcon name="clear" />
-                {{ $t('controls.clear') }}
-              </button>
-            </div>
-          </div>
+            class="mb-6"
+            :counts="pattern.counts"
+            :chords="pattern.chords"
+            @set-counts="setCounts"
+            @set-chord="setChord"
+            @randomize="randomize"
+            @clear="clear"
+          />
 
           <BeatGrid
             :pattern="pattern"
@@ -285,6 +252,8 @@ const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(active
             :playing-bar="playingBar"
             :advanced="advanced"
             :simple-hides="simpleHides"
+            :solo="solo"
+            @solo="setSolo"
             @toggle-step="switchStep"
             @set-step="setStep"
             @update:volume="setVolume"

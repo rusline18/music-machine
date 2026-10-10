@@ -50,10 +50,6 @@ export const ICONS: Record<string, readonly string[]> = {
   // Controls
   /** A metronome. */
   tempo: ['M6 21h12L15 3H9z', 'M12 17l5-9'],
-  /** A loose wave: a band that breathes. */
-  feel: ['M2 12c3-6 5 6 8 0s5 6 8 0 3-3 4-3'],
-  /** Echoes spreading out from a source. */
-  reverb: ['M5 12h.01', 'M9 9a4 4 0 0 1 0 6', 'M13 6a8 8 0 0 1 0 12', 'M17 3a12 12 0 0 1 0 18'],
   /** A loop arrow: how many counts repeat. */
   counts: ['M4 12a8 8 0 1 0 2.3-5.7', 'M3 3v4.5h4.5'],
   /** Sliders. */

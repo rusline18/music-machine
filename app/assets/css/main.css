@@ -101,3 +101,48 @@ body {
   transform-box: fill-box;
   transform-origin: center;
 }
+
+/* Volume sliders: a thin track filled in the genre's color up to the
+   value (--v, set inline) and a light round thumb. range-lg is the
+   bigger, thumb-sized one for phones. The padding (outside the painted
+   content box) makes the whole thumb height grabbable. */
+.range {
+  appearance: none;
+  height: 16px;
+  padding: 6px 0;
+  border-radius: 9999px;
+  background: linear-gradient(to right, rgb(var(--accent-500)) var(--v, 50%), theme('colors.neutral.700') var(--v, 50%)) content-box;
+  cursor: pointer;
+}
+
+.range::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 50%;
+  background: theme('colors.neutral.100');
+}
+
+.range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 50%;
+  background: theme('colors.neutral.100');
+}
+
+.range-lg {
+  height: 28px;
+  padding: 11px 0;
+}
+
+.range-lg::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+}
+
+.range-lg::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+}
