@@ -1,12 +1,9 @@
-import type { CurtainKind } from '~/core/curtain'
 import { coveringCircle, curtainKind } from '~/core/curtain'
 
-/** Where the next curtain into a genre starts: the tapped link's mark, in that genre's color. */
+/** Where the next home → genre curtain starts: the tapped card's arrow, in its color. */
 interface Origin {
   x: number
   y: number
-  /** How big the circle is when it starts, px: the mark's height. */
-  size: number
   color: string
 }
 
@@ -41,13 +38,12 @@ function center(element: Element) {
 }
 
 /**
- * The curtain between the home page and a genre, and between genres.
- * Forward: a circle of the genre's color grows out of the tapped card's
- * arrow until it covers the screen, the genre page renders underneath, and
- * the curtain melts away while the page's parts rise in. Across (the genre
- * switch on a genre page): the same, grown out of the tapped switch in the
- * other genre's color. Back: the curtain fades in over the genre and
- * shrinks into that genre's arrow on the home page.
+ * The curtain between the home page and a genre. Forward: a circle of the
+ * genre's color grows out of the tapped card's arrow until it covers the
+ * screen, the genre page renders underneath, and the curtain melts away
+ * while the page's parts rise in. Back: the curtain fades in over the
+ * genre and shrinks into that genre's arrow on the home page. Between
+ * genres the page slides instead (plugins/genre-slide.client.ts).
  *
  * One fixed element, animated by transform and opacity only, so it runs
  * on the compositor. Skipped when motion is off and on the browser's own
@@ -63,21 +59,21 @@ export default defineNuxtPlugin((nuxtApp) => {
   document.body.append(curtain)
 
   let origin: Origin | undefined
-  let pending: { kind: CurtainKind, genre: string, lifting?: boolean } | undefined
+  let pending: { kind: 'enter' | 'leave', genre: string, lifting?: boolean } | undefined
   let fromHistory = false
   let stuck: ReturnType<typeof setTimeout> | undefined
 
   window.addEventListener('popstate', () => (fromHistory = true))
 
-  function place(x: number, y: number, startSize?: number) {
-    const circle = coveringCircle(x, y, window.innerWidth, window.innerHeight, startSize)
+  function place(x: number, y: number) {
+    const circle = coveringCircle(x, y, window.innerWidth, window.innerHeight)
     Object.assign(curtain.style, {
       left: `${circle.left}px`,
       top: `${circle.top}px`,
       width: `${circle.size}px`,
       height: `${circle.size}px`,
     })
-    return circle.startScale
+    return circle.arrowScale
   }
 
   function show(color: string) {
@@ -102,23 +98,20 @@ export default defineNuxtPlugin((nuxtApp) => {
   router.beforeEach(async (to, from) => {
     const viaHistory = fromHistory
     fromHistory = false
-    const kind = curtainKind(
-      { name: from.name?.toString(), genre: from.params.genre?.toString() },
-      { name: to.name?.toString(), genre: to.params.genre?.toString() },
-    )
+    const kind = curtainKind(from.name?.toString(), to.name?.toString())
     const start = origin
     origin = undefined
     if (!kind || viaHistory || pending || motionOff()) return
-    if (kind !== 'leave' && !start) return
+    if (kind === 'enter' && !start) return
 
     // The curtain is the transition; the page's own fade would only add a wait.
     to.meta.pageTransition = false
 
-    if (kind !== 'leave' && start) {
-      const startScale = place(start.x, start.y, start.size)
+    if (kind === 'enter' && start) {
+      const arrowScale = place(start.x, start.y)
       show(start.color)
       pending = { kind, genre: String(to.params.genre) }
-      await play([{ transform: `scale(${startScale})` }, { transform: 'none' }], GROW)
+      await play([{ transform: `scale(${arrowScale})` }, { transform: 'none' }], GROW)
     } else {
       // The accent channels of the genre being left (main.css), e.g. "47 198 180".
       const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent-500').trim()
@@ -133,9 +126,9 @@ export default defineNuxtPlugin((nuxtApp) => {
     if (failure && pending) hide()
   })
 
-  async function lift(kind: CurtainKind, genre: string) {
+  async function lift(kind: 'enter' | 'leave', genre: string) {
     await settled()
-    if (kind !== 'leave') {
+    if (kind === 'enter') {
       const root = document.documentElement
       root.classList.add('curtain-arrive')
       await play([{ opacity: 1 }, { opacity: 0 }], FADE)
@@ -144,8 +137,8 @@ export default defineNuxtPlugin((nuxtApp) => {
       const arrow = document.querySelector(`[data-genre="${CSS.escape(genre)}"] [data-curtain-target]`)
       if (arrow) {
         const { x, y } = center(arrow)
-        const startScale = place(x, y)
-        await play([{ transform: 'none' }, { transform: `scale(${startScale})` }], SHRINK)
+        const arrowScale = place(x, y)
+        await play([{ transform: 'none' }, { transform: `scale(${arrowScale})` }], SHRINK)
       } else {
         await play([{ opacity: 1 }, { opacity: 0 }], FADE)
       }
@@ -164,16 +157,10 @@ export default defineNuxtPlugin((nuxtApp) => {
   return {
     provide: {
       curtain: {
-        /**
-         * Call on the click of a link to a genre (marked with `data-genre`,
-         * which gives it that genre's accent, main.css): the curtain will
-         * grow out of its `[data-curtain-target]` part, or the whole link,
-         * in the genre's color.
-         */
-        aim(link: HTMLElement) {
-          const mark = link.querySelector('[data-curtain-target]') ?? link
-          const accent = getComputedStyle(link).getPropertyValue('--accent-500').trim()
-          origin = { ...center(mark), size: mark.getBoundingClientRect().height, color: `rgb(${accent})` }
+        /** Call on a genre card's click: the curtain will grow out of its arrow, in the card's color. */
+        aim(card: HTMLElement) {
+          const arrow = card.querySelector('[data-curtain-target]') ?? card
+          origin = { ...center(arrow), color: getComputedStyle(card).backgroundColor }
         },
       },
     },

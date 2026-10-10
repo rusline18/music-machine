@@ -11,8 +11,10 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
   the body that are strummed one after another and ring out, slower and
   wider on the bass, quicker on the requinto.
 - Salsa ↔ bachata straight from a genre page: the switch next to Back (now
-  on phones too) grows a circle of the other genre's color out of the tapped
-  name, and the new page rises in under it. Music that's playing fades out
+  on phones too) slides its pill over to the genre picked while the page
+  slides across toward it, like tabs (View Transitions API: stills of both
+  pages animated on the compositor). The other genre's sounds start loading
+  when its switch is pointed at or touched. Music that's playing fades out
   instead of cutting off, here and on the way home.
 - Faster first Play: it waits only for the sounds the pattern uses (the rest
   load while it plays), and the room reverb is worked out while they load.
