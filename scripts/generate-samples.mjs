@@ -354,8 +354,8 @@ const generators = {
 // `vsco`: file in audio-sources/vsco, from VSCO 2 Community Edition
 //   (https://github.com/sgossner/VSCO-2-CE), by the same author as VCSL.
 // `wikimedia`: file in audio-sources/wikimedia (Wikimedia Commons).
-// `voice`: file in audio-sources/voice, one spoken word per file, used
-//   whole (see scripts/speak-counts.py).
+// `voice`: file in audio-sources/voice, one spoken word per file;
+//   the word is cut out of the clicks and breaths around it (see sliceWord).
 // `uiowa`: file in audio-sources/uiowa, from the University of Iowa Musical
 //   Instrument Samples (free to use without restrictions, not formally CC0).
 // `midi`: for pitched sources, the note to cut out; it's tuned to exactly
@@ -366,7 +366,7 @@ const generators = {
 // `maxLength`: seconds; the tail is also cut once it decays to -45 dB.
 
 const recordings = {
-  ...voicePaths((locale, word) => ({ voice: `${locale}/${word}.wav`, maxLength: 0.5 })),
+  ...voicePaths((locale, word) => ({ voice: `${locale}/${word}.wav`, maxLength: 0.8 })),
   '/audio/salsa/clave/hit.wav': { vcsl: 'Claves1_Hit_v2_rr1_Mid.wav', maxLength: 0.4 },
   '/audio/salsa/congas/low.wav': { vcsl: 'Tumba_HitN_v3_rr1_Sum.wav', maxLength: 0.7 },
   '/audio/salsa/congas/open.wav': { vcsl: 'Conga_HitN_v2_rr1_Sum.wav', maxLength: 0.6 },
@@ -676,16 +676,48 @@ function sliceNote(file, { midi, maxLength }) {
   return { rate: SAMPLE_RATE, signal: fadeOut(out, 0.08), tuning: midi - note.pitch }
 }
 
-/** A whole spoken word: just the silence around it trimmed off. */
+/**
+ * A whole spoken word, with the silence around it trimmed off. Home
+ * recordings carry clicks, lip smacks and breaths around the word, so it's
+ * found by loudness over 10 ms frames, not by the first loud sample: of the
+ * runs of frames within 30 dB of the loudest one, the run with the most
+ * energy is the word's core. It's widened down to 40 dB below the loudest
+ * frame to keep soft edges such as the s in "seven", then across short gaps
+ * to later runs, for word-final stops like the t in "eight". Not to earlier
+ * ones: an initial consonant runs straight into the vowel, and what sits
+ * before the word across a gap is a click.
+ */
 function sliceWord(file, { maxLength }) {
   const { rate, mono } = decodeAudio(file)
-  let peak = 0
-  for (const v of mono) peak = Math.max(peak, Math.abs(v))
-  const loud = (v) => Math.abs(v) > peak * 0.01 // -40 dB
-  const first = mono.findIndex(loud)
-  const last = mono.findLastIndex(loud)
-  const start = Math.max(0, first - Math.round(0.005 * rate))
-  const end = Math.min(mono.length, last + Math.round(0.02 * rate), start + Math.round(maxLength * rate))
+  const frame = Math.round(0.01 * rate)
+  const power = []
+  for (let i = 0; i + frame <= mono.length; i += frame) {
+    let sum = 0
+    for (let j = i; j < i + frame; j++) sum += mono[j] ** 2
+    power.push(sum / frame)
+  }
+  const loudest = Math.max(...power)
+  const loud = (i) => power[i] > loudest / 1000 // -30 dB
+  const audible = (i) => power[i] > loudest / 10000 // -40 dB
+  const runs = []
+  power.forEach((_, i) => {
+    if (!loud(i)) return
+    const run = runs.at(-1)
+    if (run && run.end === i) run.end++
+    else runs.push({ start: i, end: i + 1 })
+  })
+  const energy = ({ start, end }) => power.slice(start, end).reduce((a, b) => a + b, 0)
+  const word = { ...runs.reduce((best, run) => (energy(run) > energy(best) ? run : best)) }
+  while (word.start > 0 && audible(word.start - 1)) word.start--
+  for (;;) {
+    while (word.end < power.length && audible(word.end)) word.end++
+    const next = runs.find((run) => run.start >= word.end)
+    if (!next || next.start - word.end > 12) break // gaps up to 120 ms
+    word.end = next.end
+  }
+
+  const start = Math.max(0, word.start * frame - Math.round(0.005 * rate))
+  const end = Math.min(mono.length, word.end * frame + Math.round(0.02 * rate), start + Math.round(maxLength * rate))
   return { rate, signal: fadeOut(mono.slice(start, end), 0.02) }
 }
 
