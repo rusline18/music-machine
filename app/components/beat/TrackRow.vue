@@ -14,6 +14,8 @@ const props = defineProps<{
   showControls: boolean
   /** Advanced mode: volume slider. */
   advanced: boolean
+  /** A phone's volume mode (BeatGrid): a slider across the row instead of the cells. */
+  volumeMode?: boolean
   /** On a phone: the row the sound palette is for (BeatGrid). */
   active?: boolean
 }>()
@@ -286,7 +288,36 @@ onBeforeUnmount(() => {
       />
     </div>
 
+    <label
+      v-if="volumeMode"
+      class="flex min-w-0 flex-1 items-center gap-3"
+    >
+      <span class="flex min-w-0 flex-1 flex-col">
+        <span
+          class="truncate text-xs"
+          :class="track.muted ? 'text-neutral-500' : 'text-neutral-300'"
+        >{{ instrumentName }}</span>
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.05"
+          :value="track.volume"
+          :aria-label="t('grid.volume', { instrument: instrumentName })"
+          class="range range-lg w-full"
+          :class="{ 'opacity-40': track.muted }"
+          :style="{ '--v': `${track.volume * 100}%` }"
+          @input="emit('update:volume', Number(($event.target as HTMLInputElement).value))"
+        >
+      </span>
+      <span
+        class="w-8 text-right font-mono text-sm tabular-nums"
+        :class="track.muted ? 'text-neutral-500' : 'text-neutral-300'"
+        aria-hidden="true"
+      >{{ Math.round(track.volume * 100) }}</span>
+    </label>
     <div
+      v-else
       class="flex min-w-0 flex-1 gap-1"
       :class="{ 'opacity-50': track.muted }"
       @pointerdown="cellDown"

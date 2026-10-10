@@ -66,11 +66,8 @@ const simpleHides = props.genre.instruments.filter((instrument) => props.genre.s
 /** The band, without the counting voice: the practice switches and the 1–9 keys. */
 const bandTracks = computed(() => pattern.value.tracks.filter((track) => !simpleHides.includes(track.instrument)))
 
-const { view, setView } = useBeatView()
-/** The mixer is an advanced-mode view; leaving advanced mode falls back to the grid. */
-const viewOptions = computed(() => (advanced.value ? ['practice', 'editor', 'mixer'] as const : ['practice', 'editor'] as const)
-  .map((value) => ({ value, label: t(`view.${value}`) })))
-const shownView = computed(() => (view.value === 'mixer' && !advanced.value ? 'editor' : view.value))
+const { view: shownView, setView } = useBeatView()
+const viewOptions = computed(() => (['practice', 'editor'] as const).map((value) => ({ value, label: t(`view.${value}`) })))
 
 /** The phone's voice button: off → counts → counts with "and" → off. */
 const nextCounting = () => setCounting(COUNTING_MODES[(COUNTING_MODES.indexOf(countingMode.value ?? 'off') + 1) % COUNTING_MODES.length]!)
@@ -222,15 +219,6 @@ const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(active
           :class="shownView === 'practice' ? 'sm:hidden' : 'hidden'"
           :tracks="bandTracks"
           @update:muted="setMuted"
-        />
-        <!-- The mixer, a phone's third view in advanced mode; wider screens
-             have the volumes in the grid. -->
-        <BeatMixer
-          v-if="advanced"
-          :class="shownView === 'mixer' ? 'sm:hidden' : 'hidden'"
-          :tracks="pattern.tracks"
-          @update:muted="setMuted"
-          @update:volume="setVolume"
         />
 
         <div :class="{ 'max-sm:hidden': shownView !== 'editor' }">

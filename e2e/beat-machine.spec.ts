@@ -283,7 +283,28 @@ test.describe('on a phone', () => {
     await expect(sheet.getByRole('slider', { name: 'Volume' })).toBeVisible()
   })
 
-  test('advanced mode: the loop chip opens a sheet, the mixer is a third view, an instrument plays alone', async ({ page }) => {
+  test('volume mode: the cells give way to sliders, in simple mode too', async ({ page }) => {
+    await page.goto('/salsa')
+    await page.getByRole('button', { name: 'Edit grid' }).tap()
+    await expect(page.getByRole('slider', { name: 'Clave volume' })).toHaveCount(0)
+
+    await page.getByRole('button', { name: 'Volume' }).tap()
+    const slider = page.getByRole('slider', { name: 'Clave volume' })
+    await expect(slider).toBeVisible()
+    await expect(page.getByRole('button', { name: /^Clave step/ })).toHaveCount(0)
+    await slider.fill('0.3')
+    // The icons still switch instruments on and off.
+    const mute = page.getByRole('button', { name: 'Mute Clave' })
+    await mute.tap()
+    await expect(mute).toHaveAttribute('aria-pressed', 'true')
+
+    await page.getByRole('button', { name: 'Done' }).tap()
+    await expect(page.getByRole('button', { name: /^Clave step/ }).first()).toBeVisible()
+    await page.getByRole('button', { name: 'Volume' }).tap()
+    await expect(page.getByRole('slider', { name: 'Clave volume' })).toHaveValue('0.3')
+  })
+
+  test('advanced mode: the loop chip opens a sheet, an instrument plays alone', async ({ page }) => {
     await page.goto('/salsa')
     await advanced(page)
     await page.getByRole('button', { name: 'Edit grid' }).tap()
@@ -297,13 +318,6 @@ test.describe('on a phone', () => {
     const alone = page.getByRole('dialog', { name: 'Congas' }).getByRole('button', { name: '▶ Listen alone' })
     await alone.tap()
     await expect(page.getByRole('button', { name: '■ Whole band' })).toHaveAttribute('aria-pressed', 'true')
-    await page.keyboard.press('Escape')
-
-    await page.getByRole('button', { name: 'Mixer' }).tap()
-    const clave = page.getByRole('switch', { name: 'Clave' })
-    await clave.tap()
-    await expect(clave).toHaveAttribute('aria-checked', 'false')
-    await expect(page.getByRole('slider', { name: 'Clave volume' })).toBeVisible()
   })
 
   test('Play stays on screen at the bottom', async ({ page }) => {

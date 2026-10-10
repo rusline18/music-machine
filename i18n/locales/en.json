@@ -68,6 +68,11 @@
     "mute": "Mute {instrument}",
     "muteHint": "Tap to switch on or off · hold for the instrument's settings",
     "volume": "{instrument} volume",
+    "volumeMode": {
+      "open": "Volume",
+      "done": "Done",
+      "hint": "Move the sliders: the rhythm keeps playing."
+    },
     "previous": "Previous bar",
     "next": "Next bar",
     "page": "Bar {n} of {total}",
@@ -200,7 +205,7 @@
       "chords": "The chord for each bar. The bass, guitars and piano follow it.",
       "random": "Fills the grid with random hits. Fun for experimenting.",
       "clear": "Removes every hit, so you can build a rhythm from scratch.",
-      "advancedMode": "Loop length, chords, volumes and a mixer.",
+      "advancedMode": "Loop length, chords and the volumes beside the grid.",
       "simpleMode": "Hide the extra controls. Your rhythm and settings stay as they are.",
       "count": "The count the music is on right now. 1 and 5 start each half of the 8 counts: listen for them.",
       "share": "A link to this exact pattern — tempo, length, mutes and all. On a phone it opens the share menu, on a computer it copies the link. Send it to a partner or your students.",
@@ -276,8 +281,7 @@
   "view": {
     "label": "View",
     "practice": "Practice",
-    "editor": "Edit grid",
-    "mixer": "Mixer"
+    "editor": "Edit grid"
   },
   "advanced": {
     "loop": "Loop",
@@ -288,7 +292,6 @@
     "gridHelp": "“Random” fills the grid with random hits, for experimenting. “Clear” removes every hit so you can build a rhythm from scratch.",
     "volume": "Volume",
     "volumeHelp": "Turn up the instrument you are learning to hear, and turn the others down or off.",
-    "bar": "Bar {n}",
-    "more": "About: {name}"
+    "bar": "Bar {n}"
   }
 }
