@@ -350,6 +350,15 @@ export function createAudioEngine() {
     return (context.baseLatency || 0) + (context.outputLatency || 0)
   }
 
+  /** Fades the whole mix to silence over `seconds`; for leaving the page while it plays. */
+  function fadeAll(seconds: number) {
+    if (!ctx || !masterGain) return
+    const gain = masterGain.gain
+    gain.cancelScheduledValues(ctx.currentTime)
+    gain.setValueAtTime(gain.value, ctx.currentTime)
+    gain.linearRampToValueAtTime(0, ctx.currentTime + seconds)
+  }
+
   function dispose() {
     instrumentGains.clear()
     instrumentTones.clear()
@@ -377,6 +386,7 @@ export function createAudioEngine() {
     setReverb,
     now,
     outputLatency,
+    fadeAll,
     dispose,
   }
 }

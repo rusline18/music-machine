@@ -4,6 +4,10 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-10
 
+- Salsa ↔ bachata straight from a genre page: the switch next to Back (now
+  on phones too) grows a circle of the other genre's color out of the tapped
+  name, and the new page rises in under it. Music that's playing fades out
+  instead of cutting off, here and on the way home.
 - Dependabot: weekly PRs for npm packages (minor and patch bumps grouped
   into one, majors separately) and GitHub Actions.
 - Instrument icons move like the instruments: a hit gives each part a kick,
