@@ -4,6 +4,13 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-10
 
+- The claves strike instead of twitching: at rest the striker is raised
+  (a gap shows the held stick passing under it); on the hit they meet,
+  hold together for a moment with a spark where they cross, and the
+  striker bounces off. The guitars, tres and bass get three strings over
+  the body that are strummed one after another and ring out, slower and
+  wider on the bass, quicker on the requinto.
+
 - Lighter playback: the playhead finds the cells and icons it lights up once
   and reuses them until the grid changes, instead of searching the page on
   every step; chords are parsed once, and step names and preset share codes

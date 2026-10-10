@@ -77,10 +77,25 @@ export const ICONS: Record<string, readonly string[]> = {
  * accent color and animated on its own on every hit (INSTRUMENT_MOTION in
  * core/motion.ts). `fill` paths are closed shapes, filled (even-odd, so a
  * second subpath cuts a hole); `line` paths are strokes like ICONS.
+ *
+ * Optional parts for instruments that need more than a moving shape:
+ * - `gap`: cut out of the line layer around the accent, so the accent reads
+ *   as lifted off it (the raised clave); the gap closes on a hit.
+ * - `spark`: strokes hidden at rest that flash where the parts meet.
+ * - `strings`: `[x, top, bottom]` of each string across the body, drawn
+ *   over it and set vibrating on a hit, one after another like a strum.
  */
-export const ICON_ACCENTS: Record<string, { fill?: readonly string[], line?: readonly string[] }> = {
+export interface IconAccent {
+  fill?: readonly string[]
+  line?: readonly string[]
+  gap?: readonly string[]
+  spark?: readonly string[]
+  strings?: readonly (readonly [x: number, top: number, bottom: number])[]
+}
+
+export const ICON_ACCENTS: Record<string, IconAccent> = {
   voice: { line: ['M9 9.5h.01M12 9.5h.01M15 9.5h.01'] },
-  clave: { line: ['M7 6 17 20'] },
+  clave: { line: ['M7 6 17 20'], gap: ['M7 6 17 20'], spark: ['M11.8 11.1 12.1 9.6M13.1 13 14.6 13.3M11.2 14.3 10.9 15.8M9.9 12.4 8.4 12.1'] },
   congas: { fill: ['M7 4.5a5 1.7 0 0 0 10 0a5 1.7 0 0 0 -10 0'] },
   bongos: { fill: ['M2.5 8a3.5 1.4 0 0 0 7 0a3.5 1.4 0 0 0 -7 0', 'M13 8.5a4.5 1.6 0 0 0 9 0a4.5 1.6 0 0 0 -9 0'] },
   timbales: { fill: ['M2 7a4.5 1.5 0 0 0 9 0a4.5 1.5 0 0 0 -9 0', 'M13 7a4.5 1.5 0 0 0 9 0a4.5 1.5 0 0 0 -9 0'] },
@@ -90,13 +105,13 @@ export const ICON_ACCENTS: Record<string, { fill?: readonly string[], line?: rea
   maracas: { fill: ['M4 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0', 'M13 10a3.5 3.5 0 1 0 7 0a3.5 3.5 0 1 0 -7 0'] },
   guiro: { line: ['M5 3.5l13 3'] },
   guira: { line: ['M21 3l-4 4M17 7v5'] },
-  bass: { fill: ['M12 8.5c-2.7 0-4.2 1.5-4.2 3.4 0 1.1.6 1.7.6 2.5 0 1-1.9 1.7-1.9 3.9 0 2.3 2.3 3.7 5.5 3.7s5.5-1.4 5.5-3.7c0-2.2-1.9-2.9-1.9-3.9 0-.8.6-1.4.6-2.5 0-1.9-1.5-3.4-4.2-3.4z'] },
+  bass: { fill: ['M12 8.5c-2.7 0-4.2 1.5-4.2 3.4 0 1.1.6 1.7.6 2.5 0 1-1.9 1.7-1.9 3.9 0 2.3 2.3 3.7 5.5 3.7s5.5-1.4 5.5-3.7c0-2.2-1.9-2.9-1.9-3.9 0-.8.6-1.4.6-2.5 0-1.9-1.5-3.4-4.2-3.4z'], strings: [[10.5, 9.6, 21.4], [12, 9.6, 21.4], [13.5, 9.6, 21.4]] },
   piano: { fill: ['M6.5 5h2v8h-2zM11 5h2v8h-2zM15.5 5h2v8h-2z'] },
-  tres: { fill: ['M12 10c-1 2.5-4.5 4.5-4.5 8a4.5 4.5 0 0 0 9 0c0-3.5-3.5-5.5-4.5-8zM10.4 17.8a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0 -3.2 0'] },
+  tres: { fill: ['M12 10c-1 2.5-4.5 4.5-4.5 8a4.5 4.5 0 0 0 9 0c0-3.5-3.5-5.5-4.5-8zM10.4 17.8a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0 -3.2 0'], strings: [[10.5, 13.4, 21.4], [12, 13.4, 21.4], [13.5, 13.4, 21.4]] },
   trumpet: { fill: ['M15 12l6-5v10z'] },
   trombone: { fill: ['M14 9l7-5v10z'] },
-  requinto: { fill: ['M12 11c-2.2 0-3.5 1.2-3.5 2.8 0 .9.5 1.4.5 2 0 .8-1.5 1.4-1.5 3.2 0 1.9 1.9 3 4.5 3s4.5-1.1 4.5-3c0-1.8-1.5-2.4-1.5-3.2 0-.9-.2-1.5-1.2-2l-.6-2.7c-.4-.1-.8-.1-1.2-.1zM10.2 18.4a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0 -3.2 0'], line: ['M5 3v4M3 5h4'] },
-  segunda: { fill: ['M12 11c-2.2 0-3.5 1.2-3.5 2.8 0 .9.5 1.4.5 2 0 .8-1.5 1.4-1.5 3.2 0 1.9 1.9 3 4.5 3s4.5-1.1 4.5-3c0-1.8-1.5-2.4-1.5-3.2 0-.6.5-1.1.5-2 0-1.6-1.3-2.8-3.5-2.8zM10.4 18.4a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0 -3.2 0'] },
+  requinto: { fill: ['M12 11c-2.2 0-3.5 1.2-3.5 2.8 0 .9.5 1.4.5 2 0 .8-1.5 1.4-1.5 3.2 0 1.9 1.9 3 4.5 3s4.5-1.1 4.5-3c0-1.8-1.5-2.4-1.5-3.2 0-.9-.2-1.5-1.2-2l-.6-2.7c-.4-.1-.8-.1-1.2-.1zM10.2 18.4a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0 -3.2 0'], line: ['M5 3v4M3 5h4'], strings: [[10.6, 14.4, 20.8], [12, 14.4, 20.8], [13.4, 14.4, 20.8]] },
+  segunda: { fill: ['M12 11c-2.2 0-3.5 1.2-3.5 2.8 0 .9.5 1.4.5 2 0 .8-1.5 1.4-1.5 3.2 0 1.9 1.9 3 4.5 3s4.5-1.1 4.5-3c0-1.8-1.5-2.4-1.5-3.2 0-.6.5-1.1.5-2 0-1.6-1.3-2.8-3.5-2.8zM10.4 18.4a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0 -3.2 0'], strings: [[10.5, 12.2, 20.8], [12, 12.2, 20.8], [13.5, 12.2, 20.8]] },
 }
 
 /**
