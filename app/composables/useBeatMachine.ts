@@ -14,8 +14,12 @@ import type { TempoChoice } from '~/core/tempo'
 import { nudgeBpm, tempoChoice, tempoFor } from '~/core/tempo'
 import type { Genre } from '~/genres'
 
-/** Reverb wet level at the slider's top; beyond this the rhythm smears. */
-const MAX_REVERB_WET = 0.6
+/**
+ * How loosely the band plays (0–1, see humanizeNote) and how much room
+ * reverb is on the mix (wet level). Fixed: as sliders they taught nothing.
+ */
+const FEEL = 0.5
+const REVERB_WET = 0.21
 /** Chance that `randomize` puts a hit on a step. */
 const RANDOM_DENSITY = 0.25
 
@@ -45,10 +49,10 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
   const isPlaying = ref(false)
   /** The step currently sounding, for the playhead; -1 when stopped. */
   const activeStep = ref(-1)
-  /** 0–1: how loosely the band plays (see humanizeNote). */
-  const feel = ref(0.5)
-  /** 0–1: room reverb on the mix; 1 maps to MAX_REVERB_WET. */
-  const reverb = ref(0.35)
+  /** The instrument heard on its own ("listen alone"), or null for the whole band. */
+  const solo = ref<string | null>(null)
+  /** Set when soloing started playback, so ending the solo stops it again. */
+  let soloStartedPlay = false
 
   /**
    * "Layer by layer": the instruments to bring in, and how many are in so
@@ -96,11 +100,7 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     for (const listener of beatListeners) listener(beat)
   })
 
-  watch(feel, scheduler.setFeel, { immediate: true })
-  watch(reverb, (amount) => {
-    // Before the first play there's no audio graph yet; play() applies it.
-    if (started) engine.setReverb(amount * MAX_REVERB_WET)
-  })
+  scheduler.setFeel(FEEL)
 
   // The voice's words in the new language load in the background; until
   // they arrive the voice is skipped, the band keeps playing.
@@ -244,9 +244,9 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     started = true
     for (const track of pattern.value.tracks) {
       engine.setInstrumentVolume(track.instrument, track.volume)
-      engine.setInstrumentMuted(track.instrument, track.muted)
+      applyMuted(track.instrument)
     }
-    engine.setReverb(reverb.value * MAX_REVERB_WET)
+    engine.setReverb(REVERB_WET)
     await scheduler.start(pattern.value, resolveStep, showStep)
     isPlaying.value = true
   }
@@ -311,7 +311,30 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     const track = findTrack(instrument)
     if (!track) return
     track.muted = muted
-    engine.setInstrumentMuted(instrument, muted)
+    applyMuted(instrument)
+  }
+
+  /** What the engine hears: switched off, or left out while another instrument plays alone. */
+  function applyMuted(instrument: string) {
+    const track = findTrack(instrument)
+    if (track) engine.setInstrumentMuted(instrument, track.muted || (solo.value !== null && solo.value !== instrument))
+  }
+
+  /**
+   * Plays one instrument on its own (starting playback if stopped), or the
+   * whole band again with null. Switched-off instruments stay off.
+   */
+  function setSolo(instrument: string | null) {
+    if (instrument === solo.value) return
+    solo.value = instrument
+    for (const track of pattern.value.tracks) applyMuted(track.instrument)
+    if (instrument && !isPlaying.value && !isLoading.value) {
+      soloStartedPlay = true
+      play()
+    } else if (!instrument && soloStartedPlay) {
+      soloStartedPlay = false
+      stop()
+    }
   }
 
   /** Which counting preset the voice track matches, if any (it can also be edited cell by cell). */
@@ -403,8 +426,8 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     /** Changes on every step: read it only where that's cheap; `onBeat` is for the rest. */
     activeStep: readonly(activeStep),
     onBeat,
-    feel,
-    reverb,
+    solo: readonly(solo),
+    setSolo,
     play,
     stop,
     /** In place, so a running loop picks the new length up on its next tick. */

@@ -2,6 +2,8 @@
 defineProps<{
   /** What the thing in the slot is or does, in a sentence or two. */
   text: string
+  /** A bold heading above the text. */
+  title?: string
 }>()
 
 /** Matches w-64 / max-w-[80vw] on the bubble. */
@@ -75,7 +77,13 @@ onBeforeUnmount(() => {
       class="fixed z-30 w-64 max-w-[80vw] rounded-xl border border-neutral-700 bg-neutral-900 px-3 py-2 text-left text-xs font-normal normal-case leading-snug tracking-normal text-neutral-200 shadow-lg"
       :style="position && { top: `${position.top}px`, left: `${position.left}px` }"
     >
+      <strong
+        v-if="title"
+        class="mb-1 block text-sm font-bold text-neutral-50"
+      >{{ title }}</strong>
       {{ text }}
+      <!-- Extra content under the text, e.g. a little diagram. -->
+      <slot name="details" />
     </span>
   </span>
 </template>

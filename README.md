@@ -56,11 +56,12 @@ app/
     beat/                BeatMachine (the whole trainer), BeatGrid, TrackRow,
                          CountDisplay, PracticeBar, Transport, TempoStepper,
                          InstrumentCards, LayerGuide, PresetSelector,
-                         SongBuilder
+                         SongBuilder, AdvancedPanel, Mixer
     SiteFooter.vue       Feedback and donation links (hidden until configured)
     FeedbackDialog.vue   The feedback form
-    ui/                  RangeControl, SegmentedControl, ControlLabel (icon + label
-                         + tooltip), Tooltip, Icon, Sheet (modal / bottom sheet)
+    ui/                  SegmentedControl, ControlLabel (icon + label + tooltip),
+                         Hint (label + "?" bubble), Tooltip, Icon, Sheet (modal /
+                         bottom sheet)
   plugins/
     service-worker.client.ts  Registers public/sw.js (production only)
   icons.ts             Line icons as SVG paths, keyed by instrument id or control;
@@ -94,8 +95,14 @@ The trainer opens in simple mode: pattern picker with a short description,
 Slow / Normal / Fast, the counting voice, Play with a −/+ tempo stepper (tap:
 1 BPM, hold: 5), and a grid where a click turns a hit on or off (with the
 sound that track plays most); a long press or right-click on a cell picks the
-sound from a menu. **Advanced features** adds loop length, feel, reverb,
-chords, volumes and the voice track. The mode only changes what's shown;
+sound from a menu. **Advanced features** adds loop length, Random / Clear,
+chords, volumes and the voice track. On a wide screen they sit in one card
+above the grid (each section has a "?" that explains it) with the volumes
+in a column of the grid; on a phone they are chips above the grid that open
+a sheet, plus a third view, **Mixer**, with every instrument's switch and
+volume. Tapping an instrument's icon on a phone opens its sheet: what it
+plays, **Listen alone** (solo), its switch and volume. Feel and reverb are
+fixed in code: as sliders they taught nothing. The mode only changes what's shown;
 the pattern stays the same. Every instrument and control has an icon and a
 tooltip (hover, tap or keyboard focus) explaining what it is for.
 
@@ -182,7 +189,7 @@ unset the link is hidden.
   `eslint` in `nuxt.config.ts`) — no Prettier. CI runs lint, typecheck and
   tests on every pull request.
 - **Components are auto-imported with their folder prefix**: `beat/TrackRow.vue`
-  is `<BeatTrackRow>`, `ui/RangeControl.vue` is `<UiRangeControl>`.
+  is `<BeatTrackRow>`, `ui/Sheet.vue` is `<UiSheet>`.
   `npm run typecheck` (strict templates) catches a wrong name.
 
 ### Adding things
