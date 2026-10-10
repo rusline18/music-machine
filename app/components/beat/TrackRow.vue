@@ -165,9 +165,50 @@ function contextMenu(stepIndex: number) {
   menuOpened = false
 }
 
+// The icon is the track's switch: a tap mutes it, a long press (or
+// right-click, the menu key) opens the instrument's sheet. Same timing as
+// the cells' long press.
+let iconTimer: ReturnType<typeof setTimeout> | undefined
+let iconStart: { x: number, y: number } | null = null
+/** Set when a press opened the sheet, so the click that ends it doesn't also mute. */
+let sheetOpened = false
+
+function iconDown(event: PointerEvent) {
+  if (event.button !== 0) return
+  sheetOpened = false
+  iconStart = { x: event.clientX, y: event.clientY }
+  clearTimeout(iconTimer)
+  iconTimer = setTimeout(() => {
+    iconStart = null
+    sheetOpened = true
+    emit('open-instrument')
+  }, LONG_PRESS_MS)
+}
+
+function iconMove(event: PointerEvent) {
+  if (iconStart && Math.hypot(event.clientX - iconStart.x, event.clientY - iconStart.y) > PRESS_SLOP_PX) iconCancel()
+}
+
+function iconCancel() {
+  clearTimeout(iconTimer)
+  iconStart = null
+}
+
+function iconClick() {
+  if (sheetOpened) sheetOpened = false
+  else emit('update:muted', !props.track.muted)
+}
+
+function iconMenu() {
+  iconCancel()
+  if (!sheetOpened) emit('open-instrument')
+  sheetOpened = false
+}
+
 onBeforeUnmount(() => {
   pressCancel()
   hintOut()
+  iconCancel()
 })
 </script>
 
@@ -176,44 +217,63 @@ onBeforeUnmount(() => {
     class="flex items-center gap-2 border-t border-neutral-800/60 py-1.5 transition-colors sm:gap-3"
     :class="{ '-mx-1.5 rounded-xl border-transparent bg-accent-500/10 px-1.5': active }"
   >
-    <div class="flex w-[4.5rem] shrink-0 items-center gap-1 sm:w-32 sm:gap-2">
+    <div class="flex w-11 shrink-0 items-center gap-2 sm:w-32">
+      <!-- The icon is the switch, so a phone needs no room for an on/off
+           button or the name; a long press opens the instrument's sheet. -->
       <button
         v-if="showControls"
         type="button"
-        class="min-h-11 rounded-lg px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide transition sm:min-h-0"
-        :class="track.muted ? 'bg-neutral-700 text-neutral-400' : 'bg-accent-500/20 text-accent-400'"
+        class="instrument-icon relative flex size-11 shrink-0 select-none items-center justify-center rounded-xl border transition [-webkit-touch-callout:none] sm:size-9 sm:rounded-lg"
+        :class="[
+          track.muted
+            ? 'border-neutral-700 bg-neutral-900 text-neutral-500 hover:bg-neutral-800 [&>svg:first-child]:opacity-60'
+            : 'border-accent-500/70 bg-accent-500/25 text-neutral-100 hover:bg-accent-500/35',
+          { 'ring-2 ring-accent-500': active },
+        ]"
         :aria-pressed="track.muted"
         :aria-label="t('grid.mute', { instrument: instrumentName })"
-        @click="emit('update:muted', !track.muted)"
-      >
-        {{ track.muted ? t('grid.off') : t('grid.on') }}
-      </button>
-      <!-- A phone has no room for the name and no hover: the icon opens
-           the instrument's sheet instead. -->
-      <button
-        v-if="showControls"
-        type="button"
-        class="instrument-icon flex size-11 items-center justify-center rounded-xl bg-neutral-800/70 hover:bg-neutral-700 sm:hidden"
-        :class="[track.muted ? 'text-neutral-500' : 'text-neutral-200', { 'ring-2 ring-inset ring-accent-500': active }]"
-        :aria-label="t('grid.settings', { instrument: instrumentName })"
+        :title="t('grid.muteHint')"
         :data-instrument="track.instrument"
-        @click="emit('open-instrument')"
+        @pointerdown="iconDown"
+        @pointermove="iconMove"
+        @pointerup="iconCancel"
+        @pointerleave="iconCancel"
+        @pointercancel="iconCancel"
+        @contextmenu.prevent="iconMenu"
+        @click="iconClick"
       >
         <UiIcon
           :name="track.instrument"
           :accent="!track.muted"
         />
+        <svg
+          v-if="track.muted"
+          viewBox="0 0 44 44"
+          class="pointer-events-none absolute inset-0 size-full"
+          aria-hidden="true"
+        >
+          <!-- Corner to corner, across the tile rather than the drawing, so
+               it doesn't read as part of an icon (the clave's sticks). -->
+          <path
+            d="M7 37 37 7"
+            class="stroke-neutral-950"
+            stroke-width="5"
+            stroke-linecap="round"
+          />
+          <path
+            d="M7 37 37 7"
+            class="stroke-neutral-300"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
       </button>
       <UiControlLabel
         v-if="showControls"
-        class="instrument-icon min-w-0 text-sm max-sm:hidden"
+        class="min-w-0 text-sm max-sm:hidden"
         :class="track.muted ? 'text-neutral-500' : 'text-neutral-200'"
         :label="instrumentName"
-        :icon="track.instrument"
-        :accent="!track.muted"
         :hint="t(`help.instruments.${track.instrument}`)"
-        :data-instrument="track.instrument"
-        compact
       />
       <UiControlLabel
         v-else

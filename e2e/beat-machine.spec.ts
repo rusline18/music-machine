@@ -68,7 +68,6 @@ test.describe('salsa beat machine', () => {
     await expect(mute).toHaveAttribute('aria-pressed', 'false')
     await mute.click()
     await expect(mute).toHaveAttribute('aria-pressed', 'true')
-    await expect(mute).toHaveText('off')
   })
 
   test('play and stop', async ({ page }) => {
