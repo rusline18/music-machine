@@ -95,8 +95,21 @@ function pick(name: string | null) {
 /** The row the palette is for and the sound a tap puts in (null: silence), on a phone. */
 const brush = ref<{ instrument: string, name: string | null } | null>(null)
 const brushTrack = computed(() => trackOf(props.pattern, brush.value?.instrument))
+
+// A phone has no room for a volume slider beside the cells, so the volumes
+// get the whole row in a mode of their own: the cells give way to sliders
+// and the music plays on, to mix by ear. (Wider screens have the sliders in
+// the row in advanced mode.)
+const volumeMode = ref(false)
+function setVolumeMode(on: boolean) {
+  volumeMode.value = on
+  if (on) brush.value = null
+}
+
 watch(narrow, (isNarrow) => {
-  if (!isNarrow) brush.value = null
+  if (isNarrow) return
+  brush.value = null
+  volumeMode.value = false
 })
 
 function tap(instrument: string, stepIndex: number) {
@@ -154,7 +167,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
 <template>
   <div class="space-y-4">
     <div
-      v-if="narrow && sectionCount > 1"
+      v-if="narrow && sectionCount > 1 && !volumeMode"
       class="flex items-center justify-between gap-2"
     >
       <button
@@ -192,7 +205,22 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
       v-if="narrow"
       class="flex min-h-[4.75rem] flex-col justify-center gap-2 rounded-2xl border border-neutral-800 bg-neutral-900 p-2"
     >
-      <template v-if="brush && brushTrack">
+      <div
+        v-if="volumeMode"
+        class="flex items-center gap-2"
+      >
+        <p class="min-w-0 flex-1 px-2 text-sm leading-snug text-neutral-300">
+          {{ t('grid.volumeMode.hint') }}
+        </p>
+        <button
+          type="button"
+          class="min-h-11 shrink-0 rounded-xl bg-neutral-100 px-4 text-sm font-semibold text-neutral-950"
+          @click="setVolumeMode(false)"
+        >
+          {{ t('grid.volumeMode.done') }}
+        </button>
+      </div>
+      <template v-else-if="brush && brushTrack">
         <div class="flex items-center gap-2 px-1 text-sm">
           <UiIcon
             :name="brush.instrument"
@@ -235,12 +263,22 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
           </button>
         </div>
       </template>
-      <p
+      <div
         v-else
-        class="px-2 text-center text-sm text-neutral-500"
+        class="flex items-center gap-2"
       >
-        {{ t('grid.brush.hint') }}
-      </p>
+        <p class="min-w-0 flex-1 px-2 text-sm leading-snug text-neutral-500">
+          {{ t('grid.brush.hint') }}
+        </p>
+        <button
+          type="button"
+          class="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl bg-neutral-800 px-3 text-sm font-semibold text-neutral-200 hover:bg-neutral-700"
+          @click="setVolumeMode(true)"
+        >
+          <UiIcon name="volume" />
+          {{ t('grid.volumeMode.open') }}
+        </button>
+      </div>
     </div>
 
     <!-- The key to the marks; a phone has the palette instead. -->
@@ -270,7 +308,11 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
       @pointerup="swipeUp"
       @pointercancel="swipeStart = null"
     >
-      <div class="flex items-center gap-2 pb-1 sm:gap-3">
+      <!-- The counts are no use over sliders. -->
+      <div
+        v-if="!volumeMode"
+        class="flex items-center gap-2 pb-1 sm:gap-3"
+      >
         <span class="w-11 shrink-0 whitespace-nowrap text-xs font-semibold uppercase text-neutral-500 sm:w-32 sm:tracking-wide">
           {{ t('grid.block', { n: blockOf(section) }) }}
         </span>
@@ -342,6 +384,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
         :steps-per-count="pattern.stepsPerCount"
         :show-controls="narrow || section === 0"
         :advanced="advanced"
+        :volume-mode="volumeMode"
         :active="brush?.instrument === track.instrument"
         @toggle-step="(stepIndex: number) => tap(track.instrument, stepIndex)"
         @step-menu="(stepIndex: number) => openMenu(track.instrument, stepIndex)"

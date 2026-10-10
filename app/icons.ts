@@ -54,6 +54,8 @@ export const ICONS: Record<string, readonly string[]> = {
   counts: ['M4 12a8 8 0 1 0 2.3-5.7', 'M3 3v4.5h4.5'],
   /** Sliders. */
   advanced: ['M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1', 'M15 4v4M9 10v4M17 16v4'],
+  /** A speaker: the grid's volume mode. */
+  volume: ['M4 9h4l5-4v14l-5-4H4z', 'M16.5 9a4 4 0 0 1 0 6M19 6.5a7.5 7.5 0 0 1 0 11'],
   /** A die. */
   random: ['M4 4h16v16H4z', 'M8.5 8.5h.01M15.5 8.5h.01M12 12h.01M8.5 15.5h.01M15.5 15.5h.01'],
   /** An eraser. */
