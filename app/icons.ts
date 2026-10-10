@@ -98,3 +98,43 @@ export const ICON_ACCENTS: Record<string, { fill?: readonly string[], line?: rea
   requinto: { fill: ['M12 11c-2.2 0-3.5 1.2-3.5 2.8 0 .9.5 1.4.5 2 0 .8-1.5 1.4-1.5 3.2 0 1.9 1.9 3 4.5 3s4.5-1.1 4.5-3c0-1.8-1.5-2.4-1.5-3.2 0-.9-.2-1.5-1.2-2l-.6-2.7c-.4-.1-.8-.1-1.2-.1zM10.2 18.4a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0 -3.2 0'], line: ['M5 3v4M3 5h4'] },
   segunda: { fill: ['M12 11c-2.2 0-3.5 1.2-3.5 2.8 0 .9.5 1.4.5 2 0 .8-1.5 1.4-1.5 3.2 0 1.9 1.9 3 4.5 3s4.5-1.1 4.5-3c0-1.8-1.5-2.4-1.5-3.2 0-.6.5-1.1.5-2 0-1.6-1.3-2.8-3.5-2.8zM10.4 18.4a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0 -3.2 0'] },
 }
+
+/**
+ * A mark for each sound a step can be (step names), drawn in a grid cell
+ * over the sound's color. One mark per sound across instruments, so a slap
+ * looks the same on the congas and the bongos; pitched sounds sit higher
+ * the higher they are (root, 3rd, 5th). `fill` marks are solid shapes, the
+ * rest strokes. The counting voice has none: its cells show the number.
+ */
+export const STEP_GLYPHS: Record<string, { d: string, fill?: true }> = {
+  /** The plain stroke: a solid dot. */
+  hit: { d: 'M7 12a5 5 0 1 0 10 0a5 5 0 1 0 -10 0', fill: true },
+  /** A ring: the open tone rings out. */
+  open: { d: 'M6.5 12a5.5 5.5 0 1 0 11 0a5.5 5.5 0 1 0 -11 0' },
+  /** A cross: the sharp slap. */
+  slap: { d: 'M7 7l10 10M17 7 7 17' },
+  /** The lower half of a dot: the heel of the hand. */
+  heel: { d: 'M5.5 11h13a6.5 6.5 0 0 1 -13 0z', fill: true },
+  /** A small dot: the fingertips. */
+  toe: { d: 'M9.3 12a2.7 2.7 0 1 0 5.4 0a2.7 2.7 0 1 0 -5.4 0', fill: true },
+  high: { d: 'M12 5.5l6.5 11h-13z', fill: true },
+  low: { d: 'M5.5 7.5h13L12 18.5z', fill: true },
+  /** An arc: the edge of the drum. */
+  rim: { d: 'M5 15a7 7 0 0 1 14 0' },
+  short: { d: 'M9 12h6' },
+  long: { d: 'M4 12h16' },
+  /** A diamond: the bell's neck, a thinner sound than its mouth. */
+  neck: { d: 'M12 6.5l5.5 5.5-5.5 5.5-5.5-5.5z' },
+  /** A square: a muted, choked sound. */
+  mute: { d: 'M7 7h10v10H7z' },
+  root: { d: 'M8.5 17a3.5 3.5 0 1 0 7 0a3.5 3.5 0 1 0 -7 0', fill: true },
+  '3rd': { d: 'M8.5 12a3.5 3.5 0 1 0 7 0a3.5 3.5 0 1 0 -7 0', fill: true },
+  '5th': { d: 'M8.5 7a3.5 3.5 0 1 0 7 0a3.5 3.5 0 1 0 -7 0', fill: true },
+  /** A bar at the bottom: the low note under a chord. */
+  bass: { d: 'M7 15.5h10v3H7z', fill: true },
+  /** Three stacked lines: the notes of a chord. */
+  chord: { d: 'M6 7.5h12M6 12h12M6 16.5h12' },
+  dyad: { d: 'M6 9.5h12M6 14.5h12' },
+  /** An arrow: the chord pushed ahead of the beat. */
+  push: { d: 'M5 12h12M13 7.5 17.5 12 13 16.5' },
+}

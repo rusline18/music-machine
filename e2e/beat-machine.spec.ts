@@ -16,26 +16,26 @@ test.describe('salsa beat machine', () => {
 
   test('a click turns a step on and off', async ({ page }) => {
     const step = page.getByRole('button', { name: 'Clave step 2', exact: true })
-    await expect(step).toHaveText('')
+    await expect(step).not.toHaveAttribute('data-sound')
     await step.click()
-    await expect(step).not.toHaveText('')
+    await expect(step).toHaveAttribute('data-sound')
     await step.click()
-    await expect(step).toHaveText('')
+    await expect(step).not.toHaveAttribute('data-sound')
   })
 
   test('right-click picks the sound from a menu', async ({ page }) => {
     const step = page.getByRole('button', { name: 'Bongos step 8', exact: true })
-    await expect(step).toHaveText('')
+    await expect(step).not.toHaveAttribute('data-sound')
     await step.click({ button: 'right' })
     const menu = page.getByRole('dialog', { name: 'Bongos step 8' })
     await menu.getByRole('menuitemradio', { name: 'slap' }).click()
     await expect(menu).toBeHidden()
-    await expect(step).toHaveText('slap')
+    await expect(step).toHaveAttribute('data-sound', 'slap')
 
     await step.click({ button: 'right' })
     await expect(menu.getByRole('menuitemradio', { name: 'slap' })).toHaveAttribute('aria-checked', 'true')
     await menu.getByRole('menuitemradio', { name: 'Silence' }).click()
-    await expect(step).toHaveText('')
+    await expect(step).not.toHaveAttribute('data-sound')
   })
 
   test('clear empties every step but the counting voice', async ({ page }) => {
@@ -45,7 +45,7 @@ test.describe('salsa beat machine', () => {
     await expect(steps.first()).toBeVisible()
     for (const step of await steps.all()) {
       const name = await step.getAttribute('aria-label')
-      if (!name?.startsWith('Voice')) await expect(step).toHaveText('')
+      if (!name?.startsWith('Voice')) await expect(step).not.toHaveAttribute('data-sound')
     }
   })
 
@@ -134,12 +134,12 @@ test.describe('salsa beat machine', () => {
     const other = await (await browser.newContext()).newPage()
     await other.goto(link)
     await expect(other.getByRole('combobox', { name: 'Pattern' })).toHaveValue('salsa-chachacha-2-3')
-    await expect(other.getByRole('button', { name: 'Clave step 1', exact: true })).not.toHaveText('')
+    await expect(other.getByRole('button', { name: 'Clave step 1', exact: true })).toHaveAttribute('data-sound')
     // The code is dropped from the address bar once loaded.
     await expect(other).toHaveURL(/\/salsa$/)
 
     await other.getByRole('button', { name: 'Reset' }).click()
-    await expect(other.getByRole('button', { name: 'Clave step 1', exact: true })).toHaveText('')
+    await expect(other.getByRole('button', { name: 'Clave step 1', exact: true })).not.toHaveAttribute('data-sound')
   })
 
   test('a song is built from sections; ones that do not fit are greyed out with the reason', async ({ page }) => {
@@ -165,9 +165,9 @@ test.describe('salsa beat machine', () => {
   test('edits survive a reload', async ({ page }) => {
     const step = page.getByRole('button', { name: 'Clave step 2', exact: true })
     await step.click()
-    await expect(step).not.toHaveText('')
+    await expect(step).toHaveAttribute('data-sound')
     await page.reload()
-    await expect(page.getByRole('button', { name: 'Clave step 2', exact: true })).not.toHaveText('')
+    await expect(page.getByRole('button', { name: 'Clave step 2', exact: true })).toHaveAttribute('data-sound')
   })
 })
 
@@ -232,6 +232,24 @@ test.describe('on a phone', () => {
     await expect(page.getByText('Link copied')).toBeHidden()
   })
 
+  test('the palette sets what a tap in the row puts in', async ({ page }) => {
+    await page.goto('/salsa')
+    await page.getByRole('button', { name: 'Edit grid' }).tap()
+    await expect(page.getByText('Tap a cell: the instrument\'s sounds show up here')).toBeVisible()
+    const step = page.getByRole('button', { name: 'Congas step 2', exact: true })
+    // The first tap works as always (a hit on or off) and picks the row.
+    await step.tap()
+    const sounds = page.getByRole('radiogroup', { name: 'Congas sounds' })
+    await sounds.getByRole('radio', { name: 'Silence' }).tap()
+    await step.tap()
+    await expect(step).not.toHaveAttribute('data-sound')
+    await sounds.getByRole('radio', { name: 'slap' }).tap()
+    await step.tap()
+    await expect(step).toHaveAttribute('data-sound', 'slap')
+    await step.tap()
+    await expect(step).not.toHaveAttribute('data-sound')
+  })
+
   test('a long press on a cell opens the sound menu', async ({ page }) => {
     await page.goto('/salsa')
     await page.getByRole('button', { name: 'Edit grid' }).tap()
@@ -242,7 +260,7 @@ test.describe('on a phone', () => {
     await page.waitForTimeout(600)
     await step.dispatchEvent('pointerup', at)
     await page.getByRole('dialog', { name: 'Congas step 1' }).getByRole('menuitemradio', { name: 'slap' }).tap()
-    await expect(step).toHaveText('slap')
+    await expect(step).toHaveAttribute('data-sound', 'slap')
   })
 
   test('a swipe turns the bar; the icon opens the instrument sheet', async ({ page }) => {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Track } from '~/core/pattern'
-import { countInBlock } from '~/core/pattern'
+import { countInBlock, switchStep } from '~/core/pattern'
 
 const props = defineProps<{
   track: Track
@@ -14,6 +14,8 @@ const props = defineProps<{
   showControls: boolean
   /** Advanced mode: volume slider. */
   advanced: boolean
+  /** On a phone: the row the sound palette is for (BeatGrid). */
+  active?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -31,16 +33,40 @@ const { t } = useI18n()
 
 const stepIndices = computed(() => Array.from({ length: props.length }, (_, i) => props.start + i))
 const instrumentName = computed(() => t(`instruments.${props.track.instrument}`))
-const cellHint = computed(() => props.stepNames.length > 1
-  ? t('help.grid.cellSounds', { sounds: props.stepNames.map((name) => t(`steps.${name}`)).join(', ') })
-  : t('help.grid.cell'))
+const isSpoken = (name: string | null | undefined) => name === 'count' || name === 'and'
 
-/** What a cell shows: the step's name, or for a counting voice the number it says. */
-function stepLabel(stepIndex: number): string {
+/** For a counting voice, what a cell shows: the number it says, or "&". */
+function spokenLabel(stepIndex: number): string {
   const name = props.track.steps[stepIndex]
-  if (!name) return ''
-  return name === 'count' ? String(countInBlock(stepIndex, props.stepsPerCount) + 1) : t(`steps.${name}`)
+  if (name === 'count') return String(countInBlock(stepIndex, props.stepsPerCount) + 1)
+  return name === 'and' ? t('grid.and') : ''
 }
+
+// The hint under a cell, for the mouse: what's in it and what the two
+// buttons do. A short delay, so sweeping across the grid doesn't flash one
+// bubble after another; fixed to the screen like UiTooltip.
+const HINT_DELAY_MS = 400
+const hint = ref<{ stepIndex: number, top: number, left: number } | null>(null)
+let hintTimer: ReturnType<typeof setTimeout> | undefined
+function hintIn(event: PointerEvent, stepIndex: number) {
+  if (event.pointerType !== 'mouse') return
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+  clearTimeout(hintTimer)
+  hintTimer = setTimeout(() => {
+    hint.value = { stepIndex, top: rect.bottom + 8, left: rect.left + rect.width / 2 }
+  }, HINT_DELAY_MS)
+}
+function hintOut() {
+  clearTimeout(hintTimer)
+  hint.value = null
+}
+const hintStep = computed(() => (hint.value ? props.track.steps[hint.value.stepIndex] ?? null : null))
+/** What a click on the hinted cell does: takes the sound out, or puts one in. */
+const hintClick = computed(() => {
+  if (hintStep.value) return t('grid.hint.remove')
+  const added = switchStep(null, props.track.steps, props.stepNames)
+  return added ? t('grid.hint.add', { sound: t(`steps.${added}`) }) : ''
+})
 
 /**
  * A cell's colors: the instrument's main sound in the genre's color, its
@@ -65,6 +91,7 @@ let pressStart: { x: number, y: number } | null = null
 let menuOpened = false
 
 function pressDown(event: PointerEvent, stepIndex: number) {
+  hintOut()
   if (event.button !== 0) return
   menuOpened = false
   pressStart = { x: event.clientX, y: event.clientY }
@@ -92,16 +119,23 @@ function click(stepIndex: number) {
 
 function contextMenu(stepIndex: number) {
   pressCancel()
+  hintOut()
   // Android fires this after our own timer already opened the menu.
   if (!menuOpened) emit('step-menu', stepIndex)
   menuOpened = false
 }
 
-onBeforeUnmount(pressCancel)
+onBeforeUnmount(() => {
+  pressCancel()
+  hintOut()
+})
 </script>
 
 <template>
-  <div class="flex items-center gap-2 border-t border-neutral-800/60 py-1.5 sm:gap-3">
+  <div
+    class="flex items-center gap-2 border-t border-neutral-800/60 py-1.5 transition-colors sm:gap-3"
+    :class="{ '-mx-1.5 rounded-xl border-transparent bg-accent-500/10 px-1.5': active }"
+  >
     <div class="flex w-[4.5rem] shrink-0 items-center gap-1 sm:w-32 sm:gap-2">
       <button
         v-if="showControls"
@@ -120,7 +154,7 @@ onBeforeUnmount(pressCancel)
         v-if="showControls"
         type="button"
         class="instrument-icon flex size-11 items-center justify-center rounded-xl bg-neutral-800/70 hover:bg-neutral-700 sm:hidden"
-        :class="track.muted ? 'text-neutral-500' : 'text-neutral-200'"
+        :class="[track.muted ? 'text-neutral-500' : 'text-neutral-200', { 'ring-2 ring-inset ring-accent-500': active }]"
         :aria-label="t('grid.settings', { instrument: instrumentName })"
         :data-instrument="track.instrument"
         @click="emit('open-instrument')"
@@ -160,25 +194,93 @@ onBeforeUnmount(pressCancel)
         v-for="(stepIndex, i) in stepIndices"
         :key="stepIndex"
         type="button"
-        class="step-cell h-11 min-w-0 flex-1 select-none overflow-hidden rounded-lg font-mono text-[10px] font-bold transition [-webkit-touch-callout:none] active:scale-90 sm:h-9"
+        class="step-cell flex h-11 min-w-0 flex-1 select-none items-center justify-center overflow-hidden rounded-lg font-mono text-[10px] font-bold transition [-webkit-touch-callout:none] active:scale-90 sm:h-9"
         :class="[
           cellClass(stepIndex),
           { 'ml-1.5': i % stepsPerCount === 0 && i > 0 },
         ]"
         :data-step="stepIndex"
-        :title="cellHint"
+        :data-sound="track.steps[stepIndex] ?? undefined"
         :aria-label="t('grid.step', { instrument: instrumentName, n: stepIndex + 1 })"
         aria-haspopup="menu"
         @pointerdown="pressDown($event, stepIndex)"
         @pointermove="pressMove"
         @pointerup="pressCancel"
-        @pointerleave="pressCancel"
+        @pointerenter="hintIn($event, stepIndex)"
+        @pointerleave="pressCancel(); hintOut()"
         @pointercancel="pressCancel"
         @contextmenu.prevent="contextMenu(stepIndex)"
         @click="click(stepIndex)"
       >
-        {{ stepLabel(stepIndex) }}
+        <template v-if="isSpoken(track.steps[stepIndex])">
+          {{ spokenLabel(stepIndex) }}
+        </template>
+        <!-- A cell is too narrow for the word, even on a desktop: the
+             mark, with the word in the hint, the key and the palette. -->
+        <BeatStepGlyph
+          v-else-if="track.steps[stepIndex]"
+          :name="track.steps[stepIndex]!"
+        />
       </button>
+    </div>
+
+    <div
+      v-if="hint"
+      role="tooltip"
+      class="pointer-events-none fixed z-30 -translate-x-1/2 rounded-xl bg-neutral-100 px-3 py-2 text-neutral-950 shadow-lg"
+      :style="{ top: `${hint.top}px`, left: `${hint.left}px` }"
+    >
+      <strong class="block whitespace-nowrap text-sm font-bold">
+        {{ instrumentName }} · {{ hintStep ? t(`steps.${hintStep}`) : t('grid.silence').toLowerCase() }}
+      </strong>
+      <span class="mt-1.5 flex items-center gap-3 whitespace-nowrap text-xs text-neutral-700">
+        <span
+          v-if="hintClick"
+          class="inline-flex items-center gap-1"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            class="size-4"
+            aria-hidden="true"
+          >
+            <path
+              d="M7 8a5 5 0 0 1 5-5v6H7z"
+              class="fill-accent-500"
+            />
+            <path
+              d="M7 8a5 5 0 0 1 10 0v8a5 5 0 0 1-10 0zM12 3v6M7 9h10"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linejoin="round"
+            />
+          </svg>
+          {{ hintClick }}
+        </span>
+        <span
+          v-if="stepNames.length > 1"
+          class="inline-flex items-center gap-1"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            class="size-4"
+            aria-hidden="true"
+          >
+            <path
+              d="M17 8a5 5 0 0 0 -5-5v6h5z"
+              class="fill-accent-500"
+            />
+            <path
+              d="M7 8a5 5 0 0 1 10 0v8a5 5 0 0 1-10 0zM12 3v6M7 9h10"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linejoin="round"
+            />
+          </svg>
+          {{ t('grid.hint.choose') }}
+        </span>
+      </span>
     </div>
 
     <div

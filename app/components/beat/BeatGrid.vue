@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { CHORD_NAMES } from '~/core/harmony'
+import { STEP_GLYPHS } from '~/icons'
 import type { Pattern } from '~/core/pattern'
 import { COUNTS_PER_BAR, COUNTS_PER_BLOCK, countInBlock } from '~/core/pattern'
 
@@ -86,6 +87,38 @@ function pick(name: string | null) {
   menu.value = null
 }
 
+// A phone has no hover and a long press is hard to find, so the sounds are
+// laid out as a palette instead: a tap on an instrument with several sounds
+// picks that row and works as before (a hit on or off); from then on a tap
+// in the row puts in the sound chosen in the palette, or takes it out if
+// it's already there.
+/** The row the palette is for and the sound a tap puts in (null: silence), on a phone. */
+const brush = ref<{ instrument: string, name: string | null } | null>(null)
+const brushTrack = computed(() => props.pattern.tracks.find((track) => track.instrument === brush.value?.instrument))
+watch(narrow, (isNarrow) => {
+  if (!isNarrow) brush.value = null
+})
+
+function tap(instrument: string, stepIndex: number) {
+  const names = props.stepNames(instrument)
+  if (!narrow.value || names.length < 2) {
+    emit('toggle-step', instrument, stepIndex)
+    return
+  }
+  if (brush.value?.instrument !== instrument) {
+    brush.value = { instrument, name: names[0]! }
+    emit('toggle-step', instrument, stepIndex)
+    return
+  }
+  const { name } = brush.value
+  const current = brushTrack.value?.steps[stepIndex] ?? null
+  emit('set-step', instrument, stepIndex, current === name ? null : name)
+}
+
+/** The sounds on the grid now, for the key over it: each mark once, in instrument order. */
+const keySounds = computed(() => [...new Set(shownTracks.value.flatMap((track) =>
+  props.stepNames(track.instrument).filter((name) => STEP_GLYPHS[name] && track.steps.includes(name))))])
+
 /** The instrument whose sheet is open (phones). */
 const sheet = ref<string | null>(null)
 const sheetTrack = computed(() => props.pattern.tracks.find((track) => track.instrument === sheet.value))
@@ -153,6 +186,81 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
         ›
       </button>
     </div>
+
+    <!-- Always there on a phone, so the grid doesn't jump when it fills in. -->
+    <div
+      v-if="narrow"
+      class="flex min-h-[4.75rem] flex-col justify-center gap-2 rounded-2xl border border-neutral-800 bg-neutral-900 p-2"
+    >
+      <template v-if="brush && brushTrack">
+        <div class="flex items-center gap-2 px-1 text-sm">
+          <UiIcon
+            :name="brush.instrument"
+            class="!size-4"
+          />
+          <span class="font-semibold text-neutral-100">{{ t(`instruments.${brush.instrument}`) }}</span>
+          <span class="text-neutral-400">{{ t('grid.brush.puts') }}</span>
+          <button
+            type="button"
+            class="-my-2 ml-auto flex size-9 items-center justify-center rounded-lg text-lg text-neutral-400 hover:bg-neutral-800"
+            :aria-label="t('grid.brush.close')"
+            @click="brush = null"
+          >
+            ×
+          </button>
+        </div>
+        <div
+          class="grid grid-cols-3 gap-1.5"
+          role="radiogroup"
+          :aria-label="t('grid.brush.sounds', { instrument: t(`instruments.${brush.instrument}`) })"
+        >
+          <button
+            v-for="name in [...stepNames(brush.instrument), null]"
+            :key="name ?? 'silence'"
+            type="button"
+            role="radio"
+            class="flex min-h-11 min-w-0 items-center justify-center gap-1.5 rounded-xl px-1.5 text-sm transition"
+            :class="brush.name === name
+              ? 'bg-accent-500 font-semibold text-neutral-950'
+              : name === null ? 'border border-neutral-700 text-neutral-300' : 'bg-neutral-800 text-neutral-200'"
+            :aria-checked="brush.name === name"
+            @click="brush.name = name"
+          >
+            <BeatStepGlyph
+              v-if="name"
+              :name="name"
+              :class="brush.name === name ? '' : name === stepNames(brush.instrument)[0] ? 'text-accent-500' : 'text-accent-300'"
+            />
+            {{ name ? t(`steps.${name}`) : t('grid.silence') }}
+          </button>
+        </div>
+      </template>
+      <p
+        v-else
+        class="px-2 text-center text-sm text-neutral-500"
+      >
+        {{ t('grid.brush.hint') }}
+      </p>
+    </div>
+
+    <!-- The key to the marks; a phone has the palette instead. -->
+    <ul
+      v-if="!narrow && keySounds.length"
+      class="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-1 text-sm text-neutral-300"
+      :aria-label="t('grid.key')"
+    >
+      <li
+        v-for="name in keySounds"
+        :key="name"
+        class="inline-flex items-center gap-1.5"
+      >
+        <BeatStepGlyph
+          :name="name"
+          class="text-accent-300"
+        />
+        {{ t(`steps.${name}`) }}
+      </li>
+    </ul>
 
     <div
       v-for="section in shownSections"
@@ -234,7 +342,8 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
         :steps-per-count="pattern.stepsPerCount"
         :show-controls="narrow || section === 0"
         :advanced="advanced"
-        @toggle-step="(stepIndex: number) => emit('toggle-step', track.instrument, stepIndex)"
+        :active="brush?.instrument === track.instrument"
+        @toggle-step="(stepIndex: number) => tap(track.instrument, stepIndex)"
         @step-menu="(stepIndex: number) => openMenu(track.instrument, stepIndex)"
         @open-instrument="sheet = track.instrument"
         @update:volume="(volume: number) => emit('update:volume', track.instrument, volume)"

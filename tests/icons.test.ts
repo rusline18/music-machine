@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { genres } from '~/genres'
-import { ICON_ACCENTS, ICONS } from '~/icons'
+import { ICON_ACCENTS, ICONS, STEP_GLYPHS } from '~/icons'
+import { COUNTING_STEPS, stepNames } from '~/core/resolve'
 import { INSTRUMENT_MOTION } from '~/core/motion'
 
 describe('icons', () => {
@@ -26,6 +27,11 @@ describe('icons', () => {
     for (const keyframes of [motion.keyframes, motion.accent, motion.base ?? []]) {
       expect(keyframes.at(-1)?.transform ?? 'none').toBe('none')
     }
+  })
+
+  const sounds = new Set(genres.flatMap((genre) => genre.instruments.flatMap((instrument) => stepNames(genre, instrument))))
+  it.each([...sounds].filter((name) => !COUNTING_STEPS.includes(name)))('has a cell mark for the %s sound', (name) => {
+    expect(STEP_GLYPHS[name]?.d).toBeTruthy()
   })
 
   it('stays small', () => {
