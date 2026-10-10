@@ -113,6 +113,15 @@ export function useBeatEffects(
         }
         const base = svg.querySelector('.icon-base')
         if (base && motion.base) ring(base, motion.base, motion.duration)
+        // Played over, not added: the gap and the spark show a state (apart,
+        // together), which doesn't stack the way a push does.
+        if (motion.gap) svg.querySelector('.icon-gap')?.animate(motion.gap, motion.duration)
+        const spark = svg.querySelector<SVGGElement>('.icon-spark')
+        if (spark && motion.spark) {
+          spark.style.transformOrigin = motion.spark.origin
+          spark.animate(motion.spark.keyframes, { duration: motion.spark.duration, easing: 'ease-out' })
+        }
+        for (const string of svg.querySelectorAll<SVGAnimationElement>('.icon-strings animate')) string.beginElement()
       }
     }
     if (!onCount) return

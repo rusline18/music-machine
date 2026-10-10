@@ -24,6 +24,21 @@ export interface Motion {
   accentOrigin?: string
   /** The line layer alone, for parts that move against the accent (the held clave). */
   base?: Keyframe[]
+  /** The gap cut around the accent (ICON_ACCENTS `gap`): follows it and closes on contact. Played over, not added. */
+  gap?: Keyframe[]
+  /** The flash where the parts meet (ICON_ACCENTS `spark`), from hidden to hidden; its own duration and center in viewBox px. */
+  spark?: { keyframes: Keyframe[], duration: number, origin: string }
+  /** How the strings (ICON_ACCENTS `strings`) vibrate: see stringFrames. */
+  strum?: Strum
+}
+
+/** A strum across the strings: each is plucked `stagger` ms after the one before, swings `amp` and rings at f Hz. */
+export interface Strum {
+  f: number
+  tau: number
+  /** How far the curve's control point swings, viewBox px; the middle of the string moves half that. */
+  amp: number
+  stagger: number
 }
 
 // `px` inside the SVG are viewBox units, so 2px is 2/24 of the icon.
@@ -75,14 +90,33 @@ function drum(skin: { f: number, tau: number, depth: number }, shell: { f: numbe
   }
 }
 
-/** A plucked string: the body breathes at the note, the instrument rocks once. */
-function plucked(body: { f: number, tau: number }, rock: { deg: number, f: number, tau: number }, duration: number): Motion {
+/** A plucked string: the strings are strummed, the body breathes at the note, the instrument rocks once. */
+function plucked(body: { f: number, tau: number }, rock: { deg: number, f: number, tau: number }, strum: Strum, duration: number): Motion {
   return {
     duration,
     keyframes: sample(duration, (t) => `rotate(${n(rock.deg * kick(t, rock.f, rock.tau))}deg)`),
     origin: '50% 85%',
-    accent: sample(duration, (t) => `scale(${n(1 + 0.1 * kick(t, body.f, body.tau))})`),
+    // Softer than before the strings: they carry the hit now.
+    accent: sample(duration, (t) => `scale(${n(1 + 0.05 * kick(t, body.f, body.tau))})`),
+    strum,
   }
+}
+
+/**
+ * The `values` of a string's SMIL <animate> on `d`: the string `[x, top,
+ * bottom]` bowed by a released pluck, sampled every ~20 ms over `duration`.
+ * SMIL rather than Web Animations: Safari can't animate `d` any other way.
+ * String `index` is plucked `stagger` ms after the first; all end straight.
+ */
+export function stringFrames(strum: Strum, [x, top, bottom]: readonly [number, number, number], index: number, duration: number): string {
+  const mid = n((top + bottom) / 2)
+  const count = Math.round(duration / 20)
+  const delay = index * strum.stagger
+  return Array.from({ length: count + 1 }, (_, i) => {
+    const t = duration * i / count
+    const bow = i === count || t < delay ? 0 : strum.amp * release(t - delay, strum.f, strum.tau)
+    return `M${x} ${top}Q${n(x + bow)} ${mid} ${x} ${bottom}`
+  }).join(';')
 }
 
 /** Brass: a push back from the lips; the bell swells with the breath (soft attack) and a little vibrato. */
@@ -131,37 +165,42 @@ function bell(swing: { deg: number, f: number, tau: number }, origin: string, mo
 }
 
 /**
- * The claves, struck crosswise: they rest as an X. The striker (accent) is
- * raised toward the viewer, pivoting at the hand end, falls onto the held
- * stick by CLAVE_MEET ms and bounces off it like a dropped stick, never
- * passing through. 1 = raised, 0 = on the held stick.
+ * The claves, struck crosswise: they rest as an X with the striker (accent)
+ * raised off the held stick — a gap cut around it shows the held one passing
+ * under. On the hit the striker is already down on it: the gap closes, a
+ * spark flashes where they cross, they stay together CLAVE_HOLD ms (that
+ * pause is what reads as a blow rather than a twitch), then the striker
+ * bounces up past its rest and settles. 1 = down on the held stick.
  */
-const CLAVE_MEET = 40
-function claveLift(t: number) {
-  if (t < CLAVE_MEET) return 1 - (t / CLAVE_MEET) ** 2
-  const u = t - CLAVE_MEET
-  return 0.32 * Math.exp(-u / 85) * Math.abs(Math.sin(Math.PI * u / 115))
+const CLAVE_HOLD = 60
+function claveDown(t: number) {
+  return t < CLAVE_HOLD ? 1 : release(t - CLAVE_HOLD, 4, 150)
 }
-/** Nothing until the sticks meet, then a kick. */
-function afterMeet(t: number, f: number, tau: number) {
-  return t < CLAVE_MEET ? 0 : kick(t - CLAVE_MEET, f, tau)
+/** The striker's move toward the held stick, at `down`. */
+function claveStrike(down: number) {
+  return `translate(${n(0.9 * down)}px, ${n(1.6 * down)}px)`
 }
 
 const clave: Motion = {
-  duration: 620,
+  duration: 700,
   // The pair shivers on contact.
-  keyframes: sample(620, (t) => `rotate(${n(1.5 * afterMeet(t, 12, 60))}deg)`),
-  accent: sample(620, (t) => {
-    const lift = claveLift(t)
-    return `translate(${n(-1.2 * lift)}px, ${n(-2 * lift)}px) rotate(${n(-12 * lift)}deg) scale(${n(1 + 0.12 * lift)})`
-  }),
-  // The hand end, top left of the striker's box.
-  accentOrigin: 'left top',
+  keyframes: sample(700, (t) => `rotate(${n(1.5 * kick(t, 12, 60))}deg)`),
+  accent: sample(700, (t) => claveStrike(claveDown(t))),
   // The held stick gives under the blow and rings.
-  base: sample(620, (t) => {
-    const give = afterMeet(t, 9, 70)
-    return `translate(${n(0.5 * give)}px, ${n(0.85 * give)}px) rotate(${n(2.5 * afterMeet(t, 19, 75))}deg)`
+  base: sample(700, (t) => {
+    const give = kick(t, 9, 70)
+    return `translate(${n(0.5 * give)}px, ${n(0.85 * give)}px) rotate(${n(2.5 * kick(t, 19, 75))}deg)`
   }),
+  gap: sample(700, (t) => claveStrike(claveDown(t))).map((frame, i, all) => ({
+    ...frame,
+    opacity: i === all.length - 1 ? 1 : n(Math.min(1, Math.max(0, 1 - 1.6 * claveDown(700 * i / (all.length - 1))))),
+  })),
+  // Where the sticks cross when down.
+  spark: {
+    duration: 260,
+    origin: '11.5px 12.7px',
+    keyframes: [{ opacity: 1, transform: 'scale(0.7)' }, { offset: 0.25, opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(1.3)' }],
+  },
 }
 
 export const INSTRUMENT_MOTION: Record<string, Motion> = {
@@ -205,7 +244,7 @@ export const INSTRUMENT_MOTION: Record<string, Motion> = {
   guiro: scrape('x', 3, 5, 620),
   guira: scrape('y', 5, 6, 620),
   // Deep and slow: the longest ring.
-  bass: plucked({ f: 5, tau: 320 }, { deg: 3, f: 3, tau: 260 }, 1300),
+  bass: plucked({ f: 5, tau: 320 }, { deg: 3, f: 3, tau: 260 }, { f: 6, tau: 260, amp: 2.2, stagger: 45 }, 1300),
   // The keys go down with the sound and spring back up.
   piano: {
     duration: 600,
@@ -213,11 +252,11 @@ export const INSTRUMENT_MOTION: Record<string, Motion> = {
     origin: '50% 100%',
     accent: sample(600, (t) => `translateY(${n(1.6 * release(t, 3, 90))}px)`),
   },
-  tres: plucked({ f: 11, tau: 170 }, { deg: 4, f: 6, tau: 140 }, 850),
+  tres: plucked({ f: 11, tau: 170 }, { deg: 4, f: 6, tau: 140 }, { f: 11, tau: 150, amp: 2, stagger: 35 }, 850),
   trumpet: brass(3, 900),
   trombone: brass(4, 1000),
-  requinto: plucked({ f: 15, tau: 140 }, { deg: 5, f: 8, tau: 110 }, 700),
-  segunda: plucked({ f: 9, tau: 200 }, { deg: 3.5, f: 5, tau: 170 }, 1000),
+  requinto: plucked({ f: 15, tau: 140 }, { deg: 5, f: 8, tau: 110 }, { f: 14, tau: 120, amp: 1.8, stagger: 30 }, 700),
+  segunda: plucked({ f: 9, tau: 200 }, { deg: 3.5, f: 5, tau: 170 }, { f: 9, tau: 180, amp: 2, stagger: 40 }, 1000),
 }
 
 /** The count box pulsing on a beat; 1 and 5, where the halves of the phrase start, harder. */
