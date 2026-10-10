@@ -27,6 +27,11 @@ onMounted(() => {
 })
 onBeforeUnmount(() => observer?.disconnect())
 
+// The genre opens behind a curtain of its color grown out of the card's
+// arrow (plugins/curtain.client.ts; client only, hence the `?.`).
+const { $curtain } = useNuxtApp()
+const aim = (event: MouseEvent) => $curtain?.aim(event.currentTarget as HTMLElement)
+
 useSeoMeta({
   title: () => t('app.name'),
   description: () => t('app.description'),
@@ -79,10 +84,12 @@ const CLAVE = [0, 3, 6, 10, 12]
         @pointerenter="prefetch(genre)"
         @focus="prefetch(genre)"
         @touchstart.passive="prefetch(genre)"
+        @click="aim"
       >
         <span class="text-4xl font-extrabold tracking-tight">{{ t(`genres.${genre.id}.name`) }}</span>
         <span
           class="flex size-11 shrink-0 items-center justify-center rounded-full bg-neutral-950 text-neutral-100 transition group-hover:translate-x-1"
+          data-curtain-target
           aria-hidden="true"
         >
           <svg
