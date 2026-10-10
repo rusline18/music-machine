@@ -5,7 +5,7 @@ mapping from each app sample to its source lives in `recordings` in
 `scripts/generate-samples.mjs`. Every file here is **CC0** or public domain
 (no attribution required, credits below are a courtesy), except the
 University of Iowa guitar, which is free to use under the university's own
-terms — see [uiowa/](#uiowa) — and [voice/](#voice), synthesized for this
+terms — see [uiowa/](#uiowa) — and [voice/](#voice), recorded for this
 project.
 
 Any sample whose source is missing is synthesized instead.
@@ -67,11 +67,12 @@ retunes each one.
 ## voice/
 
 Spoken counts for the counting voice, one word per file:
-`<locale>/1.wav` … `8.wav` and `and.wav`. Generated with
-[espeak-ng](https://github.com/espeak-ng/espeak-ng) by
-`scripts/speak-counts.py` (the audio espeak-ng produces is not covered by
-its GPL license). Placeholders — replace them with recordings of a real
-person counting (same file names) for a much better result.
+`<locale>/1.wav` … `8.wav` and `and.wav`, recorded for this project.
+Leave some silence around each word: the script finds the word by loudness
+and drops clicks and breaths before it, so the files don't need trimming by
+hand. Words are cut at 0.8 s. `scripts/speak-counts.py` can make stand-ins
+with [espeak-ng](https://github.com/espeak-ng/espeak-ng) (the audio
+espeak-ng produces is not covered by its GPL license).
 
 ## freesound/
 
