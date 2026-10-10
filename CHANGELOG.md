@@ -10,7 +10,14 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
   striker bounces off. The guitars, tres and bass get three strings over
   the body that are strummed one after another and ring out, slower and
   wider on the bass, quicker on the requinto.
-
+- Salsa ↔ bachata straight from a genre page: the switch next to Back (now
+  on phones too) grows a circle of the other genre's color out of the tapped
+  name, and the new page rises in under it. Music that's playing fades out
+  instead of cutting off, here and on the way home.
+- Faster first Play: it waits only for the sounds the pattern uses (the rest
+  load while it plays), and the room reverb is worked out while they load.
+  Grid cells share one set of pointer listeners per row instead of eight
+  each; the scheduler reads the pattern without Vue's reactive wrapper.
 - Lighter playback: the playhead finds the cells and icons it lights up once
   and reuses them until the grid changes, instead of searching the page on
   every step; chords are parsed once, and step names and preset share codes

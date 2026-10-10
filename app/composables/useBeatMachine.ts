@@ -9,7 +9,7 @@ import type { CountingMode } from '~/core/resolve'
 import { decodePattern, encodePattern } from '~/core/share'
 import type { SectionFit } from '~/core/song'
 import { buildSong, sectionFit, songBpm } from '~/core/song'
-import { COUNTING_MODES, countingFigure, sampleUrls, stepNames, stepResolver } from '~/core/resolve'
+import { COUNTING_MODES, countingFigure, patternSampleUrls, sampleUrls, stepNames, stepResolver } from '~/core/resolve'
 import type { TempoChoice } from '~/core/tempo'
 import { nudgeBpm, tempoChoice, tempoFor } from '~/core/tempo'
 import type { Genre } from '~/genres'
@@ -22,6 +22,8 @@ const FEEL = 0.5
 const REVERB_WET = 0.21
 /** Chance that `randomize` puts a hit on a step. */
 const RANDOM_DENSITY = 0.25
+/** How long the music fades out when the page is left while it plays: about the curtain closing. */
+const LEAVE_FADE_SECONDS = 0.4
 
 /** Query parameter carrying a shared pattern: /salsa?p=… */
 export const SHARE_PARAM = 'p'
@@ -75,6 +77,17 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
   const failedSamples = ref(0)
   /** Set once every sample of the current language is decoded. */
   let samplesLoaded = false
+
+  /**
+   * Decodes every sample in the background, once playback has started with
+   * the ones the pattern needs. A sound put in before it arrives is skipped
+   * until then.
+   */
+  async function loadTheRest() {
+    const failed = await engine.preloadSamples(urls())
+    failedSamples.value = failed.length
+    samplesLoaded = failed.length === 0
+  }
 
   /** The language whose samples are downloading, so each set is fetched once. */
   let prefetchedLocale: string | undefined
@@ -238,25 +251,30 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     const unlocked = engine.resume()
     isLoading.value = !samplesLoaded
     prefetch()
-    const list = urls()
+    // Only what this pattern plays is waited for; the rest follows once it's playing.
+    const needed = [...patternSampleUrls(genre, pattern.value, locale.value)]
     try {
       // Already-loaded samples come from the engine's cache.
-      const failed = await engine.preloadSamples(list)
+      const loading = engine.preloadSamples(needed)
+      // The room is worked out while the samples load, not after them.
+      engine.setReverb(REVERB_WET)
+      const failed = await loading
       failedSamples.value = failed.length
-      samplesLoaded = failed.length === 0
       await unlocked
     } finally {
       if (request === playRequest) isLoading.value = false
     }
     // Stopped, or left the page, while loading; or nothing to play at all.
-    if (request !== playRequest || failedSamples.value === list.length) return
+    if (request !== playRequest || (needed.length > 0 && failedSamples.value === needed.length)) return
     started = true
+    if (!samplesLoaded) loadTheRest()
     for (const track of pattern.value.tracks) {
       engine.setInstrumentVolume(track.instrument, track.volume)
       applyMuted(track.instrument)
     }
-    engine.setReverb(REVERB_WET)
-    await scheduler.start(pattern.value, resolveStep, showStep)
+    // The raw pattern: the scheduler reads it on every step, and edits made
+    // through the reactive one land in the same object.
+    await scheduler.start(toRaw(pattern.value), resolveStep, showStep)
     isPlaying.value = true
   }
 
@@ -408,7 +426,18 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     layers.value = null
   }
 
+  // Leaving for home or the other genre: the music fades out while the
+  // curtain closes instead of cutting off when the page goes. A language
+  // change keeps the genre and the music.
+  let removeFadeGuard: (() => void) | undefined
+  onMounted(() => {
+    removeFadeGuard = router.beforeEach((to) => {
+      if (isPlaying.value && to.params.genre !== genre.id) engine.fadeAll(LEAVE_FADE_SECONDS)
+    })
+  })
+
   onBeforeUnmount(() => {
+    removeFadeGuard?.()
     stop()
     beatListeners.clear()
     engine.dispose()

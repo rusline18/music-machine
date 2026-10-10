@@ -3,14 +3,16 @@
 @tailwind utilities;
 
 /* The "Noche" theme (tailwind.config.ts). Accent colors as RGB channels:
-   Fuego, and Caribe on bachata pages. */
-:root {
+   Fuego, and Caribe on bachata pages. Any element marked with a genre
+   carries that genre's accent, so a link to the other genre can show it. */
+:root,
+[data-genre='salsa'] {
   --accent-300: 255 176 140;
   --accent-400: 255 138 92;
   --accent-500: 255 106 61;
 }
 
-:root[data-genre='bachata'] {
+[data-genre='bachata'] {
   --accent-300: 166 237 228;
   --accent-400: 94 221 208;
   --accent-500: 47 198 180;
