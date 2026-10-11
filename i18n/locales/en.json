@@ -71,7 +71,7 @@
     "chordForBar": "Chord for bar {n}",
     "and": "&",
     "mute": "Mute {instrument}",
-    "muteHint": "Tap to switch on or off · hold for the instrument's settings",
+    "muteHint": "Click to switch on or off · hold or right-click for the instrument's settings and volume",
     "volume": "{instrument} volume",
     "volumeMode": {
       "open": "Volume",
@@ -295,8 +295,6 @@
     "blocks": "Each bar is one block of 8 counts.",
     "grid": "Grid",
     "gridHelp": "“Random” fills the grid with random hits, for experimenting. “Clear” removes every hit so you can build a rhythm from scratch.",
-    "volume": "Volume",
-    "volumeHelp": "Turn up the instrument you are learning to hear, and turn the others down or off.",
     "bar": "Bar {n}"
   }
 }

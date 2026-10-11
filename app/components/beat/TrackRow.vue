@@ -10,10 +10,8 @@ const props = defineProps<{
   start: number
   length: number
   stepsPerCount: number
-  /** Mute and volume are per track, so only the first block shows them. */
+  /** The switch is per track, so only the first block shows it. */
   showControls: boolean
-  /** Advanced mode: volume slider. */
-  advanced: boolean
   /** A phone's volume mode (BeatGrid): a slider across the row instead of the cells. */
   volumeMode?: boolean
   /** On a phone: the row the sound palette is for (BeatGrid). */
@@ -27,7 +25,7 @@ const emit = defineEmits<{
   'step-menu': [stepIndex: number]
   'update:volume': [volume: number]
   'update:muted': [muted: boolean]
-  /** On a phone: the instrument's sheet (description, switch, volume). */
+  /** The instrument's sheet (description, switch, volume). */
   'open-instrument': []
 }>()
 
@@ -413,31 +411,5 @@ onBeforeUnmount(() => {
         </span>
       </span>
     </div>
-
-    <div
-      v-if="advanced && showControls"
-      class="flex w-36 shrink-0 items-center gap-2.5 max-sm:hidden"
-    >
-      <input
-        type="range"
-        min="0"
-        max="1"
-        step="0.05"
-        :value="track.volume"
-        :aria-label="t('grid.volume', { instrument: instrumentName })"
-        class="range min-w-0 flex-1"
-        :class="{ 'opacity-40': track.muted }"
-        :style="{ '--v': `${track.volume * 100}%` }"
-        @input="emit('update:volume', Number(($event.target as HTMLInputElement).value))"
-      >
-      <span
-        class="w-7 text-right font-mono text-xs tabular-nums text-neutral-400"
-        aria-hidden="true"
-      >{{ Math.round(track.volume * 100) }}</span>
-    </div>
-    <span
-      v-else-if="advanced"
-      class="w-36 shrink-0 max-sm:hidden"
-    />
   </div>
 </template>
