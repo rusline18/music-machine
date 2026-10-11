@@ -2,6 +2,13 @@
 
 What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
+## 2026-10-11
+
+- The desktop grid no longer has a volume column in advanced mode: the
+  cells get its room. A track's volume is set in the instrument's sheet,
+  opened by holding or right-clicking its icon (the icon's tooltip says so).
+  Phones keep their volume mode.
+
 ## 2026-10-10
 
 - The claves strike instead of twitching: at rest the striker is raised

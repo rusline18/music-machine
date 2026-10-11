@@ -70,6 +70,15 @@ test.describe('salsa beat machine', () => {
     await expect(mute).toHaveAttribute('aria-pressed', 'true')
   })
 
+  test('the volume is in the instrument sheet, not beside the cells', async ({ page }) => {
+    await advanced(page)
+    await expect(page.getByRole('slider', { name: 'Clave volume' })).toHaveCount(0)
+    await page.getByRole('button', { name: 'Mute Clave' }).click({ button: 'right' })
+    const volume = page.getByRole('dialog', { name: 'Clave' }).getByRole('slider', { name: 'Volume' })
+    await volume.fill('0.3')
+    await expect(volume).toHaveValue('0.3')
+  })
+
   test('play and stop', async ({ page }) => {
     // One button that flips between the two.
     await page.getByRole('button', { name: '▶ Play' }).click()

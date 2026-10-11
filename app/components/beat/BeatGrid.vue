@@ -10,7 +10,7 @@ const props = defineProps<{
   stepNames: (instrument: string) => readonly string[]
   /** The bar (4 counts) playing now, or -1 when stopped; a phone follows it. */
   playingBar: number
-  /** Advanced mode: chords, volumes and every track. */
+  /** Advanced mode: chords and every track. */
   advanced: boolean
   /** Tracks left off the grid in simple mode (the voice has its own switch). */
   simpleHides?: readonly string[]
@@ -98,8 +98,8 @@ const brushTrack = computed(() => trackOf(props.pattern, brush.value?.instrument
 
 // A phone has no room for a volume slider beside the cells, so the volumes
 // get the whole row in a mode of their own: the cells give way to sliders
-// and the music plays on, to mix by ear. (Wider screens have the sliders in
-// the row in advanced mode.)
+// and the music plays on, to mix by ear. (Wider screens set a volume in the
+// instrument's sheet, so the grid keeps the room for the cells.)
 const volumeMode = ref(false)
 function setVolumeMode(on: boolean) {
   volumeMode.value = on
@@ -132,7 +132,7 @@ function tap(instrument: string, stepIndex: number) {
 const keySounds = computed(() => [...new Set(shownTracks.value.flatMap((track) =>
   props.stepNames(track.instrument).filter((name) => STEP_GLYPHS[name] && track.steps.includes(name))))])
 
-/** The instrument whose sheet is open (phones). */
+/** The instrument whose sheet is open: a long press or right-click on its icon. */
 const sheet = ref<string | null>(null)
 const sheetTrack = computed(() => trackOf(props.pattern, sheet.value))
 /** Closing the sheet brings the whole band back. */
@@ -330,16 +330,6 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
             {{ cellLabel(section, cell - 1) }}
           </span>
         </div>
-        <span
-          v-if="advanced"
-          class="w-36 shrink-0 max-sm:hidden"
-        >
-          <UiHint
-            v-if="section === 0"
-            :label="t('advanced.volume')"
-            :text="t('advanced.volumeHelp')"
-          />
-        </span>
       </div>
 
       <div
@@ -371,7 +361,6 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
             </option>
           </select>
         </div>
-        <span class="w-36 shrink-0 max-sm:hidden" />
       </div>
 
       <BeatTrackRow
@@ -383,7 +372,6 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
         :length="stepsPerSection"
         :steps-per-count="pattern.stepsPerCount"
         :show-controls="narrow || section === 0"
-        :advanced="advanced"
         :volume-mode="volumeMode"
         :active="brush?.instrument === track.instrument"
         @toggle-step="(stepIndex: number) => tap(track.instrument, stepIndex)"
