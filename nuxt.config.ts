@@ -1,3 +1,5 @@
+import { contentSecurityPolicy } from './server/csp'
+
 /**
  * Loads Telegram's Mini App SDK, but only when the page was opened as a Mini
  * App: Telegram passes its launch parameters in the URL hash (#tgWebAppData=…),
@@ -24,22 +26,9 @@ export default defineNuxtConfig({
     routeRules: {
       '/**': {
         headers: {
-          // Nuxt inlines its payload and hydration scripts, hence 'unsafe-inline'.
-          'Content-Security-Policy': [
-            'default-src \'self\'',
-            // telegram.org: the Mini App SDK, loaded only inside Telegram (TELEGRAM_LOADER).
-            'script-src \'self\' \'unsafe-inline\' https://telegram.org',
-            'style-src \'self\' \'unsafe-inline\'',
-            'img-src \'self\' data:',
-            'media-src \'self\'',
-            'connect-src \'self\'',
-            'object-src \'none\'',
-            'base-uri \'self\'',
-            'form-action \'self\'',
-            // Telegram Web shows Mini Apps in an iframe; nobody else may frame
-            // the site. (This replaces X-Frame-Options, which can't name an origin.)
-            'frame-ancestors \'self\' https://web.telegram.org',
-          ].join('; '),
+          // Pages replace it with one carrying their scripts' nonce (server/plugins/csp-nonce.ts).
+          // It also stands in for X-Frame-Options, which can't allow Telegram Web.
+          'Content-Security-Policy': contentSecurityPolicy(),
           'X-Content-Type-Options': 'nosniff',
           'Referrer-Policy': 'strict-origin-when-cross-origin',
           'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',

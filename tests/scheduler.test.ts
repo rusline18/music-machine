@@ -100,6 +100,22 @@ describe('scheduler', () => {
     scheduler.stop()
   })
 
+  it('skips steps it missed while the timer was stalled instead of playing them at once', async () => {
+    const { context, engine } = fakeEngine()
+    const steps: number[] = []
+    const scheduler = createScheduler(engine)
+    await scheduler.start(pattern(4, 120), samples, (step) => steps.push(step))
+    // The first tick comes 5 s late (a background tab): 20 steps went by.
+    context.currentTime = 5
+    await vi.advanceTimersByTimeAsync(25)
+
+    const times = engine.playNote.mock.calls.map(([, , time]) => time)
+    expect(times).toEqual([5])
+    // Still on the grid: 20 cells of 0.25 s in an 8-cell loop.
+    expect(steps).toEqual([20 % 8])
+    scheduler.stop()
+  })
+
   it('reports whether it is playing', async () => {
     const { engine } = fakeEngine()
     const scheduler = createScheduler(engine)

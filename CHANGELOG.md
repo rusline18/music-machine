@@ -2,6 +2,23 @@
 
 What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
+## 2026-10-12
+
+- After a stall (a background tab, a long pause) the beat picks up where
+  it should be instead of playing every missed step at once.
+- Opening shared links no longer fills the offline cache: a page is kept
+  once, whatever pattern its link carries.
+- The feedback rate limit counts an IPv6 sender by its /64 network, so
+  rotating addresses doesn't get round it; its cleanup of idle senders no
+  longer runs on every request when there are many.
+- Inline scripts no longer run just for being inline: each page carries a
+  one-off nonce that only Nuxt's own scripts get, and the CSP allows those
+  alone. The smallest font subsets, which Vite inlines, are no longer
+  blocked by it.
+- With data saving on, the offline copy of every page isn't downloaded
+  up front; pages are kept as they're visited.
+- GitHub Actions are pinned to commit SHAs (Dependabot keeps them current).
+
 ## 2026-10-11
 
 - The desktop grid no longer has a volume column in advanced mode: the

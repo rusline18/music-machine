@@ -2,7 +2,7 @@ import type { H3Event } from 'h3'
 import { InvalidFeedbackError, validateFeedback } from '#shared/feedback'
 import { deliverFeedback } from '../feedback/deliver'
 import type { FeedbackEntry } from '../feedback/deliver'
-import { createRateLimiter } from '../feedback/rateLimit'
+import { clientKey, createRateLimiter } from '../feedback/rateLimit'
 
 const MAX_BODY_BYTES = 16 * 1024
 const perClient = createRateLimiter({ limit: 5, windowMs: 10 * 60_000 })
@@ -42,7 +42,10 @@ export default defineEventHandler(async (event) => {
 
   // Behind a reverse proxy every request comes from the proxy's address;
   // only then trust X-Forwarded-For (NUXT_FEEDBACK_TRUST_PROXY=true).
-  const client = getRequestIP(event, { xForwardedFor: Boolean(config.feedbackTrustProxy) }) ?? 'unknown'
+  // h3 takes the first X-Forwarded-For entry, which a client can forge; the
+  // proxy must replace the header (Caddy does by default, see deploy/Caddyfile).
+  const ip = getRequestIP(event, { xForwardedFor: Boolean(config.feedbackTrustProxy) })
+  const client = ip ? clientKey(ip) : 'unknown'
   if (!perClient(client) || !overall('all')) {
     throw createError({ statusCode: 429, statusMessage: 'Too much feedback at once — please try again later' })
   }

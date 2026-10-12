@@ -5,6 +5,12 @@ import { humanizeNote } from './humanize'
 
 const LOOKAHEAD_MS = 25
 const SCHEDULE_AHEAD_S = 0.1
+/**
+ * Steps due further back than this are skipped: the timer stalled (a
+ * background tab, a long pause), and playing them now would sound them all
+ * at once.
+ */
+const MAX_LATE_S = 0.1
 
 /** What a track plays at a step: none, one sample, or several (a chord). */
 export type StepResolver = (pattern: Pattern, track: Track, stepIndex: number) => Note[]
@@ -64,7 +70,14 @@ export function createScheduler(engine: Pick<AudioEngine, 'now' | 'resume' | 'pl
     }
     // The pattern can be shortened mid-play; wrap instead of running off the end.
     if (currentStep >= length) currentStep = 0
-    const horizon = engine.now() + SCHEDULE_AHEAD_S
+    const now = engine.now()
+    // Pick up again on the beat it's at now, as if those steps had played.
+    if (nextStepTime < now - MAX_LATE_S) {
+      const missed = Math.ceil((now - nextStepTime) / step)
+      nextStepTime += missed * step
+      currentStep = (currentStep + missed) % length
+    }
+    const horizon = now + SCHEDULE_AHEAD_S
     while (nextStepTime < horizon) {
       scheduleStep(currentStep, nextStepTime)
       nextStepTime += step
