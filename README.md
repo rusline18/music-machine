@@ -64,6 +64,8 @@ app/
                          bottom sheet)
   plugins/
     service-worker.client.ts  Registers public/sw.js (production only)
+    telegram.client.ts   Inside Telegram (Mini App): full height, matching colors,
+                         Telegram's Back button, no swipe-to-close
   icons.ts             Line icons as SVG paths, keyed by instrument id or control;
                        instruments add an accent layer in the genre's color
     LanguageSwitcher.vue
@@ -242,6 +244,10 @@ The site runs on a VPS: Node behind Caddy (HTTPS). After CI passes on
 the server keeps the last 5 releases and rolls back if a new one doesn't
 answer. One-time server setup and the GitHub secrets it needs:
 [docs/deploy.md](docs/deploy.md).
+
+The same site is also a Telegram Mini App: a bot opens it, and the page
+adapts when it sees Telegram's launch parameters. Bot setup:
+[docs/telegram.md](docs/telegram.md).
 
 ## Audio samples
 
