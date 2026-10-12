@@ -7,6 +7,7 @@ const FAKE_SDK = `
 window.telegramCalls = []
 const record = (name) => () => { window.telegramCalls.push(name) }
 let onBack = () => {}
+const homeScreenAdded = []
 window.Telegram = { WebApp: {
   platform: 'android',
   initDataUnsafe: {
@@ -15,6 +16,13 @@ window.Telegram = { WebApp: {
   },
   openTelegramLink: (url) => window.telegramCalls.push('open ' + url),
   enableClosingConfirmation: record('confirm close on'),
+  checkHomeScreenStatus: (callback) => setTimeout(() => callback(window.fakeHomeScreen ?? 'unsupported')),
+  addToHomeScreen: () => {
+    window.telegramCalls.push('add to home screen')
+    for (const handler of homeScreenAdded) handler()
+  },
+  onEvent: (event, handler) => { if (event === 'homeScreenAdded') homeScreenAdded.push(handler) },
+  offEvent: () => {},
   disableClosingConfirmation: record('confirm close off'),
   CloudStorage: {
     getItem: (key, callback) => setTimeout(() => callback(null, window.fakeCloud[key] ?? '')),
@@ -203,4 +211,27 @@ test('in Telegram, closing asks first while the beat plays', async ({ page }) =>
   await expect.poll(confirmations).toEqual(['confirm close on'])
   await page.getByRole('button', { name: '■ Stop' }).click()
   await expect.poll(confirmations).toEqual(['confirm close on', 'confirm close off'])
+})
+
+test('in Telegram the home page offers a home screen shortcut until there is one', async ({ page }) => {
+  await page.addInitScript(() => Object.assign(window, { fakeHomeScreen: 'missed' }))
+  await fakeTelegram(page)
+  await page.goto(`/${LAUNCH}`)
+  const button = page.getByRole('button', { name: 'Add to home screen' })
+  await button.click()
+  await expect.poll(() => page.evaluate(() => (window as unknown as { telegramCalls: string[] }).telegramCalls))
+    .toContain('add to home screen')
+  await expect(button).toBeHidden()
+})
+
+test('the home screen button is only there when Telegram can add one', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('link', { name: 'Salsa' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Add to home screen' })).toHaveCount(0)
+
+  await page.addInitScript(() => Object.assign(window, { fakeHomeScreen: 'added' }))
+  await fakeTelegram(page)
+  await page.goto(`/${LAUNCH}`)
+  await expect(page.getByRole('link', { name: 'Salsa' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Add to home screen' })).toHaveCount(0)
 })

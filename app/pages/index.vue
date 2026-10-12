@@ -119,5 +119,6 @@ const CLAVE = [0, 3, 6, 10, 12]
         </span>
       </NuxtLinkLocale>
     </div>
+    <HomeScreenButton />
   </main>
 </template>

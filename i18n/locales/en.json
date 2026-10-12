@@ -7,7 +7,8 @@
       "dance": "Get it — and {dance}",
       "danceWord": "dance."
     },
-    "description": "An interactive Salsa & Bachata rhythm trainer. Build your own beat from real percussion, practice at your own tempo, and train your ear."
+    "description": "An interactive Salsa & Bachata rhythm trainer. Build your own beat from real percussion, practice at your own tempo, and train your ear.",
+    "addToHomeScreen": "Add to home screen"
   },
   "nav": {
     "back": "← Back",

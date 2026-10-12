@@ -17,6 +17,12 @@ export interface TelegramWebApp {
   setBottomBarColor(color: string): void
   openTelegramLink(url: string): void
   enableClosingConfirmation(): void
+  /** Telegram 8.0+: offers to put a shortcut to the Mini App on the phone's home screen. */
+  addToHomeScreen(): void
+  /** 'missed': it can be added and isn't yet; 'added', 'unsupported' or 'unknown' otherwise. */
+  checkHomeScreenStatus(callback: (status: 'unsupported' | 'unknown' | 'added' | 'missed') => void): void
+  onEvent(event: 'homeScreenAdded', handler: () => void): void
+  offEvent(event: 'homeScreenAdded', handler: () => void): void
   disableClosingConfirmation(): void
   HapticFeedback: {
     impactOccurred(style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft'): void
@@ -108,4 +114,25 @@ export function useClosingConfirmation(active: () => boolean) {
 
   watch(active, apply)
   onBeforeUnmount(() => apply(false))
+}
+
+/**
+ * Inside Telegram 8.0+, whether the Mini App can still be put on the
+ * phone's home screen, and the call that offers it. `available` stays
+ * false everywhere else, and once the shortcut is there.
+ */
+export function useHomeScreen() {
+  const available = ref(false)
+  let webApp: TelegramWebApp | null = null
+  const added = () => (available.value = false)
+
+  onMounted(async () => {
+    webApp = await whenTelegram()
+    if (!webApp?.isVersionAtLeast('8.0')) return
+    webApp.onEvent('homeScreenAdded', added)
+    webApp.checkHomeScreenStatus((status) => (available.value = status === 'missed'))
+  })
+  onBeforeUnmount(() => webApp?.offEvent('homeScreenAdded', added))
+
+  return { available: readonly(available), add: () => webApp?.addToHomeScreen() }
 }
