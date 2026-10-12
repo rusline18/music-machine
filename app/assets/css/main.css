@@ -64,6 +64,77 @@ body {
   }
 }
 
+/* Share (ShareButton.vue): on a copy the button dips and fills with the
+   genre's color, the link spins away and a check draws itself in its place,
+   and the label swaps to "Copied". Back to normal on its own. */
+@layer components {
+  .share-button {
+    transition: background-color 250ms ease, color 250ms ease;
+  }
+
+  /* :hover too: the pointer is still on the button after the click. */
+  .share-button.is-copied,
+  .share-button.is-copied:hover {
+    @apply bg-accent-500 text-neutral-950;
+    animation: share-pop 450ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .share-link {
+    transition: transform 350ms cubic-bezier(0.5, 0, 0.75, 0), opacity 250ms ease;
+  }
+
+  .is-copied .share-link {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.2);
+  }
+
+  .share-check path {
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    transition: stroke-dashoffset 350ms ease;
+  }
+
+  .is-copied .share-check path {
+    stroke-dashoffset: 0;
+    transition-delay: 250ms;
+  }
+
+  .share-label,
+  .share-label-copied {
+    transition: opacity 250ms ease, transform 300ms ease;
+  }
+
+  .share-label-copied {
+    opacity: 0;
+    transform: translateX(6px);
+  }
+
+  .is-copied .share-label {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+
+  .is-copied .share-label-copied {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes share-pop {
+  35% {
+    transform: scale(0.92);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .share-button,
+  .share-button * {
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+    animation: none !important;
+  }
+}
+
 .page-enter-active,
 .page-leave-active {
   transition: opacity 150ms ease;
