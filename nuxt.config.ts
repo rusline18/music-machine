@@ -87,6 +87,12 @@ export default defineNuxtConfig({
       // button. Set with the NUXT_PUBLIC_DONATE_URL environment variable.
       donateUrl: '',
       /**
+       * NUXT_PUBLIC_TELEGRAM_BOT: the bot's username (without @). Inside the
+       * Mini App, sharing then sends a t.me link that opens the pattern in
+       * the app (docs/telegram.md). Empty: Telegram gets the site's link.
+       */
+      telegramBot: '',
+      /**
        * NUXT_PUBLIC_FEEDBACK_ENABLED=true shows the "Send feedback" link and
        * opens /api/feedback. Off until it's decided where feedback goes.
        */

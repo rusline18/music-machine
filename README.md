@@ -27,6 +27,7 @@ app/
     song.ts              Songs built from presets: which sections fit together (clave,
                          tempo, length) and joining them with a fill between sections
     sendLink.ts          Share sheet on touch screens, clipboard elsewhere
+    telegram.ts          Telegram Mini App links: t.me/<bot>?startapp=<genre>[_<packed pattern>]
     audio/
       engine.ts          AudioContext, per-instrument gain, sample loading (Opus with
                          WAV fallback, prefetch before the first click), playback, reverb
@@ -246,7 +247,9 @@ answer. One-time server setup and the GitHub secrets it needs:
 [docs/deploy.md](docs/deploy.md).
 
 The same site is also a Telegram Mini App: a bot opens it, and the page
-adapts when it sees Telegram's launch parameters. Bot setup:
+adapts when it sees Telegram's launch parameters. `t.me/<bot>?startapp=salsa`
+opens a genre; inside the app, Share sends a link that opens the pattern in
+the friend's Mini App (`app/core/telegram.ts`). Bot setup:
 [docs/telegram.md](docs/telegram.md).
 
 ## Audio samples

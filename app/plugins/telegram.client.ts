@@ -1,45 +1,41 @@
-/** The parts of Telegram's Mini App SDK (telegram.org/js/telegram-web-app.js) the site uses. */
-interface TelegramWebApp {
-  /** 'unknown' when the SDK runs outside Telegram. */
-  platform: string
-  isVersionAtLeast(version: string): boolean
-  ready(): void
-  expand(): void
-  disableVerticalSwipes(): void
-  setHeaderColor(color: string): void
-  setBackgroundColor(color: string): void
-  setBottomBarColor(color: string): void
-  BackButton: {
-    show(): void
-    hide(): void
-    onClick(callback: () => void): void
-  }
-}
-
-declare global {
-  interface Window {
-    Telegram?: { WebApp: TelegramWebApp }
-  }
-}
+import { parseStartParam, unpackCode } from '~/core/telegram'
+import { findGenre } from '~/genres'
+import { SHARE_PARAM } from '~/composables/useBeatMachine'
 
 /** The page background (neutral-950), so Telegram's header and edges blend in. */
 const BACKGROUND = '#110E0D'
+/** Set once the link's start parameter is followed, so a reload doesn't follow it again. */
+const START_FOLLOWED = 'telegram-start-followed'
 
 /**
  * Inside Telegram (opened as a Mini App): full height, Telegram's colors
  * matched to the site, and its own Back button instead of the browser's.
  * Vertical swipes are off, or dragging across the beat grid would pull the
- * app closed. The SDK is loaded only there (TELEGRAM_LOADER in nuxt.config.ts);
- * elsewhere this does nothing.
+ * app closed. A link with a start parameter (core/telegram.ts) opens its
+ * genre, with the shared pattern if it carries one. The SDK is loaded only
+ * there (TELEGRAM_LOADER in nuxt.config.ts); elsewhere this does nothing.
  */
 export default defineNuxtPlugin(() => {
   const router = useRouter()
   const localePath = useLocalePath()
   const routeBaseName = useRouteBaseName()
 
+  async function follow(param: string) {
+    try {
+      if (sessionStorage.getItem(START_FOLLOWED)) return
+      sessionStorage.setItem(START_FOLLOWED, '1')
+    } catch { /* storage blocked: follow it, at worst again on a reload */ }
+    const start = parseStartParam(param)
+    const genre = start && findGenre(start.genre)
+    if (!genre) return
+    // A pattern that won't unpack still opens its genre.
+    const code = start.packed ? await unpackCode(start.packed) : null
+    await router.replace({ path: localePath(`/${genre.id}`), query: code ? { [SHARE_PARAM]: code } : {} })
+  }
+
   function start() {
-    const webApp = window.Telegram?.WebApp
-    if (!webApp || webApp.platform === 'unknown') return
+    const webApp = telegramWebApp()
+    if (!webApp) return
 
     webApp.ready()
     webApp.expand()
@@ -60,6 +56,9 @@ export default defineNuxtPlugin(() => {
       router.afterEach(update)
       update()
     }
+
+    const param = webApp.initDataUnsafe.start_param
+    if (param) onNuxtReady(() => follow(param))
   }
 
   if (window.Telegram) start()

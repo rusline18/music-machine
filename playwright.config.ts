@@ -33,5 +33,7 @@ export default defineConfig({
     port: PORT,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
+    // Inside the Mini App, Share then sends t.me links (e2e/telegram.spec.ts).
+    env: { NUXT_PUBLIC_TELEGRAM_BOT: 'latinbeat_test_bot' },
   },
 })
