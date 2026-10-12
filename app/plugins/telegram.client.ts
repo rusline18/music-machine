@@ -1,3 +1,5 @@
+import { unpackPattern } from '~/core/compactPattern'
+import { encodePattern } from '~/core/share'
 import { parseStartParam, unpackCode } from '~/core/telegram'
 import { findGenre } from '~/genres'
 import { SHARE_PARAM } from '~/composables/useBeatMachine'
@@ -65,7 +67,8 @@ export default defineNuxtPlugin(() => {
     const genre = start && findGenre(start.genre)
     if (!genre) return
     // A pattern that won't unpack still opens its genre.
-    const code = start.packed ? await unpackCode(start.packed) : null
+    const pattern = start.pattern ? await unpackPattern(start.pattern, genre) : null
+    const code = pattern ? encodePattern(pattern, genre) : start.packed ? await unpackCode(start.packed) : null
     await router.replace({ path: localePath(`/${genre.id}`), query: code ? { [SHARE_PARAM]: code } : {} })
   }
 

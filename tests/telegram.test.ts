@@ -6,18 +6,22 @@ import { genres } from '~/genres'
 describe('start parameters', () => {
   it('name a genre, and maybe a packed pattern', () => {
     expect(parseStartParam('salsa')).toEqual({ genre: 'salsa' })
+    expect(parseStartParam('salsa-abc-_DEF09')).toEqual({ genre: 'salsa', pattern: 'abc-_DEF09' })
+  })
+
+  it('still read the packed codes of older links', () => {
     expect(parseStartParam('salsa_abc-_DEF09')).toEqual({ genre: 'salsa', packed: 'abc-_DEF09' })
   })
 
   it('reject anything else', () => {
-    for (const param of ['', 'Salsa', 'salsa_', 'sal sa', 'salsa_a.b', '../salsa', `salsa_${'a'.repeat(MAX_START_PARAM)}`]) {
+    for (const param of ['', 'Salsa', 'salsa_', 'salsa-', 'sal sa', 'salsa_a.b', '../salsa', `salsa_${'a'.repeat(MAX_START_PARAM)}`]) {
       expect(parseStartParam(param), param).toBeNull()
     }
   })
 
   it('are built only when Telegram would accept them', () => {
     expect(startParam('bachata')).toBe('bachata')
-    expect(startParam('bachata', 'xyz')).toBe('bachata_xyz')
+    expect(startParam('bachata', 'xyz')).toBe('bachata-xyz')
     expect(startParam('bachata', 'x'.repeat(MAX_START_PARAM))).toBeNull()
   })
 })
@@ -35,13 +39,12 @@ describe('links', () => {
   })
 })
 
-describe('packed patterns', () => {
-  it('fit every preset into a start parameter and come back unchanged', async () => {
+describe('packed codes', () => {
+  it('come back unchanged', async () => {
     for (const genre of genres) {
       for (const preset of genre.presets) {
         const code = encodePattern(preset, genre)
         const packed = await packCode(code)
-        expect(startParam(genre.id, packed!), preset.id).not.toBeNull()
         const unpacked = await unpackCode(packed!)
         expect(unpacked).toBe(code)
         expect(decodePattern(unpacked!, genre)).toEqual(decodePattern(code, genre))

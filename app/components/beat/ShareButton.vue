@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { SHARE_PARAM } from '~/composables/useBeatMachine'
 import { sendLink } from '~/core/sendLink'
-import { miniAppLink, packCode, startParam, telegramShareUrl } from '~/core/telegram'
+import { packPattern } from '~/core/compactPattern'
+import { decodePattern } from '~/core/share'
+import { miniAppLink, startParam, telegramShareUrl } from '~/core/telegram'
+import { findGenre } from '~/genres'
 
 const props = defineProps<{
   /** Pattern code from useBeatMachine().shareCode. */
@@ -19,7 +22,9 @@ let resetTimer: ReturnType<typeof setTimeout> | undefined
 
 /** A link that opens the pattern in the bot's Mini App, if it fits in one (core/telegram.ts). */
 async function miniAppPatternLink() {
-  const packed = await packCode(props.code)
+  const genre = findGenre(props.genre)
+  const pattern = genre && decodePattern(props.code, genre)
+  const packed = pattern && await packPattern(pattern, genre)
   const param = packed && startParam(props.genre, packed)
   return param ? miniAppLink(telegramBot, param) : null
 }
