@@ -234,8 +234,13 @@ CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit and e2e tests on
 every pull request and push to `main`; when e2e fails, download the
 `playwright-report` artifact and open `index.html` to see traces.
 
-For correct `hreflang` links in production, set the site's public URL:
+For correct canonical and `hreflang` links, link-preview images,
+`sitemap.xml` and `robots.txt` in production, set the site's public URL:
 `NUXT_PUBLIC_I18N_BASE_URL=https://example.com`.
+
+Link-preview images (`public/og/<locale>-<page>.png`, 1200×630) are drawn
+from the locale files; after changing a title, tagline or description, or
+adding a genre or language, re-render them with `node scripts/render-og.mjs`.
 
 ## Deploy
 
