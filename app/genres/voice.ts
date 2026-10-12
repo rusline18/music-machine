@@ -25,5 +25,9 @@ export const countingVoice: CountingVoice = {
   },
 }
 
-/** Voice track for presets: counts every beat, "1 2 3 … 8". */
-export const voiceTrack: TrackSpec = { instrument: 'voice', figure: countingFigure('counts', 2), volume: 0.8 }
+/**
+ * Voice track for presets: silent until the voice button turns the
+ * counting on ("1 2 3 … 8", then with "and"). Presets that are about the
+ * count, like on2's "2 … 6", write their own.
+ */
+export const voiceTrack: TrackSpec = { instrument: 'voice', figure: countingFigure('off', 2), volume: 0.8 }

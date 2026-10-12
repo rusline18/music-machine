@@ -319,3 +319,15 @@ describe('rhythm reference', () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 })
+
+describe('the counting voice', () => {
+  // Presets where what the voice says is the point of the preset.
+  const SPEAKING = ['salsa-on2-3-2']
+
+  it.each([...salsaPresets, ...bachataPresets].filter((p) => !SPEAKING.includes(p.id)).map((p) => [p.id, p] as const))(
+    '%s: silent until the voice button turns it on',
+    (_id, pattern) => {
+      expect(pattern.tracks.find((t) => t.instrument === 'voice')!.steps.every((step) => step === null)).toBe(true)
+    },
+  )
+})

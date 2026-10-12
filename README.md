@@ -275,7 +275,9 @@ Every genre has a **Voice** track that counts the dance in the page's
 language: a `count` step says the number of the count it falls on (1–8,
 starting over each 8-count block), an `and` step says "and" / «и». The
 **Voice** control switches it between off, "1 2 3…" and "1 & 2 &…"; cells
-can also be edited one by one. Random and Clear leave it alone.
+can also be edited one by one. Random and Clear leave it alone. Presets
+start with it off (`voiceTrack` in `app/genres/voice.ts`), except where the
+count is the point: on2 says "2 … 6".
 
 The current recordings are synthesized with espeak-ng
 (`scripts/speak-counts.py`) and sound robotic. For a real voice, record each
