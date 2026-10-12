@@ -1,4 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { contentSecurityPolicy } from './server/csp'
+
 export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxtjs/tailwindcss', '@nuxtjs/i18n'],
 
@@ -8,19 +10,8 @@ export default defineNuxtConfig({
     routeRules: {
       '/**': {
         headers: {
-          // Nuxt inlines its payload and hydration scripts, hence 'unsafe-inline'.
-          'Content-Security-Policy': [
-            'default-src \'self\'',
-            'script-src \'self\' \'unsafe-inline\'',
-            'style-src \'self\' \'unsafe-inline\'',
-            'img-src \'self\' data:',
-            'media-src \'self\'',
-            'connect-src \'self\'',
-            'object-src \'none\'',
-            'base-uri \'self\'',
-            'form-action \'self\'',
-            'frame-ancestors \'none\'',
-          ].join('; '),
+          // Pages replace it with one carrying their scripts' nonce (server/plugins/csp-nonce.ts).
+          'Content-Security-Policy': contentSecurityPolicy(),
           'X-Frame-Options': 'DENY',
           'X-Content-Type-Options': 'nosniff',
           'Referrer-Policy': 'strict-origin-when-cross-origin',

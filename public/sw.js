@@ -47,9 +47,12 @@ async function precachePage(cache, path) {
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(PAGES_CACHE)
+    // The user asked to save data: pages are kept as they're visited, as
+    // the sounds are (app/core/audio/prefetch.ts).
+    const savingData = self.navigator.connection?.saveData === true
     // One at a time, and one page failing (a flaky connection) doesn't
     // stop the others.
-    for (const path of PAGES) {
+    for (const path of savingData ? [] : PAGES) {
       try {
         await precachePage(cache, path)
       } catch { /* cached when it's next visited */ }

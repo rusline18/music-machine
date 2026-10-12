@@ -50,3 +50,18 @@ test('the home page downloads a genre\'s sounds before it is opened', async ({ p
   await page.getByRole('link', { name: 'Bachata' }).hover()
   await expect.poll(() => audio.length).toBeGreaterThan(0)
 })
+
+test('pages run under a CSP without inline-script allowance', async ({ page }) => {
+  const violations: string[] = []
+  page.on('console', (message) => {
+    if (message.text().includes('Content Security Policy')) violations.push(message.text())
+  })
+  const response = await page.goto('/salsa')
+  const policy = response!.headers()['content-security-policy']!
+  expect(policy).toMatch(/script-src 'self' 'nonce-[\w+/=]+';/)
+  expect(policy).not.toMatch(/script-src[^;]*unsafe-inline/)
+  // Hydrated: the app's scripts ran.
+  await page.getByRole('button', { name: '▶ Play' }).click()
+  await expect(page.getByRole('button', { name: '■ Stop' })).toBeVisible()
+  expect(violations).toEqual([])
+})
