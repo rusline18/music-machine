@@ -136,7 +136,7 @@ test.describe('salsa beat machine', () => {
     await page.getByRole('button', { name: 'Share' }).click()
     await expect(page.getByText('Link copied')).toBeVisible()
     const link = await page.evaluate(() => navigator.clipboard.readText())
-    expect(link).toMatch(/\/salsa\?p=[\w-]+$/)
+    expect(link).toMatch(/\/salsa\?b=[\w-]{1,40}$/)
 
     // Someone else opens it: a fresh browser, nothing saved.
     const other = await (await browser.newContext()).newPage()
@@ -148,6 +148,14 @@ test.describe('salsa beat machine', () => {
 
     await other.getByRole('button', { name: 'Reset' }).click()
     await expect(other.getByRole('button', { name: 'Clave step 1', exact: true })).not.toHaveAttribute('data-sound')
+  })
+
+  test('links shared before the short format still open their pattern', async ({ page }) => {
+    // Cha-cha-chá at 111 BPM, as Share wrote it until links got short.
+    await page.goto('/salsa?p=eyJ2IjoxLCJnIjoic2Fsc2EiLCJpIjoic2Fsc2EtY2hhY2hhY2hhLTItMyIsImMiOjgsInMiOjIsImIiOjExMSwiaCI6WyJDIiwiRzciXSwidCI6W1sidm9pY2UiLCItLS0tLS0tLS0tLS0tLS0tIiwwLjgsMF0sWyJjbGF2ZSIsIi0tYS1hLS0tYS0tYS0tYS0iLDAuNywwXSxbImNvbmdhcyIsImRlYmVkZWNjZGViZWRlY2MiLDEsMF0sWyJib25nb3MiLCItLS0tLS0tLS0tLS0tLS0tIiwwLjgsMV0sWyJ0aW1iYWxlcyIsIi0tYy0tLWEtLS1jLS0tYS0iLDAuNywwXSxbImNvd2JlbGwiLCItLS0tLS0tLS0tLS0tLS0tIiwwLjcsMV0sWyJ0aW1iYWxlYmVsbCIsImEtYS1hLWEtYS1hLWEtYS0iLDAuNywwXSxbIm1hcmFjYXMiLCItLS0tLS0tLS0tLS0tLS0tIiwwLjUsMV0sWyJndWlybyIsImItYWFiLWFhYi1hYWItYWEiLDAuOCwwXSxbImJhc3MiLCJhLS0tYi0tLWEtLS1iLS0tIiwwLjksMF0sWyJwaWFubyIsIi1kYWQtYmRlLWRiLWRjLWUiLDAuNDUsMF0sWyJ0cmVzIiwiLS0tLS0tLS0tLS0tLS0tLSIsMC41LDFdLFsidHJ1bXBldCIsIi0tLS0tLS0tLS0tLS0tLS0iLDAuNiwxXSxbInRyb21ib25lIiwiLS0tLS0tLS0tLS0tLS0tLSIsMC42LDFdXX0')
+    await expect(page.getByRole('combobox', { name: 'Pattern' })).toHaveValue('salsa-chachacha-2-3')
+    await expect(page.getByRole('group', { name: 'BPM' }).locator('output')).toContainText('111')
+    await expect(page).toHaveURL(/\/salsa$/)
   })
 
   test('a song is built from sections; ones that do not fit are greyed out with the reason', async ({ page }) => {
@@ -236,7 +244,7 @@ test.describe('on a phone', () => {
     })
     await page.goto('/salsa')
     await page.getByRole('button', { name: 'Share' }).tap()
-    await expect.poll(() => page.evaluate(() => (window as unknown as { shared?: ShareData }).shared?.url)).toMatch(/\/salsa\?p=[\w-]+$/)
+    await expect.poll(() => page.evaluate(() => (window as unknown as { shared?: ShareData }).shared?.url)).toMatch(/\/salsa\?b=[\w-]{1,40}$/)
     await expect(page.getByText('Link copied')).toBeHidden()
   })
 

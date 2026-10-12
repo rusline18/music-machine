@@ -4,6 +4,10 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-12
 
+- Share sends short links, to the site (`/salsa?b=…`) and in Telegram:
+  the pattern is packed as what changed from its preset, so an untouched
+  preset takes 12 characters instead of ~340–790, and a few edits a couple
+  dozen (`app/core/compactPattern.ts`). Links shared before still open.
 - Links to the site show a proper preview card in Telegram, WhatsApp, VK
   and X: a picture per page and language (`node scripts/render-og.mjs`),
   title and description (Open Graph, Twitter cards). Search engines get

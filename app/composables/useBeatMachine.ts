@@ -6,6 +6,7 @@ import { layerOrder } from '~/core/layers'
 import type { Pattern } from '~/core/pattern'
 import { patternLength, resizeSteps, setPatternCounts, switchStep, trackOf } from '~/core/pattern'
 import type { CountingMode } from '~/core/resolve'
+import { unpackPattern } from '~/core/compactPattern'
 import { decodePattern, encodePattern } from '~/core/share'
 import { packCode, unpackCode } from '~/core/telegram'
 import type { SectionFit } from '~/core/song'
@@ -26,8 +27,10 @@ const RANDOM_DENSITY = 0.25
 /** How long the music fades out when the page is left while it plays: about the curtain closing. */
 const LEAVE_FADE_SECONDS = 0.4
 
-/** Query parameter carrying a shared pattern: /salsa?p=… */
-export const SHARE_PARAM = 'p'
+/** Query parameter carrying a shared pattern, packed by packPattern (core/compactPattern.ts): /salsa?b=… */
+export const SHARE_PARAM = 'b'
+/** The same as a share.ts code: older links, and browsers that can't compress. */
+export const SHARE_CODE_PARAM = 'p'
 const storageKey = (genreId: string) => `latin-beat-machine:pattern:${genreId}`
 /** The same pattern in the user's Telegram cloud (CloudStorage keys: letters, digits, _ and -). */
 const cloudKey = (genreId: string) => `pattern-${genreId}`
@@ -189,15 +192,18 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
   // first keeps hydration consistent.
   const route = useRoute()
   const router = useRouter()
-  onMounted(() => {
-    const fromLink = route.query[SHARE_PARAM]
+  onMounted(async () => {
+    const { [SHARE_PARAM]: packed, [SHARE_CODE_PARAM]: code, ...query } = route.query
+    const fromLink = typeof packed === 'string' || typeof code === 'string'
     let restored: Pattern | null = null
-    if (typeof fromLink === 'string') {
-      restored = decodePattern(fromLink, genre)
+    if (fromLink) {
       // Drop the code from the address bar: edits from here on are the
       // user's own and get saved locally instead.
-      const { [SHARE_PARAM]: _, ...query } = route.query
       router.replace({ query })
+      const before = shareCode.value
+      restored = typeof packed === 'string' ? await unpackPattern(packed, genre) : decodePattern(code as string, genre)
+      // Unpacking waits for the browser: a tap on the grid meanwhile wins.
+      if (shareCode.value !== before) return
     }
     if (!restored) {
       try {
@@ -206,7 +212,7 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
       } catch { /* storage blocked: start from the preset */ }
     }
     if (restored) loadPattern(restored)
-    if (typeof fromLink !== 'string' && inTelegram()) restoreFromCloud()
+    if (!fromLink && inTelegram()) restoreFromCloud()
   })
 
   // Inside Telegram the pattern is also kept in the user's Telegram cloud,

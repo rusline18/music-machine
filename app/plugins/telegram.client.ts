@@ -1,6 +1,6 @@
 import { parseStartParam, unpackCode } from '~/core/telegram'
 import { findGenre } from '~/genres'
-import { SHARE_PARAM } from '~/composables/useBeatMachine'
+import { SHARE_CODE_PARAM, SHARE_PARAM } from '~/composables/useBeatMachine'
 
 /** The page background (neutral-950), so Telegram's header and edges blend in. */
 const BACKGROUND = '#110E0D'
@@ -64,9 +64,11 @@ export default defineNuxtPlugin(() => {
     const start = parseStartParam(param)
     const genre = start && findGenre(start.genre)
     if (!genre) return
-    // A pattern that won't unpack still opens its genre.
+    // The page unpacks the pattern, as from a site link; older links carry
+    // a share.ts code. One that won't unpack still opens its genre.
     const code = start.packed ? await unpackCode(start.packed) : null
-    await router.replace({ path: localePath(`/${genre.id}`), query: code ? { [SHARE_PARAM]: code } : {} })
+    const query = start.pattern ? { [SHARE_PARAM]: start.pattern } : code ? { [SHARE_CODE_PARAM]: code } : {}
+    await router.replace({ path: localePath(`/${genre.id}`), query })
   }
 
   function start(webApp: TelegramWebApp | null) {

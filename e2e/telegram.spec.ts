@@ -121,6 +121,16 @@ test('a t.me link with a genre opens that genre', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Bachata' })).toBeVisible()
 })
 
+test('links shared before the short format still open their pattern', async ({ page }) => {
+  // Cha-cha-chá at 111 BPM, as Share packed it until links got short.
+  const old = 'salsa_hZHBboQwDET_Zc52tWy7ZZtrD_0IxMFOIhYJyIqw9FD136s0IEEl1MSOc3iaGSVfmGEKQgODKF0UENr1zvYmufjMzyBYmCshwpwJClMUBeEGU-EdhI8SNWGCqSrMobUeBP6zQKenK51qqmA7mTMiLJzOXAkpFyQMjUQQnFfvvLXrBBWZ0DA0IR4aFYmZ2l6l85my2WmZO69P9V13IFXupBZQeL83ar2MYuUo2CWrNY92DCAoi2x780gqMf46MeuSXBeRt0zcWxmSCDtxrM6zU3aWfUJeLpmZRv9PlGl89Hc_HUCvKxR6DcPRvyaq_v4B'
+  await fakeTelegram(page, old)
+  await page.goto(`/${LAUNCH}`)
+  await expect(page).toHaveURL('/salsa')
+  await expect(page.getByRole('combobox', { name: 'Pattern' })).toHaveValue('salsa-chachacha-2-3')
+  await expect(page.getByRole('group', { name: 'BPM' }).locator('output')).toContainText('111')
+})
+
 test('Share in Telegram sends a t.me link that opens the same pattern in the Mini App', async ({ page, browser }) => {
   await fakeTelegram(page)
   await page.goto(`/salsa${LAUNCH}`)
@@ -133,7 +143,7 @@ test('Share in Telegram sends a t.me link that opens the same pattern in the Min
   const link = new URL(shared.searchParams.get('url')!)
   expect(link.origin + link.pathname).toBe(`https://t.me/${BOT}`)
   const startParam = link.searchParams.get('startapp')!
-  expect(startParam).toMatch(/^salsa_[\w-]+$/)
+  expect(startParam).toMatch(/^salsa-[\w-]{1,40}$/)
   expect(shared.searchParams.get('text')).toContain('Latin Beat Machine')
 
   // A friend taps it: Telegram opens the Mini App with that start parameter.
