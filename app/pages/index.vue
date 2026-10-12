@@ -32,9 +32,10 @@ onBeforeUnmount(() => observer?.disconnect())
 const { $curtain } = useNuxtApp()
 const aim = (event: MouseEvent) => $curtain?.aim(event.currentTarget as HTMLElement)
 
-useSeoMeta({
+useSeoPage({
   title: () => t('app.name'),
   description: () => t('app.description'),
+  image: 'home',
 })
 
 /** Each genre's own color; spelled out in full so Tailwind keeps the classes. */

@@ -4,6 +4,11 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-12
 
+- Links to the site show a proper preview card in Telegram, WhatsApp, VK
+  and X: a picture per page and language (`node scripts/render-og.mjs`),
+  title and description (Open Graph, Twitter cards). Search engines get
+  `/sitemap.xml` with every page in both languages, a `robots.txt` that
+  points to it, and a schema.org description of the app.
 - Share answers in the button itself: it dips and fills with the genre's
   color, the link spins away into a check that draws itself, and the label
   turns to "Copied" before going back. No more text popping up beside it,
