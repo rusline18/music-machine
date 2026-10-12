@@ -14,6 +14,19 @@ window.Telegram = { WebApp: {
     user: window.fakeLanguage ? { language_code: window.fakeLanguage } : undefined,
   },
   openTelegramLink: (url) => window.telegramCalls.push('open ' + url),
+  CloudStorage: {
+    getItem: (key, callback) => setTimeout(() => callback(null, window.fakeCloud[key] ?? '')),
+    setItem: (key, value, callback) => {
+      window.fakeCloud[key] = value
+      window.telegramCalls.push('cloud set ' + key)
+      setTimeout(() => callback?.(null, true))
+    },
+    removeItem: (key, callback) => {
+      delete window.fakeCloud[key]
+      window.telegramCalls.push('cloud remove ' + key)
+      setTimeout(() => callback?.(null, true))
+    },
+  },
   HapticFeedback: {
     impactOccurred: (style) => window.telegramCalls.push('impact ' + style),
     selectionChanged: record('selection'),
@@ -46,10 +59,10 @@ function openedLink(page: Page) {
 }
 
 /** Telegram's SDK, stood in for; `startParam` and `language` are what Telegram would pass. */
-async function fakeTelegram(page: Page, startParam?: string, language?: string) {
-  await page.addInitScript(([param, code]) => {
-    Object.assign(window, { fakeStartParam: param, fakeLanguage: code })
-  }, [startParam, language])
+async function fakeTelegram(page: Page, startParam?: string, language?: string, cloud: Record<string, string> = {}) {
+  await page.addInitScript(([param, code, stored]) => {
+    Object.assign(window, { fakeStartParam: param, fakeLanguage: code, fakeCloud: stored })
+  }, [startParam, language, cloud] as const)
   const requested: string[] = []
   await page.route(SDK, (route) => {
     requested.push(route.request().url())
@@ -155,4 +168,25 @@ test('a genre link opens in Telegram\'s language', async ({ page }) => {
   await page.goto(`/${LAUNCH}`)
   await expect(page).toHaveURL('/ru/bachata')
   await expect(page.getByRole('heading', { name: 'Бачата' })).toBeVisible()
+})
+
+test('in Telegram an edited pattern is kept in the user\'s cloud and opens on another device', async ({ page, browser }) => {
+  await fakeTelegram(page)
+  await page.goto(`/salsa${LAUNCH}`)
+  await page.getByRole('combobox', { name: 'Pattern' }).selectOption('salsa-chachacha-2-3')
+  await page.getByRole('button', { name: 'Clave step 1', exact: true }).click()
+  const cloud = () => page.evaluate(() => (window as unknown as { fakeCloud: Record<string, string> }).fakeCloud)
+  await expect.poll(async () => Object.keys(await cloud())).toEqual(['pattern-salsa'])
+
+  // The same Telegram account on another device: nothing saved locally there.
+  const other = await (await browser.newContext()).newPage()
+  await fakeTelegram(other, undefined, undefined, await cloud())
+  await other.goto(`/salsa${LAUNCH}`)
+  await expect(other.getByRole('combobox', { name: 'Pattern' })).toHaveValue('salsa-chachacha-2-3')
+  await expect(other.getByRole('button', { name: 'Clave step 1', exact: true })).toHaveAttribute('data-sound')
+
+  // Back to the untouched preset: it leaves the cloud too.
+  await other.getByRole('button', { name: 'Reset' }).click()
+  await expect.poll(() => other.evaluate(() => (window as unknown as { fakeCloud: Record<string, string> }).fakeCloud))
+    .toEqual({})
 })

@@ -7,6 +7,7 @@ import type { Pattern } from '~/core/pattern'
 import { patternLength, resizeSteps, setPatternCounts, switchStep, trackOf } from '~/core/pattern'
 import type { CountingMode } from '~/core/resolve'
 import { decodePattern, encodePattern } from '~/core/share'
+import { packCode, unpackCode } from '~/core/telegram'
 import type { SectionFit } from '~/core/song'
 import { buildSong, sectionFit, songBpm } from '~/core/song'
 import { COUNTING_MODES, countingFigure, patternSampleUrls, sampleUrls, stepNames, stepResolver } from '~/core/resolve'
@@ -28,6 +29,10 @@ const LEAVE_FADE_SECONDS = 0.4
 /** Query parameter carrying a shared pattern: /salsa?p=… */
 export const SHARE_PARAM = 'p'
 const storageKey = (genreId: string) => `latin-beat-machine:pattern:${genreId}`
+/** The same pattern in the user's Telegram cloud (CloudStorage keys: letters, digits, _ and -). */
+const cloudKey = (genreId: string) => `pattern-${genreId}`
+/** Edits come in bursts of taps: the cloud is written once they pause. */
+const CLOUD_SAVE_DELAY_MS = 1000
 
 /**
  * Pattern state + audio engine + scheduler for one genre page.
@@ -201,7 +206,41 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
       } catch { /* storage blocked: start from the preset */ }
     }
     if (restored) loadPattern(restored)
+    if (typeof fromLink !== 'string' && inTelegram()) restoreFromCloud()
   })
+
+  // Inside Telegram the pattern is also kept in the user's Telegram cloud,
+  // so it follows them from phone to computer. The cloud copy wins over
+  // this device's, unless the user has started editing before it arrives.
+  let cloudRead: Promise<void> = Promise.resolve()
+  function restoreFromCloud() {
+    const before = shareCode.value
+    cloudRead = (async () => {
+      const packed = await cloudGet(cloudKey(genre.id))
+      const code = packed && await unpackCode(packed)
+      const fromCloud = code && decodePattern(code, genre)
+      if (fromCloud && shareCode.value === before) loadPattern(fromCloud)
+    })()
+  }
+
+  /** Bumped by every save, so a slower, older one gives way. */
+  let cloudSaves = 0
+  let cloudTimer: ReturnType<typeof setTimeout> | undefined
+  /** Saves `code` to the cloud, or removes it for null (an untouched preset). */
+  function saveToCloud(code: string | null) {
+    if (!inTelegram()) return
+    const save = ++cloudSaves
+    clearTimeout(cloudTimer)
+    cloudTimer = setTimeout(async () => {
+      // Not before the cloud's own copy is in, or this device's older one would overwrite it.
+      await cloudRead
+      const packed = code === null ? null : await packCode(code)
+      if (save !== cloudSaves) return
+      if (code === null) cloudSet(cloudKey(genre.id), null)
+      // Too long for a cloud value (a long song), or no compression on this phone: this device only.
+      else if (packed && packed.length <= CLOUD_VALUE_MAX) cloudSet(cloudKey(genre.id), packed)
+    }, CLOUD_SAVE_DELAY_MS)
+  }
 
   /** Presets never change (loading one clones it), so each one's code is worked out once. */
   const presetCodes = new Map<string, string>()
@@ -216,10 +255,12 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
   // Only edits are kept: an untouched preset isn't stored, so it picks up
   // fixes to the preset data on the next visit.
   watch(shareCode, (code) => {
+    const edited = presetCode(pattern.value.id) !== code
     try {
-      if (presetCode(pattern.value.id) === code) localStorage.removeItem(storageKey(genre.id))
-      else localStorage.setItem(storageKey(genre.id), code)
+      if (edited) localStorage.setItem(storageKey(genre.id), code)
+      else localStorage.removeItem(storageKey(genre.id))
     } catch { /* storage full or blocked: nothing to save to */ }
+    saveToCloud(edited ? code : null)
   })
 
   const findTrack = (instrument: string) => trackOf(pattern.value, instrument)

@@ -69,8 +69,7 @@ export default defineNuxtPlugin(() => {
     await router.replace({ path: localePath(`/${genre.id}`), query: code ? { [SHARE_PARAM]: code } : {} })
   }
 
-  function start() {
-    const webApp = telegramWebApp()
+  function start(webApp: TelegramWebApp | null) {
     if (!webApp) return
 
     webApp.ready()
@@ -102,6 +101,5 @@ export default defineNuxtPlugin(() => {
     })
   }
 
-  if (window.Telegram) start()
-  else window.addEventListener('telegram-sdk', start, { once: true })
+  whenTelegram().then(start)
 })
