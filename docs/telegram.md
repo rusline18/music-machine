@@ -10,7 +10,7 @@ Mini App — это тот же сайт, открытый внутри Telegram
 - красит шапку и фон Telegram в цвет сайта;
 - отключает закрытие свайпом вниз, чтобы оно не срабатывало при работе с сеткой битов;
 - показывает кнопку «Назад» Telegram на странице жанра, она ведёт на главную;
-- открывает жанр или присланный бит из ссылки `t.me/<бот>?startapp=…`;
+- открывает жанр или присланный бит из ссылки `t.me/latinbeatmachine_bot?startapp=…`;
 - «Поделиться» открывает выбор чата Telegram (см. «Ссылки» ниже).
 
 Обычные посетители сайта SDK не скачивают. Код: `TELEGRAM_LOADER` в
@@ -21,11 +21,11 @@ Mini App — это тот же сайт, открытый внутри Telegram
 В Telegram откройте [@BotFather](https://t.me/BotFather).
 
 1. `/newbot` — имя (например, `Latin Beat Machine`) и username,
-   оканчивающийся на `bot` (например, `latinbeatmachine_bot`).
+   оканчивающийся на `bot` (у нас — `latinbeatmachine_bot`).
 2. `/mybots` → ваш бот → **Bot Settings** → **Configure Mini App** →
    **Enable Mini App** → адрес `https://latinbeatmachine.ru`.
    В профиле бота появится кнопка «Открыть» (её Telegram переводит сам),
-   а ссылка `https://t.me/<username>?startapp` открывает приложение сразу.
+   а ссылка `https://t.me/latinbeatmachine_bot?startapp` открывает приложение сразу.
 3. `/mybots` → бот → **Bot Settings** → **Menu Button** → подпись `▶ Play`
    → тот же адрес. Это кнопка в чате с ботом, слева от поля ввода. Без
    своей подписи её нет (`/empty` её убирает), а своя подпись одна на все
@@ -95,13 +95,13 @@ curl -s "https://api.telegram.org/bot$TOKEN/setMyShortDescription" \
 
 ## Ссылки
 
-**На жанр:** `https://t.me/<username>?startapp=salsa` или `?startapp=bachata`
+**На жанр:** `https://t.me/latinbeatmachine_bot?startapp=salsa` или `?startapp=bachata`
 открывает Mini App сразу на странице жанра, на языке пользователя. Удобно
 для постов и чатов танцевальных школ.
 
 **На бит.** Внутри Mini App кнопка «Поделиться» открывает выбор чата
 Telegram с сообщением «Вот мой бит — открой в Latin Beat Machine 🥁» и
-ссылкой `t.me/<username>?startapp=salsa_…`. Получатель нажимает — и бит
+ссылкой `t.me/latinbeatmachine_bot?startapp=salsa_…`. Получатель нажимает — и бит
 открывается у него в Mini App, со всем: темп, длина, выключенные
 инструменты. Бит в ссылке сжат: Telegram пропускает не больше 512
 символов, а код бита сальсы — около 790, сжатый — около 350. Если бит всё
