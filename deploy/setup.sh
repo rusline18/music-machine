@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-time setup of a fresh Ubuntu 24.04 VPS. Run as root from a copy of
+# One-time setup of a fresh Ubuntu 24.04 or Debian 13 VPS. Run as root from a copy of
 # this folder:
 #   sudo bash setup.sh example.ru "ssh-ed25519 AAAA... github-deploy"
 # The second argument is the public half of the key GitHub Actions deploys
