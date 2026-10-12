@@ -14,6 +14,10 @@ export interface TelegramWebApp {
   setBackgroundColor(color: string): void
   setBottomBarColor(color: string): void
   openTelegramLink(url: string): void
+  HapticFeedback: {
+    impactOccurred(style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft'): void
+    selectionChanged(): void
+  }
   BackButton: {
     show(): void
     hide(): void

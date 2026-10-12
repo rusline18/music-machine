@@ -11,6 +11,10 @@ window.Telegram = { WebApp: {
   platform: 'android',
   initDataUnsafe: { start_param: window.fakeStartParam },
   openTelegramLink: (url) => window.telegramCalls.push('open ' + url),
+  HapticFeedback: {
+    impactOccurred: (style) => window.telegramCalls.push('impact ' + style),
+    selectionChanged: record('selection'),
+  },
   isVersionAtLeast: () => true,
   ready: record('ready'),
   expand: record('expand'),
@@ -114,4 +118,18 @@ test('Share in Telegram sends a t.me link that opens the same pattern in the Min
   await expect(other).toHaveURL('/salsa')
   await expect(other.getByRole('combobox', { name: 'Pattern' })).toHaveValue('salsa-chachacha-2-3')
   await expect(other.getByRole('button', { name: 'Clave step 1', exact: true })).toHaveAttribute('data-sound')
+})
+
+test('controls answer with a vibration in Telegram', async ({ page }) => {
+  await fakeTelegram(page)
+  await page.goto(`/salsa${LAUNCH}`)
+  const haptics = () => page.evaluate(() => (window as unknown as { telegramCalls: string[] }).telegramCalls
+    .filter((call) => call.startsWith('impact') || call === 'selection'))
+
+  await page.getByRole('button', { name: 'Clave step 2', exact: true }).click()
+  await expect.poll(haptics).toEqual(['impact light'])
+  await page.getByRole('button', { name: '▶ Play' }).click()
+  await expect.poll(haptics).toEqual(['impact light', 'impact medium'])
+  await page.getByRole('combobox', { name: 'Pattern' }).selectOption('salsa-chachacha-2-3')
+  await expect.poll(haptics).toEqual(['impact light', 'impact medium', 'selection'])
 })
