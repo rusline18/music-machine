@@ -4,6 +4,10 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-12
 
+- Share answers in the button itself: it dips and fills with the genre's
+  color, the link spins away into a check that draws itself, and the label
+  turns to "Copied" before going back. No more text popping up beside it,
+  and the button keeps its width, so nothing around it moves.
 - After a stall (a background tab, a long pause) the beat picks up where
   it should be instead of playing every missed step at once.
 - Opening shared links no longer fills the offline cache: a page is kept

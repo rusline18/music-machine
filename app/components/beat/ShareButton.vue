@@ -41,22 +41,48 @@ onUnmounted(() => clearTimeout(resetTimer))
 
 <template>
   <div class="flex flex-wrap items-center gap-3">
+    <!-- On a copy the button fills with the genre's color and the link
+         turns into a check (main.css, .share-button). -->
     <button
       type="button"
-      class="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-accent-500/20 px-4 py-2 sm:min-h-0 text-sm font-medium text-accent-400 hover:bg-accent-500/30"
+      class="share-button inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-accent-500/20 px-4 py-2 sm:min-h-0 text-sm font-medium text-accent-400 hover:bg-accent-500/30"
+      :class="{ 'is-copied': status === 'copied' }"
       :title="$t('help.controls.share')"
       @click="share"
     >
-      <UiIcon name="share" />
-      {{ $t('controls.share') }}
+      <span class="relative size-5 shrink-0">
+        <UiIcon
+          name="share"
+          class="share-link absolute inset-0"
+        />
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.25"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+          class="share-check absolute inset-0 size-5"
+        >
+          <path d="M5 12.5l4.5 4.5L19 7.5" />
+        </svg>
+      </span>
+      <!-- Both labels share one cell, so the button keeps the width of the longer one. -->
+      <span class="grid">
+        <span class="share-label [grid-area:1/1]">{{ $t('controls.share') }}</span>
+        <span
+          class="share-label-copied [grid-area:1/1]"
+          aria-hidden="true"
+        >{{ $t('controls.copied') }}</span>
+      </span>
     </button>
     <span
-      v-if="status === 'copied'"
-      class="text-sm text-neutral-400"
+      class="sr-only"
       role="status"
-    >{{ $t('controls.linkCopied') }}</span>
+    >{{ status === 'copied' ? $t('controls.linkCopied') : '' }}</span>
     <input
-      v-else-if="status === 'manual'"
+      v-if="status === 'manual'"
       :value="link"
       readonly
       :aria-label="$t('controls.link')"
