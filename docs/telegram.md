@@ -22,11 +22,14 @@ Mini App — это тот же сайт, открытый внутри Telegram
    оканчивающийся на `bot` (например, `latinbeatmachine_bot`).
 2. `/mybots` → ваш бот → **Bot Settings** → **Configure Mini App** →
    **Enable Mini App** → адрес `https://latinbeatmachine.ru`.
-   В профиле бота появится кнопка «Открыть», а ссылка
-   `https://t.me/<username>?startapp` открывает приложение сразу.
-3. `/mybots` → бот → **Bot Settings** → **Menu Button** → тот же адрес и
-   подпись кнопки (например, `Играть`). Кнопка появится в чате с ботом
-   слева от поля ввода.
+   В профиле бота появится кнопка «Открыть» (её Telegram переводит сам),
+   а ссылка `https://t.me/<username>?startapp` открывает приложение сразу.
+3. `/mybots` → бот → **Bot Settings** → **Menu Button** → подпись `▶ Play`
+   → тот же адрес. Это кнопка в чате с ботом, слева от поля ввода. Без
+   своей подписи её нет (`/empty` её убирает), а своя подпись одна на все
+   языки, поэтому — понятная без перевода. Проверить, что задано:
+   `curl -s "https://api.telegram.org/bot$TOKEN/getChatMenuButton"`
+   (про токен — ниже).
 4. Описание и аватарка: см. ниже.
 
 Язык выбирается так же, как на сайте: по языку телефона, дальше
@@ -48,7 +51,7 @@ Mini App — это тот же сайт, открытый внутри Telegram
 
 Помогает услышать «раз», попадать в музыку и понимать, что играет оркестр.
 
-Нажми «Играть» 👇
+Жми на кнопку внизу 👇
 ```
 
 **Краткое описание** (`/setabouttext`, до 120 символов) видно в профиле
@@ -58,7 +61,8 @@ Mini App — это тот же сайт, открытый внутри Telegram
 Тренажёр ритмов сальсы и бачаты: собери бит, слушай счёт и танцуй в своём темпе. latinbeatmachine.ru
 ```
 
-«Играть» — подпись кнопки меню из шага 3; если она другая, поправьте текст.
+Описания ссылаются на «кнопку внизу», а не на её подпись, чтобы не
+расходиться с ней, если подпись поменяется.
 
 ### По-английски
 
@@ -78,7 +82,7 @@ Build a beat from real percussion — clave, congas, bongos, güira, bass — an
 
 Learn to hear the "one", stay on the beat and understand what the band is doing.
 
-Tap "Play" 👇'
+Tap the button below 👇'
 
 curl -s "https://api.telegram.org/bot$TOKEN/setMyShortDescription" \
   --data-urlencode 'language_code=en' \
