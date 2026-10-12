@@ -4,16 +4,19 @@ import { contentSecurityPolicy } from './server/csp'
  * Loads Telegram's Mini App SDK, but only when the page was opened as a Mini
  * App: Telegram passes its launch parameters in the URL hash (#tgWebAppData=…),
  * and the SDK keeps them in sessionStorage for reloads. Ordinary visitors
- * download nothing extra.
+ * download nothing extra. window.telegramReady settles once the SDK has
+ * loaded or failed to (useTelegram.ts); outside Telegram it isn't set.
  */
 const TELEGRAM_LOADER = `(function () {
   try {
     if (!/[#&]tgWebApp/.test(location.hash) && !sessionStorage.getItem('__telegram__initParams')) return
   } catch (e) { return }
-  var script = document.createElement('script')
-  script.src = 'https://telegram.org/js/telegram-web-app.js'
-  script.onload = function () { window.dispatchEvent(new Event('telegram-sdk')) }
-  document.head.appendChild(script)
+  window.telegramReady = new Promise(function (resolve) {
+    var script = document.createElement('script')
+    script.src = 'https://telegram.org/js/telegram-web-app.js'
+    script.onload = script.onerror = function () { resolve() }
+    document.head.appendChild(script)
+  })
 })()`
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
@@ -86,6 +89,12 @@ export default defineNuxtConfig({
       // Link to a donation page (Boosty, Ko-fi…), https only. Empty hides the
       // button. Set with the NUXT_PUBLIC_DONATE_URL environment variable.
       donateUrl: '',
+      /**
+       * NUXT_PUBLIC_TELEGRAM_BOT: the bot's username (without @). Inside the
+       * Mini App, sharing then sends a t.me link that opens the pattern in
+       * the app (docs/telegram.md). Empty: Telegram gets the site's link.
+       */
+      telegramBot: '',
       /**
        * NUXT_PUBLIC_FEEDBACK_ENABLED=true shows the "Send feedback" link and
        * opens /api/feedback. Off until it's decided where feedback goes.

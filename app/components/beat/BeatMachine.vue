@@ -80,6 +80,7 @@ const nextCounting = () => setCounting(COUNTING_MODES[(COUNTING_MODES.indexOf(co
 
 const togglePlay = () => (isPlaying.value || isLoading.value ? stop() : play())
 useWakeLock(() => isPlaying.value)
+useClosingConfirmation(() => isPlaying.value)
 useHotkeys({
   togglePlay,
   nudgeTempo,
@@ -299,7 +300,10 @@ const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(active
         <UiIcon name="reset" />
         {{ $t('controls.reset') }}
       </button>
-      <BeatShareButton :code="shareCode" />
+      <BeatShareButton
+        :code="shareCode"
+        :genre="genre.id"
+      />
       <button
         type="button"
         class="inline-flex min-h-11 items-center gap-2 rounded-xl border border-neutral-700 px-4 py-2 text-sm text-neutral-200 transition hover:bg-neutral-800"

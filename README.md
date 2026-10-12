@@ -27,6 +27,7 @@ app/
     song.ts              Songs built from presets: which sections fit together (clave,
                          tempo, length) and joining them with a fill between sections
     sendLink.ts          Share sheet on touch screens, clipboard elsewhere
+    telegram.ts          Telegram Mini App links: t.me/<bot>?startapp=<genre>[_<packed pattern>]
     audio/
       engine.ts          AudioContext, per-instrument gain, sample loading (Opus with
                          WAV fallback, prefetch before the first click), playback, reverb
@@ -251,7 +252,9 @@ answer. One-time server setup and the GitHub secrets it needs:
 [docs/deploy.md](docs/deploy.md).
 
 The same site is also a Telegram Mini App: a bot opens it, and the page
-adapts when it sees Telegram's launch parameters. Bot setup:
+adapts when it sees Telegram's launch parameters. `t.me/<bot>?startapp=salsa`
+opens a genre; inside the app, Share sends a link that opens the pattern in
+the friend's Mini App (`app/core/telegram.ts`). Bot setup:
 [docs/telegram.md](docs/telegram.md).
 
 ## Audio samples
@@ -277,7 +280,9 @@ Every genre has a **Voice** track that counts the dance in the page's
 language: a `count` step says the number of the count it falls on (1–8,
 starting over each 8-count block), an `and` step says "and" / «и». The
 **Voice** control switches it between off, "1 2 3…" and "1 & 2 &…"; cells
-can also be edited one by one. Random and Clear leave it alone.
+can also be edited one by one. Random and Clear leave it alone. Presets
+start with it off (`voiceTrack` in `app/genres/voice.ts`), except where the
+count is the point: on2 says "2 … 6".
 
 The current recordings are synthesized with espeak-ng
 (`scripts/speak-counts.py`) and sound robotic. For a real voice, record each

@@ -1,16 +1,28 @@
 <script setup lang="ts">
 import { SHARE_PARAM } from '~/composables/useBeatMachine'
 import { sendLink } from '~/core/sendLink'
+import { miniAppLink, packCode, startParam, telegramShareUrl } from '~/core/telegram'
 
 const props = defineProps<{
   /** Pattern code from useBeatMachine().shareCode. */
   code: string
+  genre: string
 }>()
+
+const { t } = useI18n()
+const telegramBot = useRuntimeConfig().public.telegramBot
 
 /** 'copied' after a successful copy; 'manual' when the browser won't let us copy. */
 const status = ref<'idle' | 'copied' | 'manual'>('idle')
 const link = ref('')
 let resetTimer: ReturnType<typeof setTimeout> | undefined
+
+/** A link that opens the pattern in the bot's Mini App, if it fits in one (core/telegram.ts). */
+async function miniAppPatternLink() {
+  const packed = await packCode(props.code)
+  const param = packed && startParam(props.genre, packed)
+  return param ? miniAppLink(telegramBot, param) : null
+}
 
 async function share() {
   const url = new URL(window.location.href)
@@ -18,6 +30,14 @@ async function share() {
   url.hash = ''
   url.searchParams.set(SHARE_PARAM, props.code)
   link.value = url.toString()
+
+  // Inside Telegram: its own chat picker, with a link that opens the
+  // pattern right in the Mini App (or the site, if the pattern's too long).
+  const webApp = telegramWebApp()
+  if (webApp && telegramBot) {
+    webApp.openTelegramLink(telegramShareUrl(await miniAppPatternLink() ?? link.value, t('controls.shareText')))
+    return
+  }
 
   clearTimeout(resetTimer)
   const touch = window.matchMedia('(pointer: coarse)').matches
