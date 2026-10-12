@@ -19,6 +19,14 @@ test('works offline once visited', async ({ page, context }) => {
     return settled
   }, { timeout: 20_000, intervals: [1000] }).toBe(true)
 
+  // A shared link is cached as its page: one copy, not one per link.
+  await page.goto('/salsa?p=shared')
+  const cachedPages = await page.evaluate(async () => {
+    const pages = (await caches.keys()).find((key) => key.startsWith('pages-'))
+    return pages ? (await (await caches.open(pages)).keys()).map((request) => request.url) : []
+  })
+  expect(cachedPages.some((url) => url.includes('?p='))).toBe(false)
+
   const failed: string[] = []
   page.on('requestfailed', (request) => failed.push(`${request.url()} ${request.failure()?.errorText}`))
   await context.setOffline(true)

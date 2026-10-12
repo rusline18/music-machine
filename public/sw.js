@@ -67,14 +67,15 @@ self.addEventListener('activate', (event) => {
   })())
 })
 
-async function networkFirst(request) {
+/** `key` is what the response is cached as; the request itself by default. */
+async function networkFirst(request, key = request) {
   const cache = await caches.open(PAGES_CACHE)
   try {
     const response = await fetch(request)
-    if (response.ok) await cache.put(request, await storable(response.clone()))
+    if (response.ok) await cache.put(key, await storable(response.clone()))
     return response
   } catch (error) {
-    const cached = await cache.match(request, { ignoreSearch: true })
+    const cached = await cache.match(key, { ignoreSearch: true })
     if (cached) return cached
     throw error
   }
@@ -94,7 +95,9 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url)
   if (request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return
 
-  if (request.mode === 'navigate') event.respondWith(networkFirst(request))
+  // Pages are cached by path alone: the query (a shared pattern, ?p=…) is
+  // read in the browser, and keeping a copy per link would grow without end.
+  if (request.mode === 'navigate') event.respondWith(networkFirst(request, url.origin + url.pathname))
   else if (url.pathname.startsWith('/audio/')) event.respondWith(cacheFirst(request, AUDIO_CACHE))
   // builds/ says which deploy is current: always ask the server first.
   else if (url.pathname.startsWith('/_nuxt/') && !url.pathname.startsWith('/_nuxt/builds/')) event.respondWith(cacheFirst(request, PAGES_CACHE))
