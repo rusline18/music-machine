@@ -3,12 +3,12 @@ import { addScriptNonce, contentSecurityPolicy } from '../server/csp'
 
 describe('contentSecurityPolicy', () => {
   it('allows no inline scripts without a nonce', () => {
-    expect(contentSecurityPolicy()).toContain('script-src \'self\';')
+    expect(contentSecurityPolicy()).toContain('script-src \'self\' https://telegram.org;')
     expect(contentSecurityPolicy()).not.toMatch(/script-src[^;]*unsafe-inline/)
   })
 
   it('allows scripts carrying the nonce', () => {
-    expect(contentSecurityPolicy('abc')).toContain('script-src \'self\' \'nonce-abc\';')
+    expect(contentSecurityPolicy('abc')).toContain('script-src \'self\' \'nonce-abc\' https://telegram.org;')
   })
 })
 

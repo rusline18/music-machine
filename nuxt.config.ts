@@ -1,6 +1,22 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 import { contentSecurityPolicy } from './server/csp'
 
+/**
+ * Loads Telegram's Mini App SDK, but only when the page was opened as a Mini
+ * App: Telegram passes its launch parameters in the URL hash (#tgWebAppData=…),
+ * and the SDK keeps them in sessionStorage for reloads. Ordinary visitors
+ * download nothing extra.
+ */
+const TELEGRAM_LOADER = `(function () {
+  try {
+    if (!/[#&]tgWebApp/.test(location.hash) && !sessionStorage.getItem('__telegram__initParams')) return
+  } catch (e) { return }
+  var script = document.createElement('script')
+  script.src = 'https://telegram.org/js/telegram-web-app.js'
+  script.onload = function () { window.dispatchEvent(new Event('telegram-sdk')) }
+  document.head.appendChild(script)
+})()`
+
+// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxtjs/tailwindcss', '@nuxtjs/i18n'],
 
@@ -11,8 +27,8 @@ export default defineNuxtConfig({
       '/**': {
         headers: {
           // Pages replace it with one carrying their scripts' nonce (server/plugins/csp-nonce.ts).
+          // It also stands in for X-Frame-Options, which can't allow Telegram Web.
           'Content-Security-Policy': contentSecurityPolicy(),
-          'X-Frame-Options': 'DENY',
           'X-Content-Type-Options': 'nosniff',
           'Referrer-Policy': 'strict-origin-when-cross-origin',
           'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
@@ -46,6 +62,9 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
       ],
       meta: [{ name: 'theme-color', content: '#110E0D' }],
+      // Runs before the app, while Telegram's launch parameters are still in
+      // the URL; the telegram plugin takes it from there.
+      script: [{ innerHTML: TELEGRAM_LOADER, tagPriority: 'critical' }],
     },
     // Pages fade into each other, so salsa's coral turning into bachata's
     // teal reads as one app changing color (main.css).

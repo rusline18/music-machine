@@ -58,7 +58,7 @@ test('pages run under a CSP without inline-script allowance', async ({ page }) =
   })
   const response = await page.goto('/salsa')
   const policy = response!.headers()['content-security-policy']!
-  expect(policy).toMatch(/script-src 'self' 'nonce-[\w+/=]+';/)
+  expect(policy).toMatch(/script-src 'self' 'nonce-[\w+/=]+' https:\/\/telegram\.org;/)
   expect(policy).not.toMatch(/script-src[^;]*unsafe-inline/)
   // Hydrated: the app's scripts ran.
   await page.getByRole('button', { name: '▶ Play' }).click()

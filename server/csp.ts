@@ -8,7 +8,8 @@
 export function contentSecurityPolicy(nonce?: string): string {
   return [
     'default-src \'self\'',
-    `script-src 'self'${nonce ? ` 'nonce-${nonce}'` : ''}`,
+    // telegram.org: the Mini App SDK, loaded only inside Telegram (TELEGRAM_LOADER in nuxt.config.ts).
+    `script-src 'self'${nonce ? ` 'nonce-${nonce}'` : ''} https://telegram.org`,
     'style-src \'self\' \'unsafe-inline\'',
     'img-src \'self\' data:',
     // Vite inlines the smallest font subsets as data: URIs.
@@ -18,7 +19,8 @@ export function contentSecurityPolicy(nonce?: string): string {
     'object-src \'none\'',
     'base-uri \'self\'',
     'form-action \'self\'',
-    'frame-ancestors \'none\'',
+    // Telegram Web shows Mini Apps in an iframe; nobody else may frame the site.
+    'frame-ancestors \'self\' https://web.telegram.org',
   ].join('; ')
 }
 
