@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SHARE_PARAM } from '~/composables/useBeatMachine'
+import { SHARE_CODE_PARAM, SHARE_PARAM } from '~/composables/useBeatMachine'
 import { sendLink } from '~/core/sendLink'
 import { packPattern } from '~/core/compactPattern'
 import { decodePattern } from '~/core/share'
@@ -20,27 +20,44 @@ const status = ref<'idle' | 'copied' | 'manual'>('idle')
 const link = ref('')
 let resetTimer: ReturnType<typeof setTimeout> | undefined
 
+/**
+ * The pattern packed by packPattern (core/compactPattern.ts), worked out
+ * as it changes: a share sheet or a copy has to follow the tap, and
+ * packing waits for the browser. Null where the browser can't compress:
+ * links then carry the longer share.ts code.
+ */
+let packing: { code: string, packed: Promise<string | null> } | null = null
+function packed(code: string) {
+  if (packing?.code !== code) {
+    const genre = findGenre(props.genre)
+    const pattern = genre && decodePattern(code, genre)
+    packing = { code, packed: pattern ? packPattern(pattern, genre) : Promise.resolve(null) }
+  }
+  return packing.packed
+}
+watch(() => props.code, (code) => import.meta.client && packed(code), { immediate: true })
+
 /** A link that opens the pattern in the bot's Mini App, if it fits in one (core/telegram.ts). */
-async function miniAppPatternLink() {
-  const genre = findGenre(props.genre)
-  const pattern = genre && decodePattern(props.code, genre)
-  const packed = pattern && await packPattern(pattern, genre)
-  const param = packed && startParam(props.genre, packed)
+function miniAppPatternLink(pattern: string | undefined) {
+  const param = pattern && startParam(props.genre, pattern)
   return param ? miniAppLink(telegramBot, param) : null
 }
 
 async function share() {
+  // Ready by now, unless the tap came right after an edit.
+  const pattern = await packed(props.code) ?? undefined
   const url = new URL(window.location.href)
   url.search = ''
   url.hash = ''
-  url.searchParams.set(SHARE_PARAM, props.code)
+  if (pattern) url.searchParams.set(SHARE_PARAM, pattern)
+  else url.searchParams.set(SHARE_CODE_PARAM, props.code)
   link.value = url.toString()
 
   // Inside Telegram: its own chat picker, with a link that opens the
   // pattern right in the Mini App (or the site, if the pattern's too long).
   const webApp = telegramWebApp()
   if (webApp && telegramBot) {
-    webApp.openTelegramLink(telegramShareUrl(await miniAppPatternLink() ?? link.value, t('controls.shareText')))
+    webApp.openTelegramLink(telegramShareUrl(miniAppPatternLink(pattern) ?? link.value, t('controls.shareText')))
     return
   }
 

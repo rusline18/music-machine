@@ -23,11 +23,13 @@ app/
                          plays: struck, ringing and dying away
     layers.ts            Order for "layer by layer"
     links.ts             Checks configured external links (https only)
-    share.ts             Pattern ⇄ short link code; incoming links are checked and rebuilt
+    share.ts             Pattern ⇄ code (older links, saved edits); incoming patterns are
+                         checked and rebuilt
+    compactPattern.ts    Pattern ⇄ the short code in links: what changed from its preset
     song.ts              Songs built from presets: which sections fit together (clave,
                          tempo, length) and joining them with a fill between sections
     sendLink.ts          Share sheet on touch screens, clipboard elsewhere
-    telegram.ts          Telegram Mini App links: t.me/<bot>?startapp=<genre>[_<packed pattern>]
+    telegram.ts          Telegram Mini App links: t.me/<bot>?startapp=<genre>[-<packed pattern>]
     audio/
       engine.ts          AudioContext, per-instrument gain, sample loading (Opus with
                          WAV fallback, prefetch before the first click), playback, reverb
@@ -140,12 +142,16 @@ like any other (`app/core/song.ts`).
 
 ### Sharing and saving
 
-**Share** sends a link like `/salsa?p=…` to the exact pattern: on a touch
+**Share** sends a link like `/salsa?b=Y2RkWMowogAA` to the exact pattern: on a touch
 screen through the system share menu, elsewhere it's copied. The link holds tempo, length,
-mutes, volumes, chords and the voice. Each step is one letter, so a 32-count
-pattern stays well under 2 KB. Opening a link loads the pattern and drops the
-code from the address bar; anything decoded is checked against the genre and
-rebuilt (`app/core/share.ts`). Edits are kept in the browser per genre
+mutes, volumes, chords and the voice, packed as what changed from the
+preset the pattern started from (`app/core/compactPattern.ts`): an
+untouched preset takes 12 characters, a few edits a couple dozen. Older
+links, and browsers that can't compress (iOS before 16.4), carry the
+pattern as a longer code instead, `/salsa?p=…` (`app/core/share.ts`),
+which is also how edits are kept in the browser. Opening a link loads the
+pattern and drops the code from the address bar; anything decoded is
+checked against the genre and rebuilt. Edits are kept in the browser per genre
 (an untouched preset isn't, so preset fixes reach everyone); **Reset** goes
 back to the preset.
 

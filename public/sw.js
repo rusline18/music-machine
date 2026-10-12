@@ -98,7 +98,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url)
   if (request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return
 
-  // Pages are cached by path alone: the query (a shared pattern, ?p=…) is
+  // Pages are cached by path alone: the query (a shared pattern, ?b=…) is
   // read in the browser, and keeping a copy per link would grow without end.
   if (request.mode === 'navigate') event.respondWith(networkFirst(request, url.origin + url.pathname))
   else if (url.pathname.startsWith('/audio/')) event.respondWith(cacheFirst(request, AUDIO_CACHE))
