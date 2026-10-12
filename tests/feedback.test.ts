@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { InvalidFeedbackError, validateFeedback } from '#shared/feedback'
 import { chatText, deliverFeedback, storageKey } from '../server/feedback/deliver'
 import type { FeedbackEntry } from '../server/feedback/deliver'
-import { createRateLimiter } from '../server/feedback/rateLimit'
+import { clientKey, createRateLimiter } from '../server/feedback/rateLimit'
 
 const valid = { kind: 'idea', message: 'Add a merengue page please', email: 'dancer@example.com', page: '/salsa', userAgent: 'Firefox' }
 
@@ -41,6 +41,36 @@ describe('createRateLimiter', () => {
     expect([allow('a'), allow('a'), allow('a'), allow('b')]).toEqual([true, true, false, true])
     now = 1000
     expect(allow('a')).toBe(true)
+  })
+
+  it('forgets idle keys once there are many', () => {
+    let now = 0
+    const allow = createRateLimiter({ limit: 1, windowMs: 1000, now: () => now })
+    for (let i = 0; i <= 10_000; i++) allow(`old-${i}`)
+    now = 1000
+    allow('new')
+    // The sweep dropped the expired keys; the one still in its window stays.
+    now = 1500
+    expect(allow('old-0')).toBe(true)
+    expect(allow('new')).toBe(false)
+  })
+})
+
+describe('clientKey', () => {
+  it.each([
+    ['203.0.113.7', '203.0.113.7'],
+    ['::ffff:203.0.113.7', '203.0.113.7'],
+    ['2001:db8:1:2:3:4:5:6', '2001:db8:1:2::/64'],
+    ['2001:DB8:1:2::abcd', '2001:db8:1:2::/64'],
+    ['2001:db8::1', '2001:db8:0:0::/64'],
+    ['fe80::1%eth0', 'fe80:0:0:0::/64'],
+    ['::1', '0:0:0:0::/64'],
+  ])('%s → %s', (ip, key) => {
+    expect(clientKey(ip)).toBe(key)
+  })
+
+  it('puts addresses of one /64 together', () => {
+    expect(clientKey('2001:db8:aa:bb:1::1')).toBe(clientKey('2001:db8:aa:bb:ffff:0:0:9'))
   })
 })
 

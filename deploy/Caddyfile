@@ -7,6 +7,10 @@ example.ru {
 	# Static files arrive already compressed from Nitro; this covers
 	# server-rendered pages. Caddy skips responses that are already encoded.
 	encode zstd gzip
+	# Caddy replaces any X-Forwarded-For a visitor sends with their real
+	# address; the feedback rate limit trusts its first entry. Before adding
+	# `trusted_proxies` or putting a CDN in front, make sure the first entry
+	# is still the visitor, or the limit can be dodged with a forged header.
 	reverse_proxy 127.0.0.1:3000
 }
 
