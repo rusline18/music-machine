@@ -80,6 +80,7 @@ const nextCounting = () => setCounting(COUNTING_MODES[(COUNTING_MODES.indexOf(co
 
 const togglePlay = () => (isPlaying.value || isLoading.value ? stop() : play())
 useWakeLock(() => isPlaying.value)
+useClosingConfirmation(() => isPlaying.value)
 useHotkeys({
   togglePlay,
   nudgeTempo,

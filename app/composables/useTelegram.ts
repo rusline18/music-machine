@@ -16,6 +16,8 @@ export interface TelegramWebApp {
   setBackgroundColor(color: string): void
   setBottomBarColor(color: string): void
   openTelegramLink(url: string): void
+  enableClosingConfirmation(): void
+  disableClosingConfirmation(): void
   HapticFeedback: {
     impactOccurred(style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft'): void
     selectionChanged(): void
@@ -89,4 +91,21 @@ export async function cloudSet(key: string, value: string | null): Promise<void>
     if (value === null) cloud.removeItem(key, () => resolve())
     else cloud.setItem(key, value, () => resolve())
   })
+}
+
+/**
+ * Inside Telegram, asks "close anyway?" before the Mini App closes while
+ * `active` is true (Telegram 6.2+), so a stray tap on its close button
+ * doesn't cut a practice short. Elsewhere nothing happens.
+ */
+export function useClosingConfirmation(active: () => boolean) {
+  async function apply(on: boolean) {
+    const webApp = await whenTelegram()
+    if (!webApp?.isVersionAtLeast('6.2')) return
+    if (on && active()) webApp.enableClosingConfirmation()
+    else webApp.disableClosingConfirmation()
+  }
+
+  watch(active, apply)
+  onBeforeUnmount(() => apply(false))
 }

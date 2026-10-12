@@ -14,6 +14,8 @@ window.Telegram = { WebApp: {
     user: window.fakeLanguage ? { language_code: window.fakeLanguage } : undefined,
   },
   openTelegramLink: (url) => window.telegramCalls.push('open ' + url),
+  enableClosingConfirmation: record('confirm close on'),
+  disableClosingConfirmation: record('confirm close off'),
   CloudStorage: {
     getItem: (key, callback) => setTimeout(() => callback(null, window.fakeCloud[key] ?? '')),
     setItem: (key, value, callback) => {
@@ -189,4 +191,16 @@ test('in Telegram an edited pattern is kept in the user\'s cloud and opens on an
   await other.getByRole('button', { name: 'Reset' }).click()
   await expect.poll(() => other.evaluate(() => (window as unknown as { fakeCloud: Record<string, string> }).fakeCloud))
     .toEqual({})
+})
+
+test('in Telegram, closing asks first while the beat plays', async ({ page }) => {
+  await fakeTelegram(page)
+  await page.goto(`/salsa${LAUNCH}`)
+  const confirmations = () => page.evaluate(() => (window as unknown as { telegramCalls: string[] }).telegramCalls
+    .filter((call) => call.startsWith('confirm close')))
+
+  await page.getByRole('button', { name: '▶ Play' }).click()
+  await expect.poll(confirmations).toEqual(['confirm close on'])
+  await page.getByRole('button', { name: '■ Stop' }).click()
+  await expect.poll(confirmations).toEqual(['confirm close on', 'confirm close off'])
 })
