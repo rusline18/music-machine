@@ -9,7 +9,10 @@ const record = (name) => () => { window.telegramCalls.push(name) }
 let onBack = () => {}
 window.Telegram = { WebApp: {
   platform: 'android',
-  initDataUnsafe: { start_param: window.fakeStartParam },
+  initDataUnsafe: {
+    start_param: window.fakeStartParam,
+    user: window.fakeLanguage ? { language_code: window.fakeLanguage } : undefined,
+  },
   openTelegramLink: (url) => window.telegramCalls.push('open ' + url),
   HapticFeedback: {
     impactOccurred: (style) => window.telegramCalls.push('impact ' + style),
@@ -42,12 +45,11 @@ function openedLink(page: Page) {
     .find((call) => call.startsWith('open '))?.slice('open '.length))
 }
 
-async function fakeTelegram(page: Page, startParam?: string) {
-  if (startParam) {
-    await page.addInitScript((param) => {
-      (window as unknown as { fakeStartParam: string }).fakeStartParam = param
-    }, startParam)
-  }
+/** Telegram's SDK, stood in for; `startParam` and `language` are what Telegram would pass. */
+async function fakeTelegram(page: Page, startParam?: string, language?: string) {
+  await page.addInitScript(([param, code]) => {
+    Object.assign(window, { fakeStartParam: param, fakeLanguage: code })
+  }, [startParam, language])
   const requested: string[] = []
   await page.route(SDK, (route) => {
     requested.push(route.request().url())
@@ -132,4 +134,25 @@ test('controls answer with a vibration in Telegram', async ({ page }) => {
   await expect.poll(haptics).toEqual(['impact light', 'impact medium'])
   await page.getByRole('combobox', { name: 'Pattern' }).selectOption('salsa-chachacha-2-3')
   await expect.poll(haptics).toEqual(['impact light', 'impact medium', 'selection'])
+})
+
+test('the first launch takes Telegram\'s language; the switcher still wins after that', async ({ page }) => {
+  await fakeTelegram(page, undefined, 'ru')
+  await page.goto(`/${LAUNCH}`)
+  // (Switching keeps Telegram's launch hash, which its SDK reads.)
+  await expect(page).toHaveURL(/\/ru(#|$)/)
+  await expect(page.getByRole('link', { name: 'Сальса' })).toBeVisible()
+
+  await page.getByRole('link', { name: 'en', exact: true }).click()
+  await expect(page).toHaveURL(/:3000\/(#|$)/)
+  await page.goto(`/${LAUNCH}`)
+  await expect(page.getByRole('link', { name: 'Salsa' })).toBeVisible()
+  await expect(page).toHaveURL(/:3000\/(#|$)/)
+})
+
+test('a genre link opens in Telegram\'s language', async ({ page }) => {
+  await fakeTelegram(page, 'bachata', 'ru-RU')
+  await page.goto(`/${LAUNCH}`)
+  await expect(page).toHaveURL('/ru/bachata')
+  await expect(page.getByRole('heading', { name: 'Бачата' })).toBeVisible()
 })

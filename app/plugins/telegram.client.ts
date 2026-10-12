@@ -22,12 +22,16 @@ function haptics(feedback: TelegramWebApp['HapticFeedback']) {
 
 /** Set once the link's start parameter is followed, so a reload doesn't follow it again. */
 const START_FOLLOWED = 'telegram-start-followed'
+/** Set once Telegram's language has been applied, so a later pick in the switcher sticks. */
+const LANGUAGE_APPLIED = 'telegram-language-applied'
 
 /**
  * Inside Telegram (opened as a Mini App): full height, Telegram's colors
  * matched to the site, and its own Back button instead of the browser's.
  * Vertical swipes are off, or dragging across the beat grid would pull the
- * app closed. Controls answer with a light vibration. A link with a start
+ * app closed. Controls answer with a light vibration. The first time, the
+ * site takes the language Telegram is set to, if it has it (the switcher
+ * still changes it after that). A link with a start
  * parameter (core/telegram.ts) opens its genre, with the shared pattern if
  * it carries one. The SDK is loaded only there (TELEGRAM_LOADER in
  * nuxt.config.ts); elsewhere this does nothing.
@@ -35,7 +39,22 @@ const START_FOLLOWED = 'telegram-start-followed'
 export default defineNuxtPlugin(() => {
   const router = useRouter()
   const localePath = useLocalePath()
+  const switchLocalePath = useSwitchLocalePath()
   const routeBaseName = useRouteBaseName()
+  const { locale, localeCodes } = useNuxtApp().$i18n
+
+  /** Switches to Telegram's language on the first launch, if the site has it. */
+  async function adoptLanguage(languageCode: string | undefined) {
+    try {
+      if (localStorage.getItem(LANGUAGE_APPLIED)) return
+      localStorage.setItem(LANGUAGE_APPLIED, '1')
+    } catch {
+      return // nowhere to remember it: switching every launch would undo the user's pick
+    }
+    const code = languageCode?.toLowerCase().split('-')[0]
+    const target = localeCodes.value.find((available) => available === code)
+    if (target && target !== locale.value) await router.replace(switchLocalePath(target))
+  }
 
   async function follow(param: string) {
     try {
@@ -75,8 +94,12 @@ export default defineNuxtPlugin(() => {
       update()
     }
 
-    const param = webApp.initDataUnsafe.start_param
-    if (param) onNuxtReady(() => follow(param))
+    // Language first, so a start link opens its genre in that language.
+    const { start_param: param, user } = webApp.initDataUnsafe
+    onNuxtReady(async () => {
+      await adoptLanguage(user?.language_code)
+      if (param) await follow(param)
+    })
   }
 
   if (window.Telegram) start()

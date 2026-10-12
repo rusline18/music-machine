@@ -5,6 +5,8 @@ export interface TelegramWebApp {
   initDataUnsafe: {
     /** The `startapp` parameter of the link that opened the app. */
     start_param?: string
+    /** Who opened the app; `language_code` is their Telegram language (IETF tag: "ru", "pt-br"). */
+    user?: { language_code?: string }
   }
   isVersionAtLeast(version: string): boolean
   ready(): void
