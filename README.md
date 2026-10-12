@@ -87,6 +87,7 @@ scripts/
   encode-samples.mjs   Adds an Opus (.webm) copy of every WAV
   speak-counts.py      Speaks the counts with espeak-ng into audio-sources/voice
   app-icon.svg         The app icon; render-icons.mjs turns it into public/*.png and favicon.ico
+  render-loading-icon.mjs  Writes loading-icon-{light,dark}.svg: the icon as one <path>, for BotFather's loading screen
 tests/                 Vitest unit tests
 e2e/                   Playwright: pages, grid editing, transport, sharing in a real browser
 deploy/                VPS setup: systemd unit, Caddyfile, setup and release scripts
