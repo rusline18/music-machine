@@ -13,6 +13,8 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
   while the genre was opening, it cancelled that and reopened the home
   page. The language and `startapp` links are now read from the launch
   address right away.
+- Mini App: the bundled Telegram SDK is the current one from telegram.org
+  (was the Bot API 8.0 copy).
 
 ## 2026-10-12
 
