@@ -2,6 +2,18 @@
 
 What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
+## 2026-10-13
+
+- Mini App: no more endless Telegram loading screen or black screen. The
+  Telegram SDK is served from the site instead of telegram.org (slow or
+  blocked for many users in Russia), and the loading screen is lifted as
+  soon as the page is there, without waiting for the whole app.
+- Mini App: tapping a genre no longer throws you back to the genre choice.
+  Switching to Telegram's language waited for the SDK, and when it arrived
+  while the genre was opening, it cancelled that and reopened the home
+  page. The language and `startapp` links are now read from the launch
+  address right away.
+
 ## 2026-10-12
 
 - Share sends short links, to the site (`/salsa?b=…`) and in Telegram:
