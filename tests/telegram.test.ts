@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { decodePattern, encodePattern } from '~/core/share'
-import { MAX_START_PARAM, miniAppLink, packCode, parseStartParam, startParam, telegramShareUrl, unpackCode } from '~/core/telegram'
+import { MAX_START_PARAM, miniAppLink, packCode, parseLaunchParams, parseStartParam, startParam, telegramShareUrl, unpackCode } from '~/core/telegram'
 import { genres } from '~/genres'
 
 describe('start parameters', () => {
@@ -23,6 +23,28 @@ describe('start parameters', () => {
     expect(startParam('bachata')).toBe('bachata')
     expect(startParam('bachata', 'xyz')).toBe('bachata-xyz')
     expect(startParam('bachata', 'x'.repeat(MAX_START_PARAM))).toBeNull()
+  })
+})
+
+describe('launch parameters', () => {
+  // As Telegram puts them in the hash: the init data, URL-encoded once more.
+  const initData = `query_id=1&user=${encodeURIComponent('{"id":1,"language_code":"ru"}')}&start_param=bachata&hash=x`
+  const hash = `#tgWebAppData=${encodeURIComponent(initData)}&tgWebAppVersion=8.0&tgWebAppPlatform=ios`
+
+  it('are read from the URL hash', () => {
+    expect(parseLaunchParams(hash, null)).toEqual({ startParam: 'bachata', language: 'ru' })
+  })
+
+  it('or, after a reload, from the copy the SDK keeps', () => {
+    expect(parseLaunchParams('', JSON.stringify({ tgWebAppData: initData }))).toEqual({ startParam: 'bachata', language: 'ru' })
+    expect(parseLaunchParams(hash, JSON.stringify({ tgWebAppData: 'start_param=salsa' }))).toEqual({ startParam: 'bachata', language: 'ru' })
+  })
+
+  it('may be missing or broken', () => {
+    expect(parseLaunchParams('', null)).toEqual({})
+    expect(parseLaunchParams('#tgWebAppData=query_id%3D1', 'not json')).toEqual({ startParam: undefined, language: undefined })
+    expect(parseLaunchParams('#tgWebAppData=user%3D%7Bbroken', null)).toEqual({ startParam: undefined, language: undefined })
+    expect(parseLaunchParams('', '{"tgWebAppData":5}')).toEqual({})
   })
 })
 

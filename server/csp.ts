@@ -8,8 +8,8 @@
 export function contentSecurityPolicy(nonce?: string): string {
   return [
     'default-src \'self\'',
-    // telegram.org: the Mini App SDK, loaded only inside Telegram (TELEGRAM_LOADER in nuxt.config.ts).
-    `script-src 'self'${nonce ? ` 'nonce-${nonce}'` : ''} https://telegram.org`,
+    // Telegram's Mini App SDK is served from the site too (TELEGRAM_LOADER in nuxt.config.ts).
+    `script-src 'self'${nonce ? ` 'nonce-${nonce}'` : ''}`,
     'style-src \'self\' \'unsafe-inline\'',
     'img-src \'self\' data:',
     // Vite inlines the smallest font subsets as data: URIs.

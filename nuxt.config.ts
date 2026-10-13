@@ -6,6 +6,11 @@ import { contentSecurityPolicy } from './server/csp'
  * and the SDK keeps them in sessionStorage for reloads. Ordinary visitors
  * download nothing extra. window.telegramReady settles once the SDK has
  * loaded or failed to (useTelegram.ts); outside Telegram it isn't set.
+ *
+ * The SDK is served from the site (public/telegram-web-app.js): telegram.org
+ * is slow or blocked for many users in Russia. Telegram shows its loading
+ * screen until the app calls ready(), so that's called as soon as the SDK
+ * and the server-rendered page are both in, without waiting for the app.
  */
 const TELEGRAM_LOADER = `(function () {
   try {
@@ -13,8 +18,15 @@ const TELEGRAM_LOADER = `(function () {
   } catch (e) { return }
   window.telegramReady = new Promise(function (resolve) {
     var script = document.createElement('script')
-    script.src = 'https://telegram.org/js/telegram-web-app.js'
-    script.onload = script.onerror = function () { resolve() }
+    script.src = '/telegram-web-app.js'
+    script.onload = script.onerror = function () {
+      resolve()
+      function show() {
+        try { window.Telegram.WebApp.ready() } catch (e) {}
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', show)
+      else show()
+    }
     document.head.appendChild(script)
   })
 })()`

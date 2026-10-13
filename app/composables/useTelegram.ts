@@ -1,13 +1,7 @@
-/** The parts of Telegram's Mini App SDK (telegram.org/js/telegram-web-app.js) the site uses. */
+/** The parts of Telegram's Mini App SDK (public/telegram-web-app.js) the site uses. */
 export interface TelegramWebApp {
   /** 'unknown' when the SDK runs outside Telegram. */
   platform: string
-  initDataUnsafe: {
-    /** The `startapp` parameter of the link that opened the app. */
-    start_param?: string
-    /** Who opened the app; `language_code` is their Telegram language (IETF tag: "ru", "pt-br"). */
-    user?: { language_code?: string }
-  }
   isVersionAtLeast(version: string): boolean
   ready(): void
   expand(): void

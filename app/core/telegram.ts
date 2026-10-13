@@ -43,6 +43,40 @@ export function miniAppLink(bot: string, param: string): string | null {
   return BOT_USERNAME.test(bot) ? `https://t.me/${bot}?startapp=${param}` : null
 }
 
+/** What the site needs of the parameters Telegram launches the Mini App with. */
+export interface LaunchParams {
+  /** The `startapp` parameter of the link that opened the app. */
+  startParam?: string
+  /** The user's Telegram language (IETF tag: "ru", "pt-br"). */
+  language?: string
+}
+
+/**
+ * Reads Telegram's launch parameters from the URL hash (#tgWebAppData=…)
+ * or, after a reload, from `stored`: the copy its SDK keeps in
+ * sessionStorage (`__telegram__initParams`). Needs no SDK.
+ */
+export function parseLaunchParams(hash: string, stored: string | null): LaunchParams {
+  let data = new URLSearchParams(hash.replace(/^#/, '')).get('tgWebAppData')
+  if (data === null && stored) {
+    try {
+      const params: unknown = JSON.parse(stored)
+      const value = (params as { tgWebAppData?: unknown } | null)?.tgWebAppData
+      if (typeof value === 'string') data = value
+    } catch { /* not the SDK's */ }
+  }
+  if (!data) return {}
+  const init = new URLSearchParams(data)
+  let language: unknown
+  try {
+    language = (JSON.parse(init.get('user') ?? '') as { language_code?: unknown } | null)?.language_code
+  } catch { /* no user */ }
+  return {
+    startParam: init.get('start_param') || undefined,
+    language: typeof language === 'string' ? language : undefined,
+  }
+}
+
 /** Telegram's "share to a chat" link for `url`, with `text` as the message. */
 export function telegramShareUrl(url: string, text: string): string {
   return `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`

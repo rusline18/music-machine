@@ -1,4 +1,4 @@
-import { parseStartParam, unpackCode } from '~/core/telegram'
+import { parseLaunchParams, parseStartParam, unpackCode } from '~/core/telegram'
 import { findGenre } from '~/genres'
 import { SHARE_CODE_PARAM, SHARE_PARAM } from '~/composables/useBeatMachine'
 
@@ -37,6 +37,7 @@ const LANGUAGE_APPLIED = 'telegram-language-applied'
  * nuxt.config.ts); elsewhere this does nothing.
  */
 export default defineNuxtPlugin(() => {
+  if (!inTelegram()) return
   const router = useRouter()
   const localePath = useLocalePath()
   const switchLocalePath = useSwitchLocalePath()
@@ -94,14 +95,21 @@ export default defineNuxtPlugin(() => {
       router.afterEach(update)
       update()
     }
-
-    // Language first, so a start link opens its genre in that language.
-    const { start_param: param, user } = webApp.initDataUnsafe
-    onNuxtReady(async () => {
-      await adoptLanguage(user?.language_code)
-      if (param) await follow(param)
-    })
   }
+
+  // Language first, so a start link opens its genre in that language. Both
+  // are read from the launch URL and done once the page is up, without
+  // waiting for the SDK: a switch that came later could land while the user
+  // is already on the way to a genre, and take them back home.
+  let stored: string | null = null
+  try {
+    stored = sessionStorage.getItem('__telegram__initParams')
+  } catch { /* storage blocked: the hash is all there is */ }
+  const { language, startParam } = parseLaunchParams(location.hash, stored)
+  onNuxtReady(async () => {
+    await adoptLanguage(language)
+    if (startParam) await follow(startParam)
+  })
 
   whenTelegram().then(start)
 })

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
-const SDK = 'https://telegram.org/js/telegram-web-app.js'
+/** Served by the site itself (public/telegram-web-app.js). */
+const SDK = '**/telegram-web-app.js'
 
 /** Stands in for Telegram's SDK: records what the site asks of it, and lets the test press Back. */
 const FAKE_SDK = `
@@ -10,10 +11,6 @@ let onBack = () => {}
 const homeScreenAdded = []
 window.Telegram = { WebApp: {
   platform: 'android',
-  initDataUnsafe: {
-    start_param: window.fakeStartParam,
-    user: window.fakeLanguage ? { language_code: window.fakeLanguage } : undefined,
-  },
   openTelegramLink: (url) => window.telegramCalls.push('open ' + url),
   enableClosingConfirmation: record('confirm close on'),
   checkHomeScreenStatus: (callback) => setTimeout(() => callback(window.fakeHomeScreen ?? 'unsupported')),
@@ -62,17 +59,23 @@ window.pressTelegramBack = () => onBack()
 const BOT = 'latinbeat_test_bot'
 const LAUNCH = '#tgWebAppData=query_id%3D1&tgWebAppVersion=8.0&tgWebAppPlatform=android'
 
+/** The hash Telegram opens the Mini App with, for a link's start parameter and the user's language. */
+function launch(startParam?: string, language?: string) {
+  const data = new URLSearchParams({ query_id: '1' })
+  if (language) data.set('user', JSON.stringify({ id: 1, language_code: language }))
+  if (startParam) data.set('start_param', startParam)
+  return `#tgWebAppData=${encodeURIComponent(data.toString())}&tgWebAppVersion=8.0&tgWebAppPlatform=android`
+}
+
 /** The t.me link the page asked Telegram to open, if any. */
 function openedLink(page: Page) {
   return page.evaluate(() => (window as unknown as { telegramCalls: string[] }).telegramCalls
     .find((call) => call.startsWith('open '))?.slice('open '.length))
 }
 
-/** Telegram's SDK, stood in for; `startParam` and `language` are what Telegram would pass. */
-async function fakeTelegram(page: Page, startParam?: string, language?: string, cloud: Record<string, string> = {}) {
-  await page.addInitScript(([param, code, stored]) => {
-    Object.assign(window, { fakeStartParam: param, fakeLanguage: code, fakeCloud: stored })
-  }, [startParam, language, cloud] as const)
+/** Telegram's SDK, stood in for; `cloud` is what the user's Telegram cloud holds. */
+async function fakeTelegram(page: Page, cloud: Record<string, string> = {}) {
+  await page.addInitScript((stored) => Object.assign(window, { fakeCloud: stored }), cloud)
   const requested: string[] = []
   await page.route(SDK, (route) => {
     requested.push(route.request().url())
@@ -115,8 +118,8 @@ test('Telegram Web may show the site in a frame, no one else', async ({ request 
 })
 
 test('a t.me link with a genre opens that genre', async ({ page }) => {
-  await fakeTelegram(page, 'bachata')
-  await page.goto(`/${LAUNCH}`)
+  await fakeTelegram(page)
+  await page.goto(`/${launch('bachata')}`)
   await expect(page).toHaveURL('/bachata')
   await expect(page.getByRole('heading', { name: 'Bachata' })).toBeVisible()
 })
@@ -124,8 +127,8 @@ test('a t.me link with a genre opens that genre', async ({ page }) => {
 test('links shared before the short format still open their pattern', async ({ page }) => {
   // Cha-cha-chá at 111 BPM, as Share packed it until links got short.
   const old = 'salsa_hZHBboQwDET_Zc52tWy7ZZtrD_0IxMFOIhYJyIqw9FD136s0IEEl1MSOc3iaGSVfmGEKQgODKF0UENr1zvYmufjMzyBYmCshwpwJClMUBeEGU-EdhI8SNWGCqSrMobUeBP6zQKenK51qqmA7mTMiLJzOXAkpFyQMjUQQnFfvvLXrBBWZ0DA0IR4aFYmZ2l6l85my2WmZO69P9V13IFXupBZQeL83ar2MYuUo2CWrNY92DCAoi2x780gqMf46MeuSXBeRt0zcWxmSCDtxrM6zU3aWfUJeLpmZRv9PlGl89Hc_HUCvKxR6DcPRvyaq_v4B'
-  await fakeTelegram(page, old)
-  await page.goto(`/${LAUNCH}`)
+  await fakeTelegram(page)
+  await page.goto(`/${launch(old)}`)
   await expect(page).toHaveURL('/salsa')
   await expect(page.getByRole('combobox', { name: 'Pattern' })).toHaveValue('salsa-chachacha-2-3')
   await expect(page.getByRole('group', { name: 'BPM' }).locator('output')).toContainText('111')
@@ -148,8 +151,8 @@ test('Share in Telegram sends a t.me link that opens the same pattern in the Min
 
   // A friend taps it: Telegram opens the Mini App with that start parameter.
   const other = await (await browser.newContext()).newPage()
-  await fakeTelegram(other, startParam)
-  await other.goto(`/${LAUNCH}`)
+  await fakeTelegram(other)
+  await other.goto(`/${launch(startParam)}`)
   await expect(other).toHaveURL('/salsa')
   await expect(other.getByRole('combobox', { name: 'Pattern' })).toHaveValue('salsa-chachacha-2-3')
   await expect(other.getByRole('button', { name: 'Clave step 1', exact: true })).toHaveAttribute('data-sound')
@@ -170,22 +173,33 @@ test('controls answer with a vibration in Telegram', async ({ page }) => {
 })
 
 test('the first launch takes Telegram\'s language; the switcher still wins after that', async ({ page }) => {
-  await fakeTelegram(page, undefined, 'ru')
-  await page.goto(`/${LAUNCH}`)
+  await fakeTelegram(page)
+  await page.goto(`/${launch(undefined, 'ru')}`)
   // (Switching keeps Telegram's launch hash, which its SDK reads.)
   await expect(page).toHaveURL(/\/ru(#|$)/)
   await expect(page.getByRole('link', { name: 'Сальса' })).toBeVisible()
 
   await page.getByRole('link', { name: 'en', exact: true }).click()
   await expect(page).toHaveURL(/:3000\/(#|$)/)
-  await page.goto(`/${LAUNCH}`)
+  await page.goto(`/${launch(undefined, 'ru')}`)
   await expect(page.getByRole('link', { name: 'Salsa' })).toBeVisible()
   await expect(page).toHaveURL(/:3000\/(#|$)/)
 })
 
 test('a genre link opens in Telegram\'s language', async ({ page }) => {
-  await fakeTelegram(page, 'bachata', 'ru-RU')
-  await page.goto(`/${LAUNCH}`)
+  await fakeTelegram(page)
+  await page.goto(`/${launch('bachata', 'ru-RU')}`)
+  await expect(page).toHaveURL('/ru/bachata')
+  await expect(page.getByRole('heading', { name: 'Бачата' })).toBeVisible()
+})
+
+test('the language and a start link don\'t wait for Telegram\'s SDK, so a tap on a genre isn\'t undone', async ({ page }) => {
+  // The SDK never arrives (a blocked or very slow connection).
+  await page.route(SDK, () => {})
+  // It holds up the page's load event: wait for the page itself.
+  await page.goto(`/${launch(undefined, 'ru')}`, { waitUntil: 'domcontentloaded' })
+  await expect(page).toHaveURL(/\/ru(#|$)/)
+  await page.getByRole('link', { name: 'Бачата' }).click()
   await expect(page).toHaveURL('/ru/bachata')
   await expect(page.getByRole('heading', { name: 'Бачата' })).toBeVisible()
 })
@@ -200,7 +214,7 @@ test('in Telegram an edited pattern is kept in the user\'s cloud and opens on an
 
   // The same Telegram account on another device: nothing saved locally there.
   const other = await (await browser.newContext()).newPage()
-  await fakeTelegram(other, undefined, undefined, await cloud())
+  await fakeTelegram(other, await cloud())
   await other.goto(`/salsa${LAUNCH}`)
   await expect(other.getByRole('combobox', { name: 'Pattern' })).toHaveValue('salsa-chachacha-2-3')
   await expect(other.getByRole('button', { name: 'Clave step 1', exact: true })).toHaveAttribute('data-sound')
