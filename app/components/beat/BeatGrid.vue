@@ -3,6 +3,7 @@ import { CHORD_NAMES } from '~/core/harmony'
 import { STEP_GLYPHS } from '~/icons'
 import type { Pattern } from '~/core/pattern'
 import { COUNTS_PER_BAR, COUNTS_PER_BLOCK, countInBlock, trackOf } from '~/core/pattern'
+import { stepNamesAt } from '~/core/resolve'
 
 const props = defineProps<{
   pattern: Pattern
@@ -79,8 +80,11 @@ function swipeUp(event: PointerEvent) {
 /** The cell whose sound menu is open. */
 const menu = ref<{ instrument: string, stepIndex: number } | null>(null)
 const menuTrack = computed(() => trackOf(props.pattern, menu.value?.instrument))
+/** What this cell can be set to (a counting voice: the number on the count, "and" between). */
+const cellNames = (instrument: string, stepIndex: number) =>
+  stepNamesAt(props.stepNames(instrument), stepIndex, props.pattern.stepsPerCount)
 function openMenu(instrument: string, stepIndex: number) {
-  if (props.stepNames(instrument).length > 0) menu.value = { instrument, stepIndex }
+  if (cellNames(instrument, stepIndex).length > 0) menu.value = { instrument, stepIndex }
 }
 function pick(name: string | null) {
   if (menu.value) emit('set-step', menu.value.instrument, menu.value.stepIndex, name)
@@ -113,7 +117,7 @@ watch(narrow, (isNarrow) => {
 })
 
 function tap(instrument: string, stepIndex: number) {
-  const names = props.stepNames(instrument)
+  const names = cellNames(instrument, stepIndex)
   if (!narrow.value || names.length < 2) {
     emit('toggle-step', instrument, stepIndex)
     return
@@ -393,7 +397,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
         role="menu"
       >
         <button
-          v-for="name in stepNames(menu.instrument)"
+          v-for="name in cellNames(menu.instrument, menu.stepIndex)"
           :key="name"
           type="button"
           role="menuitemradio"

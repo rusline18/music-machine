@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { CHORD_NAMES } from '~/core/harmony'
 import type { Pattern } from '~/core/pattern'
-import { countingFigure, patternSampleUrls, sampleResolver, sampleUrls, stepNames, stepResolver } from '~/core/resolve'
+import { countingFigure, patternSampleUrls, sampleResolver, sampleUrls, stepNames, stepNamesAt, stepResolver } from '~/core/resolve'
 import { bachata } from '~/genres/bachata'
 import { salsa } from '~/genres/salsa'
 
@@ -37,6 +37,21 @@ describe('stepNames', () => {
   it('gives back the same array every time, so a prop made from it stays put', () => {
     expect(stepNames(bachata, 'campana')).toBe(stepNames(bachata, 'campana'))
     expect(stepNames(bachata, 'bass')).toBe(stepNames(bachata, 'bass'))
+  })
+})
+
+describe('stepNamesAt', () => {
+  it('gives a counting voice the number on the count and "and" between counts', () => {
+    const voice = stepNames(salsa, 'voice')
+    expect(stepNamesAt(voice, 0, 2)).toEqual(['count'])
+    expect(stepNamesAt(voice, 1, 2)).toEqual(['and'])
+    expect(stepNamesAt(voice, 6, 2)).toEqual(['count'])
+    expect(stepNamesAt(voice, 2, 4)).toEqual(['and'])
+  })
+
+  it('offers every other instrument all of its sounds in every cell', () => {
+    const campana = stepNames(bachata, 'campana')
+    expect(stepNamesAt(campana, 1, 2)).toBe(campana)
   })
 })
 

@@ -26,6 +26,18 @@ export type CountingVoice = Record<string, { counts: readonly string[], and: str
 
 /** Step names of a counting voice: the number of the count the step is on, or "and". */
 export const COUNTING_STEPS: readonly string[] = ['count', 'and']
+const ON_THE_COUNT: readonly string[] = ['count']
+const OFF_THE_COUNT: readonly string[] = ['and']
+
+/**
+ * What one cell of a track can be set to. A counting voice says the number
+ * on the count and "and" between counts, so its cells have one sound each;
+ * every other instrument offers all of its `names` everywhere.
+ */
+export function stepNamesAt(names: readonly string[], stepIndex: number, stepsPerCount: number): readonly string[] {
+  if (names !== COUNTING_STEPS) return names
+  return stepIndex % stepsPerCount === 0 ? ON_THE_COUNT : OFF_THE_COUNT
+}
 
 /** Ways the voice can count, offered as one-click presets for its track. */
 export const COUNTING_MODES = ['off', 'counts', 'ands'] as const
