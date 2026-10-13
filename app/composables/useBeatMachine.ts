@@ -11,7 +11,7 @@ import { decodePattern, encodePattern } from '~/core/share'
 import { packCode, unpackCode } from '~/core/telegram'
 import type { SectionFit } from '~/core/song'
 import { buildSong, sectionFit, songBpm } from '~/core/song'
-import { COUNTING_MODES, countingFigure, patternSampleUrls, sampleUrls, stepNames, stepResolver } from '~/core/resolve'
+import { COUNTING_MODES, countingFigure, patternSampleUrls, sampleUrls, stepNames, stepNamesAt, stepResolver } from '~/core/resolve'
 import type { TempoChoice } from '~/core/tempo'
 import { nudgeBpm, tempoChoice, tempoFor } from '~/core/tempo'
 import type { Genre } from '~/genres'
@@ -355,7 +355,8 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
   function switchStepOnOff(instrument: string, stepIndex: number) {
     const track = findTrack(instrument)
     if (!track) return
-    track.steps[stepIndex] = switchStep(track.steps[stepIndex] ?? null, track.steps, stepNames(genre, instrument))
+    const names = stepNamesAt(stepNames(genre, instrument), stepIndex, pattern.value.stepsPerCount)
+    track.steps[stepIndex] = switchStep(track.steps[stepIndex] ?? null, track.steps, names)
     if (track.steps[stepIndex] && track.muted) setMuted(instrument, false)
   }
 

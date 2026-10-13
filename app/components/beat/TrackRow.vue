@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Track } from '~/core/pattern'
 import { countInBlock, switchStep } from '~/core/pattern'
+import { stepNamesAt } from '~/core/resolve'
 
 const props = defineProps<{
   track: Track
@@ -101,10 +102,12 @@ function hintOut() {
   hint.value = null
 }
 const hintStep = computed(() => (hint.value ? props.track.steps[hint.value.stepIndex] ?? null : null))
+/** What the hinted cell can be set to (a counting voice has one sound per cell). */
+const hintNames = computed(() => (hint.value ? stepNamesAt(props.stepNames, hint.value.stepIndex, props.stepsPerCount) : props.stepNames))
 /** What a click on the hinted cell does: takes the sound out, or puts one in. */
 const hintClick = computed(() => {
   if (hintStep.value) return t('grid.hint.remove')
-  const added = switchStep(null, props.track.steps, props.stepNames)
+  const added = switchStep(null, props.track.steps, hintNames.value)
   return added ? t('grid.hint.add', { sound: t(`steps.${added}`) }) : ''
 })
 
@@ -387,7 +390,7 @@ onBeforeUnmount(() => {
           {{ hintClick }}
         </span>
         <span
-          v-if="stepNames.length > 1"
+          v-if="hintNames.length > 1"
           class="inline-flex items-center gap-1"
         >
           <svg
