@@ -21,8 +21,8 @@ Mini App — это тот же сайт, открытый внутри Telegram
 - открывает жанр или присланный бит из ссылки `t.me/latinbeatmachine_bot?startapp=…`;
 - «Поделиться» открывает выбор чата Telegram (см. «Ссылки» ниже).
 
-SDK Telegram лежит на самом сайте (`public/telegram-web-app.js`, версия Bot
-API 8.0), а не грузится с telegram.org: в России telegram.org часто
+SDK Telegram лежит на самом сайте (`public/telegram-web-app.js`, скачан
+2026-10-13), а не грузится с telegram.org: в России telegram.org часто
 тормозит или недоступен, и тогда Mini App висел на экране загрузки Telegram.
 Язык и ссылку `startapp` сайт берёт прямо из адреса запуска, не дожидаясь
 SDK. Обновить SDK: заменить файл новой версией с
