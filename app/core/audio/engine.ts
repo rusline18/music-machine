@@ -8,6 +8,10 @@ export interface Note {
   gain?: number
   /** Fade the note out after this many seconds. */
   duration?: number
+  /** How fast that fade-out falls, as a time constant in seconds; 8 ms (a damped string) when unset. */
+  release?: number
+  /** A spoken word: humanizing leaves its pitch alone and doesn't soften it off the beat. */
+  spoken?: boolean
   /**
    * Starting a note stops the instrument's ringing notes in the same group
    * (a re-plucked string); '*' stops all of them (a palm mute).
@@ -287,9 +291,9 @@ export function createAudioEngine() {
     return failed
   }
 
-  function fadeOut(voice: RingingVoice, time: number) {
-    voice.gain.gain.setTargetAtTime(0, time, 0.008)
-    voice.source.stop(time + 0.1)
+  function fadeOut(voice: RingingVoice, time: number, release = 0.008) {
+    voice.gain.gain.setTargetAtTime(0, time, release)
+    voice.source.stop(time + Math.max(0.1, release * 10))
   }
 
   function choke(instrument: string, group: string, time: number) {
@@ -314,6 +318,9 @@ export function createAudioEngine() {
     }
     const context = getContext()
     const start = time + (note.delay ?? 0)
+    // A note set to start ahead of its step (a word's lead) can come due a
+    // moment ago: skip the part already gone, so the rest still lands in time.
+    const late = Math.max(0, context.currentTime - start)
     if (note.group) choke(instrument, note.group, start)
 
     const source = context.createBufferSource()
@@ -323,10 +330,10 @@ export function createAudioEngine() {
     gain.gain.value = note.gain ?? 1
     source.connect(gain)
     gain.connect(getInstrumentGain(instrument))
-    source.start(start)
+    source.start(start + late, late * source.playbackRate.value)
 
     const voice = { source, gain }
-    if (note.duration !== undefined) fadeOut(voice, start + note.duration)
+    if (note.duration !== undefined) fadeOut(voice, start + note.duration, note.release)
     if (!note.group) return
     const groups = ringing.get(instrument) ?? new Map<string, RingingVoice[]>()
     ringing.set(instrument, groups)

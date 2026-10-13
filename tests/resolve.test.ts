@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { CHORD_NAMES } from '~/core/harmony'
 import type { Pattern } from '~/core/pattern'
+import { MAX_LEAD_S } from '~/core/audio/scheduler'
+import type { CountingVoice, SpokenWord } from '~/core/resolve'
 import { countingFigure, patternSampleUrls, sampleResolver, sampleUrls, stepNames, stepResolver } from '~/core/resolve'
 import { bachata } from '~/genres/bachata'
 import { salsa } from '~/genres/salsa'
+import { countingVoice } from '~/genres/voice'
+import timing from '~/genres/voice-timing.json'
 
 const pattern: Pattern = { id: 't', counts: 2, stepsPerCount: 2, bpm: 120, tracks: [] }
 
@@ -106,6 +110,70 @@ describe('counting voice', () => {
   it('cuts off its previous word', () => {
     const pattern: Pattern = { id: 't', counts: 8, stepsPerCount: 2, bpm: 130, tracks: [{ instrument: 'voice', steps: ['count'], volume: 1, muted: false }] }
     expect(resolve(pattern, pattern.tracks[0]!, 0)[0]!.group).toBe('voice')
+  })
+})
+
+describe('counting voice timing', () => {
+  // Words like "раз" (vowel almost at once) and "шесть" (a long "sh" first).
+  const short = (n: number): SpokenWord => ({ url: `/${n}.wav`, lead: 0.02, length: 0.3 })
+  const voice: CountingVoice = {
+    en: {
+      counts: [1, 2, 3, 4, 5, 6, 7, 8].map((n) => (n === 6 ? { url: '/6.wav', lead: 0.08, length: 0.42 } : short(n))),
+      and: { url: '/and.wav', lead: 0.02, length: 0.24 },
+    },
+  }
+  const resolve = stepResolver({ samples: {}, pitched: {}, spoken: { voice } }, () => 'en')
+
+  /** The notes said over 8 counts of `figure` at `bpm`. */
+  function said(figure: (string | null)[], bpm: number) {
+    const steps = Array.from({ length: 16 }, (_, i) => figure[i % figure.length]!)
+    const pattern: Pattern = { id: 't', counts: 8, stepsPerCount: 2, bpm, tracks: [{ instrument: 'voice', steps, volume: 1, muted: false }] }
+    return steps.map((_, i) => resolve(pattern, pattern.tracks[0]!, i)[0])
+  }
+
+  it('starts each word early by its lead, so the vowel lands on the beat', () => {
+    const notes = said(['count', null], 100)
+    expect(notes[0]!.delay).toBeCloseTo(-0.02)
+    expect(notes[10]!.delay).toBeCloseTo(-0.08) // "6"
+  })
+
+  it('lets words ring out when there is room', () => {
+    const word = said(['count', null], 100)[0]!
+    expect(word.rate).toBe(1)
+    expect(word.duration).toBeUndefined()
+  })
+
+  it('ends each word before the next one starts when it does not fit', () => {
+    const notes = said(['count', 'and'], 200)
+    const step = 60 / 200 / 2
+    notes.forEach((note, i) => {
+      const next = notes[(i + 1) % notes.length]!
+      expect(note!.rate).toBeLessThanOrEqual(1.1)
+      const end = note!.delay! + note!.duration! + 3 * note!.release! // faded to 5%
+      expect(end).toBeLessThanOrEqual(step + next.delay! + 1e-9)
+    })
+  })
+
+  it('says the 1 and the 5 loudest and "and" softest', () => {
+    const notes = said(['count', 'and'], 120)
+    const gain = (i: number) => notes[i]!.gain!
+    expect(gain(0)).toBe(gain(8)) // 1, 5
+    expect(gain(0)).toBeGreaterThan(gain(2)) // 1 over 2
+    expect(gain(2)).toBeGreaterThan(gain(1)) // 2 over "and"
+  })
+
+  it('keeps its pitch when humanized', () => {
+    expect(said(['count', null], 120)[0]!.spoken).toBe(true)
+  })
+
+  it('has the timing of every recorded word, within the lead the scheduler leaves room for', () => {
+    for (const words of Object.values(countingVoice)) {
+      for (const word of [...words.counts, words.and]) {
+        expect(timing).toHaveProperty([word.url])
+        expect(word.lead).toBeLessThanOrEqual(MAX_LEAD_S)
+        expect(word.length).toBeGreaterThan(word.lead)
+      }
+    }
   })
 })
 

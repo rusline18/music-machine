@@ -10,7 +10,9 @@
  * Usage: npm run samples
  *
  * Afterwards every WAV is also encoded to Opus (.webm) by encode-samples.mjs;
- * that's what the app downloads, with the WAV as fallback.
+ * that's what the app downloads, with the WAV as fallback. For the counting
+ * voice it also writes app/genres/voice-timing.json: where each word's vowel
+ * comes in and how long it's heard (see measureWord).
  *
  * The list of files to write is every '/audio/….wav' path quoted in
  * any .ts file under app/genres/, and the script fails if a path there has no
@@ -716,12 +718,65 @@ function sliceWord(file, { maxLength }) {
     word.end = next.end
   }
 
-  const start = Math.max(0, word.start * frame - Math.round(0.005 * rate))
+  let start = Math.max(0, word.start * frame - Math.round(0.005 * rate))
+  // A long "sh" or "th" before the vowel is shortened to MAX_WORD_LEAD_S, so
+  // the word can start that much ahead of its beat (see measureWord).
+  const vowel = start + Math.round(measureWord(mono.subarray(start), rate).lead * rate)
+  const trimmed = vowel - start > Math.round(MAX_WORD_LEAD_S * rate)
+  if (trimmed) start = vowel - Math.round(MAX_WORD_LEAD_S * rate)
   const end = Math.min(mono.length, word.end * frame + Math.round(0.02 * rate), start + Math.round(maxLength * rate))
-  return { rate, signal: fadeOut(mono.slice(start, end), 0.02) }
+  const signal = fadeOut(mono.slice(start, end), 0.02)
+  if (trimmed) fadeIn(signal, Math.round(0.01 * rate))
+  return { rate, signal }
+}
+
+/**
+ * Must match MAX_LEAD_S in app/core/audio/scheduler.ts: how far ahead of
+ * its beat a spoken word may start.
+ */
+const MAX_WORD_LEAD_S = 0.08
+
+/**
+ * Where a spoken word's beat is and how long it is heard, in seconds from
+ * the start of `signal`. The ear hears a word's beat where its vowel comes
+ * in, not where its first consonant does: "шесть" or "four" start with a
+ * long hiss. The vowel is found as the first 10 ms where the level below
+ * ~900 Hz reaches a tenth of its peak: fricatives carry little there, and
+ * a weak first syllable ("че-ТЫ-ре") still counts.
+ * The length runs to the last 10 ms within 26 dB of the loudest.
+ */
+function measureWord(signal, rate) {
+  const a = Math.exp(-2 * Math.PI * 900 / rate)
+  let y1 = 0
+  let y2 = 0
+  const frame = Math.round(0.01 * rate)
+  const low = []
+  const full = []
+  for (let i = 0; i + frame <= signal.length; i += frame) {
+    let lowSum = 0
+    let fullSum = 0
+    for (let j = i; j < i + frame; j++) {
+      y1 = (1 - a) * signal[j] + a * y1
+      y2 = (1 - a) * y1 + a * y2
+      lowSum += y2 ** 2
+      fullSum += signal[j] ** 2
+    }
+    low.push(lowSum)
+    full.push(fullSum)
+  }
+  const lowPeak = Math.max(...low)
+  const fullPeak = Math.max(...full)
+  const vowel = Math.max(0, low.findIndex((power) => power >= lowPeak / 100)) // a tenth of the amplitude
+  const end = full.findLastIndex((power) => power >= fullPeak / 400) + 1 // -26 dB
+  return { lead: vowel * 0.01, length: Math.max(end, vowel + 1) * 0.01 }
 }
 
 // --- Output ---
+
+function fadeIn(signal, n) {
+  for (let i = 0; i < Math.min(n, signal.length); i++) signal[i] *= i / n
+  return signal
+}
 
 function fadeOut(signal, seconds) {
   const n = Math.min(signal.length, Math.round(seconds * SAMPLE_RATE))
@@ -781,20 +836,29 @@ if (missing.length > 0) {
 
 let totalBytes = 0
 const synthesized = []
+const voiceTiming = {}
 for (const path of referenced) {
   const recording = recordings[path]
   const source = recording && findRecording(recording)
-  let wav
   let detail = ''
+  let rate = SAMPLE_RATE
+  let signal
   if (source) {
     const slice = recording.voice ? sliceWord : recording.midi ? sliceNote : sliceRecording
-    const { rate, signal, tuning } = slice(source, recording)
-    wav = encodeWav(finalize(signal), rate)
-    if (tuning !== undefined) detail = `  retuned ${tuning >= 0 ? '+' : ''}${Math.round(tuning * 100)} cents`
+    const sliced = slice(source, recording)
+    rate = sliced.rate
+    signal = finalize(sliced.signal)
+    if (sliced.tuning !== undefined) detail = `  retuned ${sliced.tuning >= 0 ? '+' : ''}${Math.round(sliced.tuning * 100)} cents`
   } else {
-    wav = encodeWav(finalize(generators[path]()))
+    signal = finalize(generators[path]())
     synthesized.push(path)
   }
+  if (path.startsWith('/audio/voice/')) {
+    const { lead, length } = measureWord(signal, rate)
+    voiceTiming[path] = { lead: Math.round(lead * 1000) / 1000, length: Math.round(length * 1000) / 1000 }
+    detail += `  vowel at ${Math.round(lead * 1000)} ms, heard for ${Math.round(length * 1000)} ms`
+  }
+  const wav = encodeWav(signal, rate)
   const target = join(ROOT, 'public', path)
   mkdirSync(dirname(target), { recursive: true })
   writeFileSync(target, wav)
@@ -802,6 +866,9 @@ for (const path of referenced) {
   console.log(`${path}  ${source ? 'recording' : 'synth    '}  ${(wav.length / 1024).toFixed(1)} KB${detail}`)
 }
 console.log(`\n${referenced.size} samples, ${(totalBytes / 1024).toFixed(0)} KB total`)
+// Read by app/genres/voice.ts, to put each word's vowel on the beat.
+const timing = Object.fromEntries(Object.keys(voiceTiming).sort().map((path) => [path, voiceTiming[path]]))
+writeFileSync(join(ROOT, 'app', 'genres', 'voice-timing.json'), `${JSON.stringify(timing, null, 2)}\n`)
 encodeSamples()
 
 const missingDownloads = [...new Set(synthesized.map((path) => recordings[path]?.freesound).filter(Boolean))]

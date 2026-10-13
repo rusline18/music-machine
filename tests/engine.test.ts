@@ -270,3 +270,72 @@ describe('audio engine prefetching', () => {
     expect(await createAudioEngine().preloadSamples(['/a.wav', '/b.wav'])).toEqual(['/a.wav'])
   })
 })
+
+describe('audio engine playback', () => {
+  let started: number[][]
+  let fades: number[][]
+  let contexts: FakeAudioContext[]
+
+  beforeEach(() => {
+    started = []
+    fades = []
+    contexts = []
+    vi.stubGlobal('fetch', async (url: string) => ({ ok: true, arrayBuffer: async () => url }))
+    vi.stubGlobal('Audio', class {
+      canPlayType = () => ''
+    })
+    vi.stubGlobal('AudioContext', class extends FakeAudioContext {
+      constructor() {
+        super()
+        contexts.push(this)
+      }
+
+      override createGain() {
+        const gain = new FakeGain()
+        Object.assign(gain.gain, { setTargetAtTime: (...args: number[]) => fades.push(args) })
+        return gain
+      }
+
+      createBufferSource() {
+        return {
+          playbackRate: { value: 1 },
+          connect() {},
+          start: (...args: number[]) => started.push(args),
+          stop() {},
+        }
+      }
+
+      async decodeAudioData(data: string) {
+        return { from: data }
+      }
+    })
+  })
+
+  afterEach(() => vi.unstubAllGlobals())
+
+  async function engineWith(url: string) {
+    const engine = createAudioEngine()
+    await engine.loadSample(url)
+    return engine
+  }
+
+  it('starts a note ahead of its step by a negative delay', async () => {
+    const engine = await engineWith('/1.wav')
+    engine.playNote('voice', { url: '/1.wav', delay: -0.05 }, 1)
+    expect(started).toEqual([[0.95, 0]])
+  })
+
+  it('skips the part of a note that is already past, so the rest lands in time', async () => {
+    const engine = await engineWith('/1.wav')
+    contexts[0]!.currentTime = 0.98
+    engine.playNote('voice', { url: '/1.wav', delay: -0.05, rate: 1.1 }, 1)
+    expect(started[0]![0]).toBeCloseTo(0.98)
+    expect(started[0]![1]).toBeCloseTo(0.03 * 1.1)
+  })
+
+  it('fades a note out at its own release', async () => {
+    const engine = await engineWith('/1.wav')
+    engine.playNote('voice', { url: '/1.wav', duration: 0.2, release: 0.013 }, 1)
+    expect(fades.at(-1)).toEqual([0, 1.2, 0.013])
+  })
+})

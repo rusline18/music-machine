@@ -13,7 +13,7 @@
 
 const VERSION = new URL(self.location.href).searchParams.get('v') || 'dev'
 const PAGES_CACHE = `pages-${VERSION}`
-const AUDIO_VERSION = 1
+const AUDIO_VERSION = 2
 const AUDIO_CACHE = `audio-v${AUDIO_VERSION}`
 
 /** Every page a dancer may open offline: tests/service-worker.test.ts checks it against the genres and languages. */

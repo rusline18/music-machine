@@ -6,6 +6,13 @@ import { humanizeNote } from './humanize'
 const LOOKAHEAD_MS = 25
 const SCHEDULE_AHEAD_S = 0.1
 /**
+ * How far ahead of its step a note may start (a negative `delay`): a spoken
+ * word starts before its beat so its vowel lands on it. Steps are queued
+ * this much earlier to make room. scripts/generate-samples.mjs cuts the
+ * words to fit (MAX_WORD_LEAD_S).
+ */
+export const MAX_LEAD_S = 0.08
+/**
  * Steps due further back than this are skipped: the timer stalled (a
  * background tab, a long pause), and playing them now would sound them all
  * at once.
@@ -77,7 +84,7 @@ export function createScheduler(engine: Pick<AudioEngine, 'now' | 'resume' | 'pl
       nextStepTime += missed * step
       currentStep = (currentStep + missed) % length
     }
-    const horizon = now + SCHEDULE_AHEAD_S
+    const horizon = now + SCHEDULE_AHEAD_S + MAX_LEAD_S
     while (nextStepTime < horizon) {
       scheduleStep(currentStep, nextStepTime)
       nextStepTime += step

@@ -24,6 +24,14 @@ describe('humanizeNote', () => {
     expect(humanizeNote(note, 1, true, middle).gain).toBeLessThan(humanizeNote(note, 1, false, middle).gain!)
   })
 
+  it('keeps a spoken word in pitch and at its own level off the beat', () => {
+    const word = { url: '/1.wav', gain: 0.45, rate: 1.05, delay: -0.05, spoken: true }
+    const out = humanizeNote(word, 1, true, () => 0.5)
+    expect(out.rate).toBe(1.05)
+    expect(out.gain).toBeCloseTo(0.45)
+    expect(out.delay).toBeCloseTo(-0.05 + 0.006)
+  })
+
   it('keeps an existing strum delay and adds to it', () => {
     expect(humanizeNote({ ...note, delay: 0.024 }, 1, false, () => 0.5).delay).toBeCloseTo(0.024 + 0.006)
   })

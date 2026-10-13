@@ -1,0 +1,74 @@
+{
+  "/audio/voice/en/1.wav": {
+    "lead": 0.02,
+    "length": 0.41
+  },
+  "/audio/voice/en/2.wav": {
+    "lead": 0.01,
+    "length": 0.24
+  },
+  "/audio/voice/en/3.wav": {
+    "lead": 0.08,
+    "length": 0.45
+  },
+  "/audio/voice/en/4.wav": {
+    "lead": 0.08,
+    "length": 0.29
+  },
+  "/audio/voice/en/5.wav": {
+    "lead": 0.08,
+    "length": 0.35
+  },
+  "/audio/voice/en/6.wav": {
+    "lead": 0.08,
+    "length": 0.41
+  },
+  "/audio/voice/en/7.wav": {
+    "lead": 0.08,
+    "length": 0.39
+  },
+  "/audio/voice/en/8.wav": {
+    "lead": 0.02,
+    "length": 0.39
+  },
+  "/audio/voice/en/and.wav": {
+    "lead": 0.01,
+    "length": 0.37
+  },
+  "/audio/voice/ru/1.wav": {
+    "lead": 0.05,
+    "length": 0.4
+  },
+  "/audio/voice/ru/2.wav": {
+    "lead": 0.02,
+    "length": 0.43
+  },
+  "/audio/voice/ru/3.wav": {
+    "lead": 0.01,
+    "length": 0.22
+  },
+  "/audio/voice/ru/4.wav": {
+    "lead": 0.08,
+    "length": 0.41
+  },
+  "/audio/voice/ru/5.wav": {
+    "lead": 0.03,
+    "length": 0.29
+  },
+  "/audio/voice/ru/6.wav": {
+    "lead": 0.08,
+    "length": 0.43
+  },
+  "/audio/voice/ru/7.wav": {
+    "lead": 0.08,
+    "length": 0.39
+  },
+  "/audio/voice/ru/8.wav": {
+    "lead": 0.02,
+    "length": 0.41
+  },
+  "/audio/voice/ru/and.wav": {
+    "lead": 0.02,
+    "length": 0.24
+  }
+}

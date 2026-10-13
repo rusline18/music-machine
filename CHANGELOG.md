@@ -15,6 +15,14 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
   address right away.
 - Mini App: the bundled Telegram SDK is the current one from telegram.org
   (was the Bot API 8.0 copy).
+- The counting voice sounds less mechanical and no longer runs together:
+  each word's vowel lands on the beat (the long "sh", "ch", "f", "th" before
+  it start the word early, cut to 80 ms by `npm run samples`, which also
+  writes `app/genres/voice-timing.json`); a word that doesn't fit before
+  the next one is said up to 10% quicker and faded out with a breath before
+  the next, instead of being cut off mid-word; the 1 and the 5 are said
+  loudest and "and" well under the counts; the voice is no longer detuned
+  by the feel setting. Phones download the voice again (`AUDIO_VERSION` 2).
 
 ## 2026-10-12
 
