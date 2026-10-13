@@ -5,6 +5,11 @@
  */
 export const GENRE_IDS = ['salsa', 'bachata'] as const
 
+/** Instruments with a page of their own, per genre (Genre.instrumentPages): /salsa/congas. */
+export const INSTRUMENT_PAGES: Partial<Record<(typeof GENRE_IDS)[number], readonly string[]>> = {
+  salsa: ['congas'],
+}
+
 /** The site's languages: English at /, the rest under a prefix (nuxt.config.ts). */
 export const SITE_LOCALES = [
   { language: 'en-US', prefix: '' },
@@ -17,7 +22,7 @@ export const SITE_LOCALES = [
  * page without a trailing slash.
  */
 export function sitemapXml(origin: string): string {
-  const pages = ['', ...GENRE_IDS.map((id) => `/${id}`)]
+  const pages = ['', ...GENRE_IDS.flatMap((id) => [`/${id}`, ...(INSTRUMENT_PAGES[id] ?? []).map((instrument) => `/${id}/${instrument}`)])]
   const url = (prefix: string, page: string) => `${origin}${prefix}${page}`
   const entries = pages.flatMap((page) => SITE_LOCALES.map(({ prefix }) => {
     const alternates = [

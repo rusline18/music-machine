@@ -299,5 +299,48 @@
     "grid": "Grid",
     "gridHelp": "“Random” fills the grid with random hits, for experimenting. “Clear” removes every hit so you can build a rhythm from scratch.",
     "bar": "Bar {n}"
+  },
+  "instrumentPage": {
+    "back": "← {genre}",
+    "more": "About the instruments",
+    "open": "More about the instrument →",
+    "player": "The instrument's rhythm",
+    "variant": "Rhythm",
+    "mix": {
+      "label": "Listen",
+      "hint": "On its own: the instrument and what it locks to, quietly. With the band: everyone, a little quieter, so the instrument stands out.",
+      "solo": "On its own",
+      "band": "With the band"
+    },
+    "sections": {
+      "about": "What it is",
+      "strokes": "The strokes",
+      "dancer": "What a dancer hears"
+    }
+  },
+  "instrumentPages": {
+    "salsa": {
+      "congas": {
+        "title": "Congas in salsa: the tumbao",
+        "description": "How the congas sound in salsa: the heel, toe, slap and open strokes, the tumbao rhythm, and where a dancer finds the count in it. Listen on its own and with the band.",
+        "about": "Congas (tumbadoras) are tall Cuban drums with a skin head, played with the hands. A conguero usually has two or three drums of different sizes in front of them, sitting or standing between them.\nIn salsa the congas play the tumbao: a short figure, one bar long, repeated through the whole song. It is the band's pulse: other instruments change parts, the tumbao stays.",
+        "strokes": "Heel and toe: the hand rocks on the head, first the base of the palm, then the fingers. They're quiet, nearly lost in the band, but they keep the hand moving and the eighth notes even.\nSlap: a sharp, cracking stroke with the fingers near the rim, on 2 (and 6).\nOpen: the fingers strike near the rim and bounce straight off, so the head rings out as a note. The two open tones on 4 and & (8 and &) are the tumbao's \"boom-boom\".",
+        "dancer": "The two open tones tell you where you are in the bar: right after them comes 1 or 5. Lost the count? Find that \"boom-boom\" in the music and come in on the next beat.\nThe slap on 2 and 6 suits those who dance On2: their break, the change of direction, lands on it.",
+        "variants": {
+          "tumbao": {
+            "name": "Full",
+            "description": "The full tumbao: heel and toe on 1 and 3, the slap on 2, open tones on 4 and &."
+          },
+          "slap-open": {
+            "name": "Slap",
+            "description": "Heel and toe left out: the slap on 2 and the open tones on 4 and &. The second step in learning the tumbao."
+          },
+          "open": {
+            "name": "Open",
+            "description": "Only the open tones on 4 and & — what a dancer hears best in the band. Learning the tumbao starts here."
+          }
+        }
+      }
+    }
   }
 }

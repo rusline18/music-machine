@@ -1,5 +1,6 @@
 import type { Step } from '~/core/pattern'
 import { definePattern, rotateFigure } from '~/core/pattern'
+import type { InstrumentPage } from '../types'
 import { voiceTrack } from '../voice'
 
 // Figures are eighth notes; one 8-count block = one two-bar clave cycle
@@ -21,6 +22,12 @@ const CLAVE_3_2: Step[] = [
  * through 1 and 3, slap on 2, open tones on 4 and &4.
  */
 const TUMBAO: Step[] = ['heel', 'toe', 'slap', 'toe', 'heel', 'toe', 'open', 'open']
+/**
+ * The tumbao the way it's learnt, the strokes added one at a time: first
+ * the open tones on 4 and &4 (what a dancer hears most), then the slap on 2.
+ */
+const TUMBAO_OPEN: Step[] = [null, null, null, null, null, null, 'open', 'open']
+const TUMBAO_SLAP_OPEN: Step[] = [null, null, 'slap', null, null, null, 'open', 'open']
 /** Martillo (one bar): eighths on the macho, hembra on 4 */
 const MARTILLO: Step[] = ['high', 'high', 'high', 'high', 'high', 'high', 'low', null]
 /** Cáscara (3-2) on the timbal shell */
@@ -518,4 +525,16 @@ export const salsaClave: Record<string, string> = {
   'salsa-chachacha-2-3': 'son-2-3',
   'salsa-pachanga-2-3': 'son-2-3',
   'salsa-guaguanco-3-2': 'rumba-3-2',
+}
+
+/** Instruments with a page of their own; their rhythms play over the verse. */
+export const salsaInstrumentPages: Record<string, InstrumentPage> = {
+  congas: {
+    variants: [
+      { id: 'tumbao', figure: TUMBAO },
+      { id: 'slap-open', figure: TUMBAO_SLAP_OPEN },
+      { id: 'open', figure: TUMBAO_OPEN },
+    ],
+    companions: ['clave'],
+  },
 }

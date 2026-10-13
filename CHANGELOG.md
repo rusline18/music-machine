@@ -4,6 +4,14 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-13
 
+- Instrument pages, starting with the congas (`/salsa/congas`): what the
+  instrument is, its strokes and what a dancer hears in it, with a small
+  machine to play its rhythm — the full tumbao, or the strokes added one
+  at a time (open tones, then the slap) — on its own over the clave or
+  with the whole band, quieter. Linked from the genre page and the
+  instrument's sheet, and listed in `/sitemap.xml`. Rhythms and texts:
+  `Genre.instrumentPages`, `instrumentPages.*` in i18n. Plan:
+  docs/instrument-pages-plan.md, stage 1.
 - Mini App: no more endless Telegram loading screen or black screen. The
   Telegram SDK is served from the site instead of telegram.org (slow or
   blocked for many users in Russia), and the loading screen is lifted as

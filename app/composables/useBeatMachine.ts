@@ -45,8 +45,12 @@ const CLOUD_SAVE_DELAY_MS = 1000
  *
  * `locale` is the language the counting voice speaks; it can change while
  * playing.
+ *
+ * With `persist: false` (an instrument page, whose presets are that
+ * instrument's rhythms) the pattern isn't saved, nor restored from a link
+ * or the last visit: the genre page's own pattern is left alone.
  */
-export function useBeatMachine(genre: Genre, locale: Ref<string>) {
+export function useBeatMachine(genre: Genre, locale: Ref<string>, { persist = true }: { persist?: boolean } = {}) {
   const engine = createAudioEngine()
   for (const [instrument, { tone }] of Object.entries(genre.pitched)) if (tone) engine.setInstrumentTone(instrument, tone)
   const scheduler = createScheduler(engine)
@@ -193,6 +197,7 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
   const route = useRoute()
   const router = useRouter()
   onMounted(async () => {
+    if (!persist) return
     const { [SHARE_PARAM]: packed, [SHARE_CODE_PARAM]: code, ...query } = route.query
     const fromLink = typeof packed === 'string' || typeof code === 'string'
     let restored: Pattern | null = null
@@ -261,6 +266,7 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
   // Only edits are kept: an untouched preset isn't stored, so it picks up
   // fixes to the preset data on the next visit.
   watch(shareCode, (code) => {
+    if (!persist) return
     const edited = presetCode(pattern.value.id) !== code
     try {
       if (edited) localStorage.setItem(storageKey(genre.id), code)
@@ -473,13 +479,14 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     layers.value = null
   }
 
-  // Leaving for home or the other genre: the music fades out while the
-  // curtain closes instead of cutting off when the page goes. A language
-  // change keeps the genre and the music.
+  // Leaving for another page: the music fades out while the curtain
+  // closes instead of cutting off when the page goes. A language change
+  // keeps the page and the music.
   let removeFadeGuard: (() => void) | undefined
   onMounted(() => {
-    removeFadeGuard = router.beforeEach((to) => {
-      if (isPlaying.value && to.params.genre !== genre.id) engine.fadeAll(LEAVE_FADE_SECONDS)
+    removeFadeGuard = router.beforeEach((to, from) => {
+      const samePage = to.params.genre === from.params.genre && to.params.instrument === from.params.instrument
+      if (isPlaying.value && !samePage) engine.fadeAll(LEAVE_FADE_SECONDS)
     })
   })
 

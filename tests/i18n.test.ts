@@ -3,6 +3,7 @@ import { COUNTING_MODES, stepNames } from '~/core/resolve'
 import { SONG_PATTERN_ID } from '~/core/song'
 import { TEMPO_CHOICES } from '~/core/tempo'
 import { genres } from '~/genres'
+import { INSTRUMENT_MIXES } from '~/genres/instrumentPages'
 import { countingVoice } from '~/genres/voice'
 import en from '../i18n/locales/en.json'
 import ru from '../i18n/locales/ru.json'
@@ -37,6 +38,11 @@ const dataKeys = genres.flatMap((genre) => [
   ...TEMPO_CHOICES.map((choice) => ['controls', 'tempo', choice]),
   ['presets', SONG_PATTERN_ID],
   ['help', 'presets', SONG_PATTERN_ID],
+  ...Object.entries(genre.instrumentPages ?? {}).flatMap(([instrument, page]) => [
+    ...['title', 'description', 'about', 'strokes', 'dancer'].map((text) => ['instrumentPages', genre.id, instrument, text]),
+    ...page.variants.flatMap(({ id }) => ['name', 'description'].map((text) => ['instrumentPages', genre.id, instrument, 'variants', id, text])),
+  ]),
+  ...INSTRUMENT_MIXES.map((mix) => ['instrumentPage', 'mix', mix]),
 ])
 
 describe.each([['en', en], ['ru', ru]] as const)('%s messages', (locale, messages) => {

@@ -5,6 +5,7 @@ import { COUNTING_MODES, sampleUrls, stepNames } from '~/core/resolve'
 import { TEMPO_CHOICES } from '~/core/tempo'
 import type { Genre } from '~/genres'
 import { genres } from '~/genres'
+import { findInstrumentPage } from '~/genres/instrumentPages'
 
 const props = defineProps<{
   genre: Genre
@@ -92,6 +93,7 @@ useHotkeys({
 
 /** The same array for an instrument every time (see stepNames), so rows aren't re-rendered for nothing. */
 const stepNamesFor = (instrument: string) => stepNames(props.genre, instrument)
+const instrumentLink = (instrument: string) => (findInstrumentPage(props.genre, instrument) ? `/${props.genre.id}/${instrument}` : undefined)
 
 const root = useTemplateRef('root')
 const motion = useMotion()
@@ -261,6 +263,7 @@ const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(active
             :advanced="advanced"
             :simple-hides="simpleHides"
             :solo="solo"
+            :instrument-link="instrumentLink"
             @solo="setSolo"
             @toggle-step="switchStep"
             @set-step="setStep"
