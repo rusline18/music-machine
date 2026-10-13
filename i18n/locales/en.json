@@ -340,6 +340,95 @@
             "description": "Only the open tones on 4 and & — what a dancer hears best in the band. Learning the tumbao starts here."
           }
         }
+      },
+      "clave": {
+        "title": "Clave in salsa: 3-2, 2-3 and rumba clave",
+        "description": "What the clave is in salsa: two sticks, and the five-stroke rhythm the band is built on. Listen to son clave 3-2 and 2-3 and rumba clave, on its own and with the band.",
+        "about": "Claves are two sticks of hard wood. One rests on a cupped palm, which works as a resonator, and the other strikes it. The sound is dry and high, and cuts through the whole band.\nThe rhythm played on them has the same name: five strokes over two bars. All of salsa is built on it: piano, bells and horns are written \"in clave\", so their parts fit it.",
+        "strokes": "There's one stroke: stick on stick. What matters is not how but when: three strokes in one bar, two in the other.\nIn 3-2 the three come first (1, the & of 2, 4), then the two (6 and 7). In 2-3 it's the same figure started from its second bar: two, then three.\nRumba clave differs by one stroke: the third stroke of the three-side moves from 4 to the & of 4. The rhythm pulls more — it's what rumba guaguancó is played in.",
+        "dancer": "In a song you often can't hear the clave, but the whole band holds on to it. The strokes on 6 and 7 in 3-2 land with the steps of the basic's second half — a good landmark.\nIf the band's accents don't seem to fit the count, listen for where the clave has three strokes and where two: 3-2 and 2-3 sound different, though the dancer's count stays the same.",
+        "variants": {
+          "son-3-2": {
+            "name": "3-2",
+            "description": "Son clave 3-2: 1, & of 2, 4 — 6, 7. Over the 3-2 verse."
+          },
+          "son-2-3": {
+            "name": "2-3",
+            "description": "Son clave 2-3: 2, 3 — 5, & of 6, 8. Over the 2-3 verse."
+          },
+          "rumba-3-2": {
+            "name": "Rumba",
+            "description": "Rumba clave 3-2: the third stroke on the & of 4 instead of 4. Over the guaguancó."
+          }
+        }
+      },
+      "bongos": {
+        "title": "Bongos in salsa: the martillo",
+        "description": "How the bongos sound in salsa: the macho and the hembra, the martillo rhythm, and what it tells a dancer. Listen on its own and with the band, in the verse and in a slow bolero.",
+        "about": "Bongos are two small drums joined together: the small macho and the larger hembra. The bongocero holds them between the knees and plays with the fingers.\nIn the verse the bongos play the martillo; in the montuno the bongocero puts them down and picks up a hand bell, the bongo bell.",
+        "strokes": "High: strokes on the macho, bright and ringing. Low: an open stroke on the hembra, deeper. Slap: a sharp accent the bongocero decorates with.\nThe martillo (\"hammer\"): even eighth notes on the macho, an open stroke on the hembra on 4, and a rest on the & of 4. On real bongos the macho strokes alternate fingers and thumb, which gives the \"ta-ka-ta-ka\".",
+        "dancer": "The martillo is the steadiest part in the verse: the busy macho strokes set the tempo, and the low stroke on 4 and 8, like the congas' open tones, marks the end of the bar just before 1 and 5.\nThe rest on the & of 4 and 8 is a breath before the new bar: the step starts right after it.",
+        "variants": {
+          "martillo": {
+            "name": "Verse",
+            "description": "The martillo in the salsa verse, 3-2."
+          },
+          "bolero": {
+            "name": "Bolero",
+            "description": "The same martillo in a bolero — slow, about 80 counts a minute: easy to make out every stroke."
+          }
+        }
+      },
+      "cowbell": {
+        "title": "The bongo bell in salsa: the campana",
+        "description": "The bongocero's hand bell (campana): how it's played in the salsa montuno, and why it's the easiest thing to keep the count by. Listen on its own and with the band.",
+        "about": "The campana is a hand bell the bongocero switches to in the montuno, the most energetic part of a song. It's held in one hand and struck with a stick.\nWhen it comes in, the music gets louder and denser: that's the sign the montuno has started.",
+        "strokes": "Mouth: a stroke on the wide end, loud and open. Neck: a stroke near the narrow end, short and dull.\nThe rhythm is simple: the mouth on 1 and 3 (5 and 7), the neck on 2 and 4 (6 and 8) — a stroke on every count.",
+        "dancer": "The bongo bell strikes evenly on every count — the clearest metronome in the band. The loud mouth strokes fall on 1, 3, 5 and 7.\nLost? Hold on to the bell: \"1\" is a loud stroke followed by a quiet one.",
+        "variants": {
+          "bongo-bell": {
+            "name": "Montuno",
+            "description": "The bongo bell in the montuno: the mouth on 1 and 3, the neck on 2 and 4."
+          }
+        }
+      },
+      "timbalebell": {
+        "title": "The timbales bell in salsa: the mambo bell",
+        "description": "The timbales bell (mambo bell): how its pattern follows the 3-2 and 2-3 clave, and how it changes in cha-cha-chá. Listen on its own and with the band.",
+        "about": "A bell mounted on the timbales stand. In the verse the timbalero plays cáscara on the drum's shell; in the montuno and the mambo they move to the bell.\nIt's higher and sharper than the bongo bell, and in the montuno the two play together.",
+        "strokes": "Mouth: an open stroke, on every count. Neck: quiet strokes in between, where the cáscara's strokes are. That's why the mambo bell keeps the clave's shape, and differs in 3-2 and 2-3.\nIn cha-cha-chá the bell is simpler: only open strokes, one on every count.",
+        "dancer": "The open strokes on every count keep the pulse; the quiet neck strokes tell you which half of the clave you're in.\nIn cha-cha-chá the bell strikes every count — easy to keep a slow tempo by.",
+        "variants": {
+          "mambo-3-2": {
+            "name": "3-2",
+            "description": "The mambo bell in the montuno, 3-2 clave."
+          },
+          "mambo-2-3": {
+            "name": "2-3",
+            "description": "The mambo bell in the montuno, 2-3 clave: the same pattern started from its second bar."
+          },
+          "chachacha": {
+            "name": "Cha-cha-chá",
+            "description": "The bell in cha-cha-chá: an open stroke on every count."
+          }
+        }
+      },
+      "guiro": {
+        "title": "The güiro in salsa",
+        "description": "The güiro in salsa and cha-cha-chá: how its long and short scrapes are played, and where they meet a dancer's steps. Listen on its own and with the band.",
+        "about": "The güiro is a hollow gourd with notches cut in it (today often wood or plastic). A stick scraped along the notches gives a rasping sound.\nIt came to salsa from Cuban son and danzón, and is heard best in cha-cha-chá and the montuno.",
+        "strokes": "Long: the stick runs along all the notches, and the sound draws out. Short: a quick, short scrape.\nThe pattern takes two counts: a long scrape on 1, two short ones on 2 and its &. Then the same on 3 and 4.",
+        "dancer": "The long scrape draws out from an odd count to the even one; the short \"ch-ch\" falls on 2 and &, 4 and &.\nIn cha-cha-chá the short ones on 4 and & land right on the dancer's \"cha-cha\".",
+        "variants": {
+          "montuno": {
+            "name": "Montuno",
+            "description": "The güiro in the salsa montuno, along with the bells."
+          },
+          "chachacha": {
+            "name": "Cha-cha-chá",
+            "description": "The same pattern in cha-cha-chá — slower, about 120 counts a minute."
+          }
+        }
       }
     }
   }

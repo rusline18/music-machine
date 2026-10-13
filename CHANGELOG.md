@@ -4,6 +4,12 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-13
 
+- Pages for the clave (son 3-2, 2-3, rumba clave), the bongos (the
+  martillo in the verse and in a bolero), the bongo bell, the timbales
+  bell (mambo 3-2 and 2-3, cha-cha-chá) and the güiro (montuno,
+  cha-cha-chá). Each rhythm plays over the preset it belongs to
+  (`InstrumentVariant.band`): the 2-3 clave over the 2-3 verse, the bells
+  over the montuno.
 - Instrument pages, starting with the congas (`/salsa/congas`): what the
   instrument is, its strokes and what a dancer hears in it, with a small
   machine to play its rhythm — the full tumbao, or the strokes added one

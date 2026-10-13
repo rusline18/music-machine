@@ -30,8 +30,8 @@ export interface Genre extends InstrumentSet, SongGenre {
 
 export interface InstrumentPage {
   /**
-   * Rhythms offered in the picker, played over the genre's first preset;
-   * the first one loads by default. Names: i18n
+   * Rhythms offered in the picker, each played over a preset; the first
+   * one loads by default. Names: i18n
    * `instrumentPages.<genre>.<instrument>.variants.<id>`.
    */
   variants: readonly InstrumentVariant[]
@@ -43,4 +43,10 @@ export interface InstrumentVariant {
   id: string
   /** Repeated to fill the pattern, like a preset's figure. */
   figure: readonly Step[]
+  /**
+   * The preset it plays over, where the rest of the band fits it (a 2-3
+   * clave over a 2-3 preset, the mambo bell over the montuno). Defaults to
+   * the genre's first preset.
+   */
+  band?: string
 }

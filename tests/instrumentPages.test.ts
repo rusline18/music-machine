@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { patternLength, trackOf } from '~/core/pattern'
 import { stepNames } from '~/core/resolve'
 import { findGenre, genres } from '~/genres'
-import { BAND_DUCK, findInstrumentPage, instrumentPatterns, instrumentsWithPages, mixMutes } from '~/genres/instrumentPages'
+import { BAND_DUCK, bandOf, findInstrumentPage, instrumentPatterns, instrumentsWithPages, mixMutes } from '~/genres/instrumentPages'
 
 const salsa = findGenre('salsa')!
 
@@ -25,9 +25,11 @@ describe.each(genres.flatMap((genre) => instrumentsWithPages(genre).map((instrum
       }
     })
 
-    it('fits the band its rhythms play over', () => {
-      const length = patternLength(genre.presets[0]!)
-      for (const variant of page.variants) expect(length % variant.figure.length, variant.id).toBe(0)
+    it('plays each rhythm over a preset it fits', () => {
+      for (const variant of page.variants) {
+        if (variant.band) expect(genre.presets.map((preset) => preset.id), variant.id).toContain(variant.band)
+        expect(patternLength(bandOf(genre, variant)) % variant.figure.length, variant.id).toBe(0)
+      }
     })
 
     it('has companions from the genre', () => {
@@ -82,3 +84,22 @@ describe('mixMutes', () => {
     }
   })
 })
+
+describe('a rhythm over its own preset', () => {
+  it('plays the 2-3 clave over the 2-3 verse', () => {
+    const son23 = instrumentPatterns(salsa, 'clave').find((pattern) => pattern.id === 'son-2-3')!
+    expect(trackOf(son23, 'piano')!.steps).toEqual(trackOf(findPreset('salsa-verse-2-3'), 'piano')!.steps)
+  })
+
+  it('brings in with the band what that preset plays', () => {
+    const [montuno] = instrumentPatterns(salsa, 'guiro')
+    const mutes = mixMutes(salsa, 'guiro', montuno!, 'band')
+    // The montuno has the bongo bell, not the bongos.
+    expect(mutes.get('cowbell')).toBe(false)
+    expect(mutes.get('bongos')).toBe(true)
+  })
+})
+
+function findPreset(id: string) {
+  return salsa.presets.find((preset) => preset.id === id)!
+}

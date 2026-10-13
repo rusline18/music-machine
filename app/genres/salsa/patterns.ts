@@ -527,13 +527,53 @@ export const salsaClave: Record<string, string> = {
   'salsa-guaguanco-3-2': 'rumba-3-2',
 }
 
-/** Instruments with a page of their own; their rhythms play over the verse. */
+/**
+ * Instruments with a page of their own. Each rhythm plays over the preset
+ * it's heard in: the verse unless said otherwise.
+ */
 export const salsaInstrumentPages: Record<string, InstrumentPage> = {
+  clave: {
+    variants: [
+      { id: 'son-3-2', figure: CLAVE_3_2 },
+      { id: 'son-2-3', figure: CLAVE_2_3, band: salsaVerse23.id },
+      { id: 'rumba-3-2', figure: RUMBA_CLAVE_3_2, band: salsaGuaguanco.id },
+    ],
+  },
   congas: {
     variants: [
       { id: 'tumbao', figure: TUMBAO },
       { id: 'slap-open', figure: TUMBAO_SLAP_OPEN },
       { id: 'open', figure: TUMBAO_OPEN },
+    ],
+    companions: ['clave'],
+  },
+  bongos: {
+    variants: [
+      { id: 'martillo', figure: MARTILLO },
+      { id: 'bolero', figure: MARTILLO, band: salsaBolero.id },
+    ],
+    companions: ['clave'],
+  },
+  // The bells come in with the montuno, when the bongocero and the
+  // timbalero put down their drums for them.
+  cowbell: {
+    variants: [
+      { id: 'bongo-bell', figure: BONGO_BELL, band: salsaMontuno.id },
+    ],
+    companions: ['clave'],
+  },
+  timbalebell: {
+    variants: [
+      { id: 'mambo-3-2', figure: MAMBO_BELL_3_2, band: salsaMontuno.id },
+      { id: 'mambo-2-3', figure: MAMBO_BELL_2_3, band: salsaMontuno23.id },
+      { id: 'chachacha', figure: ['open', null], band: salsaChachacha.id },
+    ],
+    companions: ['clave'],
+  },
+  guiro: {
+    variants: [
+      { id: 'montuno', figure: GUIRO, band: salsaMontuno.id },
+      { id: 'chachacha', figure: GUIRO, band: salsaChachacha.id },
     ],
     companions: ['clave'],
   },

@@ -34,6 +34,19 @@ test.describe('instrument page', () => {
     await expect(page.getByRole('button', { name: '▶ Play' })).toBeVisible()
   })
 
+  test('plays each rhythm over the preset it belongs to', async ({ page }) => {
+    await page.goto('/salsa/clave')
+    // Son clave 3-2: 1, &2, 4 — 6, 7.
+    await expect(page.getByRole('button', { name: 'Clave step 1', exact: true })).toHaveAttribute('data-sound', 'hit')
+    await page.getByRole('button', { name: '2-3', exact: true }).click()
+    await expect(page.getByRole('button', { name: 'Clave step 1', exact: true })).not.toHaveAttribute('data-sound')
+    await expect(page.getByRole('button', { name: 'Clave step 3', exact: true })).toHaveAttribute('data-sound', 'hit')
+
+    await page.goto('/salsa/guiro')
+    await page.getByRole('button', { name: 'Cha-cha-chá', exact: true }).click()
+    await expect(page.getByText('120', { exact: true })).toBeVisible()
+  })
+
   test('is in Russian too', async ({ page }) => {
     await page.goto('/ru/salsa/congas')
     await expect(page.getByRole('heading', { level: 1, name: 'Конги' })).toBeVisible()

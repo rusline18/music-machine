@@ -1,6 +1,6 @@
 import type { Pattern } from '~/core/pattern'
 import { patternLength, resizeSteps, trackOf } from '~/core/pattern'
-import type { Genre, InstrumentPage } from './types'
+import type { Genre, InstrumentPage, InstrumentVariant } from './types'
 
 /** How loud the rest of the band plays under the instrument a page is about. */
 export const BAND_DUCK = 0.5
@@ -20,16 +20,20 @@ export function instrumentsWithPages(genre: Genre): string[] {
   return genre.instruments.filter((instrument) => findInstrumentPage(genre, instrument))
 }
 
+/** The preset a variant plays over. */
+export function bandOf(genre: Genre, variant: InstrumentVariant): Pattern {
+  return genre.presets.find((preset) => preset.id === variant.band) ?? genre.presets[0]!
+}
+
 /**
- * One pattern per variant, for the page's machine: the genre's first preset
- * with the instrument playing the variant at full volume and the rest of
- * the band quieter under it. The variant's id is the pattern's.
+ * One pattern per variant, for the page's machine: its band preset with
+ * the instrument playing the variant at full volume and the rest of the
+ * band quieter under it. The variant's id is the pattern's.
  */
 export function instrumentPatterns(genre: Genre, instrument: string): Pattern[] {
   const page = findInstrumentPage(genre, instrument)
-  const band = genre.presets[0]!
   return (page?.variants ?? []).map((variant) => {
-    const pattern = structuredClone(band)
+    const pattern = structuredClone(bandOf(genre, variant))
     pattern.id = variant.id
     for (const track of pattern.tracks) {
       if (track.instrument === instrument) {
@@ -51,8 +55,10 @@ export function instrumentPatterns(genre: Genre, instrument: string): Pattern[] 
  * voice is left out: it has its own switch.
  */
 export function mixMutes(genre: Genre, instrument: string, pattern: Pattern, mix: InstrumentMix): Map<string, boolean> {
-  const band = genre.presets[0]!
-  const heardAlone = new Set([instrument, ...findInstrumentPage(genre, instrument)?.companions ?? []])
+  const page = findInstrumentPage(genre, instrument)
+  const variant = page?.variants.find(({ id }) => id === pattern.id)
+  const band = variant ? bandOf(genre, variant) : genre.presets[0]!
+  const heardAlone = new Set([instrument, ...page?.companions ?? []])
   return new Map(pattern.tracks
     .filter((track) => !genre.spoken[track.instrument])
     .map((track) => {
