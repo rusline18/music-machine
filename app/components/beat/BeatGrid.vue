@@ -160,6 +160,18 @@ function cellLabel(section: number, cellIndex: number): string {
   return position * 2 === stepsPerCount ? t('grid.and') : ''
 }
 
+/** Where a step sits, in the header's words: "3", "3 &", or between two header labels. */
+function stepPlace(stepIndex: number): string {
+  const { stepsPerCount } = props.pattern
+  const count = String(countInBlock(stepIndex, stepsPerCount) + 1)
+  const position = stepIndex % stepsPerCount
+  if (position === 0) return t('grid.atCount', { count })
+  if (position * 2 === stepsPerCount) return t('grid.atCount', { count: `${count} ${t('grid.and')}` })
+  const before = position * 2 < stepsPerCount ? count : `${count} ${t('grid.and')}`
+  const after = position * 2 < stepsPerCount ? `${count} ${t('grid.and')}` : String(countInBlock(stepIndex + 1, stepsPerCount) + 1)
+  return t('grid.between', { before, after })
+}
+
 /** The count a header cell sits on, from the pattern's start; the playhead lights it up. */
 const countOf = (section: number, cellIndex: number) => Math.floor((section * stepsPerSection.value + cellIndex) / props.pattern.stepsPerCount)
 </script>
@@ -384,7 +396,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
 
     <UiSheet
       :open="menu !== null"
-      :title="menu ? t('grid.step', { instrument: t(`instruments.${menu.instrument}`), n: menu.stepIndex + 1 }) : ''"
+      :title="menu ? t('grid.stepAt', { instrument: t(`instruments.${menu.instrument}`), place: stepPlace(menu.stepIndex) }) : ''"
       @close="menu = null"
     >
       <div
