@@ -4,6 +4,11 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-13
 
+- Switching on an instrument the preset leaves empty (bongos in the
+  montuno, the bongo bell in the verse…) no longer gives silence that
+  sounds like a broken switch: the track takes the instrument's part from a
+  preset where it plays, in the same clave (`presetPart`, core/song.ts).
+  Tracks that already have hits keep them.
 - Mini App: no more endless Telegram loading screen or black screen. The
   Telegram SDK is served from the site instead of telegram.org (slow or
   blocked for many users in Russia), and the loading screen is lifted as

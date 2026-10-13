@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { patternLength } from '~/core/pattern'
-import { buildSong, MAX_SONG_COUNTS, SONG_PATTERN_ID, sectionFit, songBpm } from '~/core/song'
+import { buildSong, MAX_SONG_COUNTS, presetPart, SONG_PATTERN_ID, sectionFit, songBpm } from '~/core/song'
 import { findGenre } from '~/genres'
 
 const salsa = findGenre('salsa')!
@@ -83,5 +83,31 @@ describe('buildSong', () => {
     const song = buildSong(bachata, ['bachata-derecho', 'bachata-majao'])
     expect(song.counts).toBe(16)
     expect(steps(song, 'bongos').slice(0, 16)).toEqual(steps(bachata.presets[0]!, 'bongos'))
+  })
+})
+
+describe('presetPart', () => {
+  const preset = (id: string) => salsa.presets.find((p) => p.id === id)!
+
+  it('borrows a part the pattern leaves empty from a preset where it plays', () => {
+    // No bongos in the montuno: the verse's martillo.
+    expect(presetPart(salsa, preset('salsa-montuno-3-2'), 'bongos')).toEqual(steps(preset('salsa-verse-3-2'), 'bongos'))
+    // No bongo bell in the verse: the montuno's.
+    expect(presetPart(salsa, preset('salsa-verse-3-2'), 'cowbell')).toEqual(steps(preset('salsa-montuno-3-2'), 'cowbell'))
+  })
+
+  it('takes it from a preset in the same clave', () => {
+    expect(presetPart(salsa, preset('salsa-verse-2-3'), 'timbalebell')).toEqual(steps(preset('salsa-montuno-2-3'), 'timbalebell'))
+    const song = buildSong(salsa, ['salsa-verse-2-3', 'salsa-verse-2-3'])
+    expect(presetPart(salsa, song, 'trumpet')).toEqual([...steps(preset('salsa-montuno-2-3'), 'trumpet'), ...steps(preset('salsa-montuno-2-3'), 'trumpet')])
+  })
+
+  it('fits the part to the pattern\'s length', () => {
+    const song = buildSong(salsa, ['salsa-montuno-3-2', 'salsa-montuno-3-2', 'salsa-montuno-3-2'])
+    expect(presetPart(salsa, song, 'bongos')).toHaveLength(patternLength(song))
+  })
+
+  it('gives nothing for an instrument no preset plays', () => {
+    expect(presetPart(salsa, preset('salsa-verse-3-2'), 'nothing')).toBeUndefined()
   })
 })

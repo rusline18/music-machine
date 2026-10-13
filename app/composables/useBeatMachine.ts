@@ -10,7 +10,7 @@ import { unpackPattern } from '~/core/compactPattern'
 import { decodePattern, encodePattern } from '~/core/share'
 import { packCode, unpackCode } from '~/core/telegram'
 import type { SectionFit } from '~/core/song'
-import { buildSong, sectionFit, songBpm } from '~/core/song'
+import { buildSong, presetPart, sectionFit, songBpm } from '~/core/song'
 import { COUNTING_MODES, countingFigure, patternSampleUrls, sampleUrls, stepNames, stepNamesAt, stepResolver } from '~/core/resolve'
 import type { TempoChoice } from '~/core/tempo'
 import { nudgeBpm, tempoChoice, tempoFor } from '~/core/tempo'
@@ -382,9 +382,18 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>) {
     engine.setInstrumentVolume(instrument, volume)
   }
 
+  /**
+   * Switches a track on or off. A track switched on with no hits gets the
+   * instrument's part from a preset, so switching it on is heard rather
+   * than looking broken.
+   */
   function setMuted(instrument: string, muted: boolean) {
     const track = findTrack(instrument)
     if (!track) return
+    if (!muted && instrument !== voiceInstrument && !track.steps.some(Boolean)) {
+      const part = presetPart(genre, pattern.value, instrument)
+      if (part) track.steps = part
+    }
     track.muted = muted
     applyMuted(instrument)
   }

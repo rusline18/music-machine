@@ -4,4 +4,6 @@ import { computed, onBeforeUnmount, onMounted, readonly, ref, toRaw, watch } fro
 // The router ones are stand-ins: a page with no query, nowhere to navigate.
 const useRoute = () => ({ query: {} })
 const useRouter = () => ({ replace: () => Promise.resolve() })
-Object.assign(globalThis, { computed, onBeforeUnmount, onMounted, readonly, ref, toRaw, watch, useRoute, useRouter })
+// Not inside Telegram: nothing goes to its cloud.
+const inTelegram = () => false
+Object.assign(globalThis, { computed, onBeforeUnmount, onMounted, readonly, ref, toRaw, watch, useRoute, useRouter, inTelegram })

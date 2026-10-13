@@ -15,6 +15,26 @@ class FakeNode {
   stop() {}
 }
 
+/** Enough of Web Audio for the engine to build its graph. */
+class FakeAudioContext {
+  state = 'running'
+  currentTime = 0
+  destination = {}
+  createGain = () => new FakeNode()
+  createBufferSource = () => new FakeNode()
+  createConvolver = () => new FakeNode()
+  createBiquadFilter = () => new FakeNode()
+  createWaveShaper = () => new FakeNode()
+  createBuffer = () => ({ getChannelData: () => new Float32Array(1) })
+  sampleRate = 8
+  async resume() {}
+  async decodeAudioData(data: string) {
+    return { from: data }
+  }
+
+  close() {}
+}
+
 const salsa = findGenre('salsa')!
 const sampleCount = sampleUrls(salsa, 'en').size
 /** What the first preset plays: all Play waits for. */
@@ -39,24 +59,7 @@ describe('useBeatMachine loading', () => {
       if (downloadsFail) throw new TypeError('offline')
       return { ok: true, arrayBuffer: async () => url }
     })
-    vi.stubGlobal('AudioContext', class {
-      state = 'running'
-      currentTime = 0
-      destination = {}
-      createGain = () => new FakeNode()
-      createBufferSource = () => new FakeNode()
-      createConvolver = () => new FakeNode()
-      createBiquadFilter = () => new FakeNode()
-      createWaveShaper = () => new FakeNode()
-      createBuffer = () => ({ getChannelData: () => new Float32Array(1) })
-      sampleRate = 8
-      async resume() {}
-      async decodeAudioData(data: string) {
-        return { from: data }
-      }
-
-      close() {}
-    })
+    vi.stubGlobal('AudioContext', FakeAudioContext)
     vi.spyOn(console, 'error').mockImplementation(() => {})
     vi.spyOn(console, 'warn').mockImplementation(() => {})
   })
@@ -131,5 +134,31 @@ describe('useBeatMachine loading', () => {
     expect(machine.failedSamples.value).toBe(0)
     expect(machine.isPlaying.value).toBe(true)
     machine.stop()
+  })
+})
+
+describe('useBeatMachine switching a track on', () => {
+  beforeEach(() => vi.stubGlobal('AudioContext', FakeAudioContext))
+  afterEach(() => vi.unstubAllGlobals())
+
+  const hits = (steps: (string | null)[]) => steps.filter(Boolean).length
+
+  it('gives an empty track a part to play, so switching it on is heard', () => {
+    const machine = machineFor()
+    // The verse has no bongo bell.
+    const cowbell = () => machine.pattern.value.tracks.find((t) => t.instrument === 'cowbell')!
+    expect(hits(cowbell().steps)).toBe(0)
+    machine.setMuted('cowbell', false)
+    expect(cowbell().muted).toBe(false)
+    expect(hits(cowbell().steps)).toBeGreaterThan(0)
+  })
+
+  it('keeps what a track already plays', () => {
+    const machine = machineFor()
+    const bongos = () => machine.pattern.value.tracks.find((t) => t.instrument === 'bongos')!
+    const before = [...bongos().steps]
+    machine.setMuted('bongos', true)
+    machine.setMuted('bongos', false)
+    expect(bongos().steps).toEqual(before)
   })
 })

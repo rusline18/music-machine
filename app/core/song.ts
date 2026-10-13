@@ -1,5 +1,5 @@
 import type { Pattern, Step } from './pattern'
-import { chainPatterns, COUNT_OPTIONS, endWith } from './pattern'
+import { chainPatterns, COUNT_OPTIONS, endWith, patternLength, resizeSteps, trackOf } from './pattern'
 
 /**
  * A song: the user's own run of presets ("sections"), e.g. verse → montuno
@@ -75,4 +75,26 @@ export function buildSong(genre: SongGenre, sections: readonly string[]): Patter
   const [first, ...rest] = blocks
   if (!first) throw new Error('A song needs at least one section')
   return structuredClone({ ...chainPatterns(SONG_PATTERN_ID, first, ...rest), sections: [...sections] })
+}
+
+/** The clave a pattern is in: its preset's, or its first section's for a song. */
+function claveOf(genre: SongGenre, pattern: Pick<Pattern, 'id' | 'sections'>): string | undefined {
+  return genre.clave?.[pattern.sections?.[0] ?? pattern.id]
+}
+
+/**
+ * What `instrument` plays in the genre's presets, fitted to `pattern`: for
+ * a track switched on with nothing written in it, which would otherwise
+ * stay silent (bongos in the montuno, the bongo bell in the verse). Taken
+ * from the first preset where it plays, one in the pattern's clave first;
+ * undefined if no preset gives it a part.
+ */
+export function presetPart(genre: SongGenre, pattern: Pattern, instrument: string): Step[] | undefined {
+  const clave = claveOf(genre, pattern)
+  const plays = genre.presets.filter((preset) => {
+    const track = trackOf(preset, instrument)
+    return preset.stepsPerCount === pattern.stepsPerCount && track && !track.muted && track.steps.some(Boolean)
+  })
+  const source = plays.find((preset) => genre.clave?.[preset.id] === clave) ?? plays[0]
+  return source && resizeSteps(trackOf(source, instrument)!.steps, patternLength(pattern))
 }
