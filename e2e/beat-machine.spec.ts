@@ -27,7 +27,7 @@ test.describe('salsa beat machine', () => {
     const step = page.getByRole('button', { name: 'Bongos step 8', exact: true })
     await expect(step).not.toHaveAttribute('data-sound')
     await step.click({ button: 'right' })
-    const menu = page.getByRole('dialog', { name: 'Bongos step 8' })
+    const menu = page.getByRole('dialog', { name: 'Bongos · count 4 &' })
     await menu.getByRole('menuitemradio', { name: 'slap' }).click()
     await expect(menu).toBeHidden()
     await expect(step).toHaveAttribute('data-sound', 'slap')
@@ -275,7 +275,7 @@ test.describe('on a phone', () => {
     await step.dispatchEvent('pointerdown', at)
     await page.waitForTimeout(600)
     await step.dispatchEvent('pointerup', at)
-    await page.getByRole('dialog', { name: 'Congas step 1' }).getByRole('menuitemradio', { name: 'slap' }).tap()
+    await page.getByRole('dialog', { name: 'Congas · count 1' }).getByRole('menuitemradio', { name: 'slap' }).tap()
     await expect(step).toHaveAttribute('data-sound', 'slap')
   })
 
