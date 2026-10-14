@@ -1,5 +1,6 @@
 import type { Step } from '~/core/pattern'
 import { definePattern, rotateFigure } from '~/core/pattern'
+import type { InstrumentPage } from '../types'
 import { voiceTrack } from '../voice'
 
 // Figures are eighth notes; one 8-count block = one two-bar clave cycle
@@ -21,6 +22,12 @@ const CLAVE_3_2: Step[] = [
  * through 1 and 3, slap on 2, open tones on 4 and &4.
  */
 const TUMBAO: Step[] = ['heel', 'toe', 'slap', 'toe', 'heel', 'toe', 'open', 'open']
+/**
+ * The tumbao the way it's learnt, the strokes added one at a time: first
+ * the open tones on 4 and &4 (what a dancer hears most), then the slap on 2.
+ */
+const TUMBAO_OPEN: Step[] = [null, null, null, null, null, null, 'open', 'open']
+const TUMBAO_SLAP_OPEN: Step[] = [null, null, 'slap', null, null, null, 'open', 'open']
 /** Martillo (one bar): eighths on the macho, hembra on 4 */
 const MARTILLO: Step[] = ['high', 'high', 'high', 'high', 'high', 'high', 'low', null]
 /** Cáscara (3-2) on the timbal shell */
@@ -88,6 +95,12 @@ const TRUMPET_MAMBO_3_2: Step[] = [
   null, null, null, 'hit', null, null, 'hit', null,
   null, null, 'hit', null, 'hit', null, null, 'push',
 ]
+/** Cha-cha-chá timbales (one bar): a click on the shell on 2, the open hembra on 4. */
+const CHACHACHA_TIMBALES: Step[] = [null, null, 'rim', null, null, null, 'low', null]
+/** Bass on 1 and 3 (one bar): the root, then the fifth — cha-cha-chá, pachanga, bolero. */
+const BASS_ONE_THREE: Step[] = ['root', null, null, null, '5th', null, null, null]
+/** Bolero piano (one bar): the chord on the 1, pushed again on 2&. */
+const BOLERO_PIANO: Step[] = ['chord', null, null, 'chord', null, null, null, null]
 /**
  * Timbales fill (the last two counts of a block): macho, then down to the
  * hembra. Leads from one section of a song into the next.
@@ -295,13 +308,12 @@ export const salsaChachacha = definePattern({
     { instrument: 'clave', figure: CLAVE_2_3, volume: 0.7 },
     { instrument: 'congas', figure: TUMBAO },
     { instrument: 'bongos', volume: 0.8 },
-    // Shell click on 2, open hembra on 4
-    { instrument: 'timbales', figure: [null, null, 'rim', null, null, null, 'low', null], volume: 0.7 },
+    { instrument: 'timbales', figure: CHACHACHA_TIMBALES, volume: 0.7 },
     { instrument: 'cowbell', volume: 0.7 },
     { instrument: 'timbalebell', figure: ['open', null], volume: 0.7 },
     { instrument: 'maracas', volume: 0.5 },
     { instrument: 'guiro', figure: GUIRO, volume: 0.8 },
-    { instrument: 'bass', figure: ['root', null, null, null, '5th', null, null, null], volume: 0.9 },
+    { instrument: 'bass', figure: BASS_ONE_THREE, volume: 0.9 },
     { instrument: 'piano', figure: MONTUNO_2_3, volume: 0.45 },
     // Charangas have no tres or brass (flute and violins instead)
     { instrument: 'tres', volume: 0.5 },
@@ -407,8 +419,8 @@ export const salsaBolero = definePattern({
     { instrument: 'timbalebell', volume: 0.7 },
     { instrument: 'maracas', figure: ['hit'], volume: 0.6 },
     { instrument: 'guiro', volume: 0.6 },
-    { instrument: 'bass', figure: ['root', null, null, null, '5th', null, null, null], volume: 0.9 },
-    { instrument: 'piano', figure: ['chord', null, null, 'chord', null, null, null, null], volume: 0.45 },
+    { instrument: 'bass', figure: BASS_ONE_THREE, volume: 0.9 },
+    { instrument: 'piano', figure: BOLERO_PIANO, volume: 0.45 },
     { instrument: 'tres', volume: 0.5 },
     { instrument: 'trumpet', volume: 0.6 },
     { instrument: 'trombone', volume: 0.6 },
@@ -440,12 +452,12 @@ export const salsaPachanga = definePattern({
     { instrument: 'clave', figure: CLAVE_2_3, volume: 0.7 },
     { instrument: 'congas', figure: PACHANGA_CONGAS },
     { instrument: 'bongos', volume: 0.8 },
-    { instrument: 'timbales', figure: [null, null, 'rim', null, null, null, 'low', null], volume: 0.6 },
+    { instrument: 'timbales', figure: CHACHACHA_TIMBALES, volume: 0.6 },
     { instrument: 'cowbell', volume: 0.7 },
     { instrument: 'timbalebell', figure: ['open', null], volume: 0.7 },
     { instrument: 'maracas', volume: 0.5 },
     { instrument: 'guiro', figure: GUIRO, volume: 0.7 },
-    { instrument: 'bass', figure: ['root', null, null, null, '5th', null, null, null], volume: 0.9 },
+    { instrument: 'bass', figure: BASS_ONE_THREE, volume: 0.9 },
     { instrument: 'piano', figure: MONTUNO_2_3, volume: 0.5 },
     { instrument: 'tres', volume: 0.5 },
     { instrument: 'trumpet', volume: 0.6 },
@@ -518,4 +530,108 @@ export const salsaClave: Record<string, string> = {
   'salsa-chachacha-2-3': 'son-2-3',
   'salsa-pachanga-2-3': 'son-2-3',
   'salsa-guaguanco-3-2': 'rumba-3-2',
+}
+
+/**
+ * Every instrument has a page of its own. Each rhythm plays over the
+ * preset it's heard in: the verse unless said otherwise.
+ */
+export const salsaInstrumentPages: Record<string, InstrumentPage> = {
+  clave: {
+    variants: [
+      { id: 'son-3-2', figure: CLAVE_3_2 },
+      { id: 'son-2-3', figure: CLAVE_2_3, band: salsaVerse23.id },
+      { id: 'rumba-3-2', figure: RUMBA_CLAVE_3_2, band: salsaGuaguanco.id },
+    ],
+  },
+  congas: {
+    variants: [
+      { id: 'tumbao', figure: TUMBAO },
+      { id: 'slap-open', figure: TUMBAO_SLAP_OPEN },
+      { id: 'open', figure: TUMBAO_OPEN },
+    ],
+    companions: ['clave'],
+  },
+  bongos: {
+    variants: [
+      { id: 'martillo', figure: MARTILLO },
+      { id: 'bolero', figure: MARTILLO, band: salsaBolero.id },
+    ],
+    companions: ['clave'],
+  },
+  // The bells come in with the montuno, when the bongocero and the
+  // timbalero put down their drums for them.
+  cowbell: {
+    variants: [
+      { id: 'bongo-bell', figure: BONGO_BELL, band: salsaMontuno.id },
+    ],
+    companions: ['clave'],
+  },
+  timbalebell: {
+    variants: [
+      { id: 'mambo-3-2', figure: MAMBO_BELL_3_2, band: salsaMontuno.id },
+      { id: 'mambo-2-3', figure: MAMBO_BELL_2_3, band: salsaMontuno23.id },
+      { id: 'chachacha', figure: ['open', null], band: salsaChachacha.id },
+    ],
+    companions: ['clave'],
+  },
+  guiro: {
+    variants: [
+      { id: 'montuno', figure: GUIRO, band: salsaMontuno.id },
+      { id: 'chachacha', figure: GUIRO, band: salsaChachacha.id },
+    ],
+    companions: ['clave'],
+  },
+  timbales: {
+    variants: [
+      { id: 'cascara-3-2', figure: CASCARA_3_2 },
+      { id: 'cascara-2-3', figure: CASCARA_2_3, band: salsaVerse23.id },
+      { id: 'chachacha', figure: CHACHACHA_TIMBALES, band: salsaChachacha.id },
+    ],
+    companions: ['clave'],
+  },
+  maracas: {
+    variants: [
+      { id: 'eighths', figure: ['hit'] },
+      { id: 'son', figure: ['hit'], band: salsaSon.id },
+    ],
+    companions: ['clave'],
+  },
+  bass: {
+    variants: [
+      { id: 'tumbao', figure: BASS_TUMBAO },
+      { id: 'one-three', figure: BASS_ONE_THREE, band: salsaChachacha.id },
+    ],
+    companions: ['clave'],
+  },
+  piano: {
+    variants: [
+      { id: 'montuno-3-2', figure: MONTUNO_3_2 },
+      { id: 'montuno-2-3', figure: MONTUNO_2_3, band: salsaVerse23.id },
+      { id: 'bolero', figure: BOLERO_PIANO, band: salsaBolero.id },
+    ],
+    companions: ['clave'],
+  },
+  tres: {
+    variants: [
+      { id: 'guajeo-3-2', figure: GUAJEO_3_2 },
+      { id: 'son', figure: GUAJEO_2_3, band: salsaSon.id },
+    ],
+    companions: ['clave'],
+  },
+  // The two brass sections answer each other, so each is heard with the other.
+  trumpet: {
+    variants: [
+      { id: 'mona', figure: TRUMPET_MONA_3_2, band: salsaMontuno.id },
+      { id: 'mambo', figure: TRUMPET_MAMBO_3_2, band: salsaMambo.id },
+    ],
+    companions: ['clave', 'trombone'],
+  },
+  trombone: {
+    variants: [
+      { id: 'mona', figure: TROMBONE_MONA_3_2, band: salsaMontuno.id },
+      { id: 'mambo', figure: TROMBONE_MAMBO_3_2, band: salsaMambo.id },
+    ],
+    companions: ['clave', 'trumpet'],
+  },
 }

@@ -17,6 +17,8 @@ const props = defineProps<{
   simpleHides?: readonly string[]
   /** The instrument playing on its own, if any. */
   solo?: string | null
+  /** The address of an instrument's own page, if it has one; its sheet links there. */
+  instrumentLink?: (instrument: string) => string | undefined
 }>()
 
 const emit = defineEmits<{
@@ -451,9 +453,18 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
               :accent="!sheetTrack.muted"
             />
           </span>
-          <p class="text-sm leading-snug text-neutral-300">
-            {{ t(`help.instruments.${sheetTrack.instrument}`) }}
-          </p>
+          <div class="space-y-2">
+            <p class="text-sm leading-snug text-neutral-300">
+              {{ t(`help.instruments.${sheetTrack.instrument}`) }}
+            </p>
+            <NuxtLinkLocale
+              v-if="instrumentLink?.(sheetTrack.instrument)"
+              :to="instrumentLink(sheetTrack.instrument)!"
+              class="inline-block text-sm font-semibold text-accent-400 hover:text-accent-300"
+            >
+              {{ t('instrumentPage.open') }}
+            </NuxtLinkLocale>
+          </div>
         </div>
         <button
           type="button"

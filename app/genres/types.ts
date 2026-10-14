@@ -1,4 +1,4 @@
-import type { Pattern } from '~/core/pattern'
+import type { Pattern, Step } from '~/core/pattern'
 import type { InstrumentSet } from '~/core/resolve'
 import type { SongGenre } from '~/core/song'
 
@@ -21,4 +21,32 @@ export interface Genre extends InstrumentSet, SongGenre {
    * Each is also a section the user can build a song from (core/song.ts).
    */
   presets: Pattern[]
+  /**
+   * Instruments that have a page of their own (/<genre>/<instrument>), with
+   * the rhythms it offers. Texts: i18n `instrumentPages.<genre>.<instrument>`.
+   */
+  instrumentPages?: Record<string, InstrumentPage>
+}
+
+export interface InstrumentPage {
+  /**
+   * Rhythms offered in the picker, each played over a preset; the first
+   * one loads by default. Names: i18n
+   * `instrumentPages.<genre>.<instrument>.variants.<id>`.
+   */
+  variants: readonly InstrumentVariant[]
+  /** Play along, quieter, when the instrument is heard on its own (e.g. the clave under the congas). */
+  companions?: readonly string[]
+}
+
+export interface InstrumentVariant {
+  id: string
+  /** Repeated to fill the pattern, like a preset's figure. */
+  figure: readonly Step[]
+  /**
+   * The preset it plays over, where the rest of the band fits it (a 2-3
+   * clave over a 2-3 preset, the mambo bell over the montuno). Defaults to
+   * the genre's first preset.
+   */
+  band?: string
 }
