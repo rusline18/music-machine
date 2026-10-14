@@ -38,12 +38,19 @@ describe.each(genres.flatMap((genre) => instrumentsWithPages(genre).map((instrum
   },
 )
 
+describe.each(genres.map((genre) => [genre.id, genre] as const))('%s', (_id, genre) => {
+  it('has a page for every instrument but the counting voice', () => {
+    expect(instrumentsWithPages(genre)).toEqual(genre.instruments.filter((instrument) => !genre.spoken[instrument]))
+  })
+})
+
 describe('findInstrumentPage', () => {
   it('finds pages the genre has, and nothing else', () => {
     expect(findInstrumentPage(salsa, 'congas')).toBeDefined()
     expect(findInstrumentPage(salsa, 'voice')).toBeUndefined()
     expect(findInstrumentPage(salsa, 'nope')).toBeUndefined()
     expect(findInstrumentPage(findGenre('bachata')!, 'congas')).toBeUndefined()
+    expect(findInstrumentPage(findGenre('bachata')!, 'voice')).toBeUndefined()
   })
 })
 

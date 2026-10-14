@@ -7,7 +7,8 @@ export const GENRE_IDS = ['salsa', 'bachata'] as const
 
 /** Instruments with a page of their own, per genre (Genre.instrumentPages): /salsa/congas. */
 export const INSTRUMENT_PAGES: Partial<Record<(typeof GENRE_IDS)[number], readonly string[]>> = {
-  salsa: ['clave', 'congas', 'bongos', 'cowbell', 'timbalebell', 'guiro'],
+  salsa: ['clave', 'congas', 'bongos', 'timbales', 'cowbell', 'timbalebell', 'maracas', 'guiro', 'bass', 'piano', 'tres', 'trumpet', 'trombone'],
+  bachata: ['guira', 'bongos', 'campana', 'bass', 'requinto', 'segunda'],
 }
 
 /** The site's languages: English at /, the rest under a prefix (nuxt.config.ts). */

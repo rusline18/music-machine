@@ -1,5 +1,6 @@
 import type { Step, TrackSpec } from '~/core/pattern'
 import { definePattern } from '~/core/pattern'
+import type { InstrumentPage } from '../types'
 import { voiceTrack } from '../voice'
 
 // Figures are eighth notes: a bar is 8 cells (counts 1–4), an 8-count block
@@ -15,6 +16,25 @@ const PROGRESSION = ['Am', 'E']
 
 /** Güira, derecho: every eighth, evenly — short strokes */
 const GUIRA_DERECHO: Step[] = ['short']
+/** Güira, majao: a long scrape on each beat */
+const GUIRA_MAJAO: Step[] = ['long', null]
+/** Güira, mambo (one bar): 1, 2&, 3, 4& */
+const GUIRA_MAMBO: Step[] = ['long', null, null, 'short', 'long', null, null, 'short']
+/** Bongo martillo (one bar): every eighth on the macho, the hembra on 4 */
+const BONGOS_DERECHO: Step[] = ['high', 'high', 'high', 'high', 'high', 'high', 'low', 'high']
+/** Bongo, majao (one bar): only the beats — macho on 1, 2, 3, hembra on 4 */
+const BONGOS_MAJAO: Step[] = ['high', null, 'high', null, 'high', null, 'low', null]
+/** Campana (two counts): open on 1 and 3, neck on 2 and 4 */
+const CAMPANA: Step[] = ['open', null, 'neck', null]
+/** Requinto, derecho: a chord arpeggio up and down, one note per eighth */
+const REQUINTO_DERECHO: Step[] = ['root', '3rd', '5th', '3rd']
+/** Requinto, majao (8 counts): a dyad on 4, then a run down on 7 & 8 & */
+const REQUINTO_MAJAO: Step[] = [
+  null, null, null, null, null, null, 'dyad', null,
+  null, null, null, null, 'dyad', '5th', '3rd', 'root',
+]
+/** Requinto, mambo (one bar): the lead riff */
+const REQUINTO_MAMBO: Step[] = ['dyad', '5th', '3rd', 'root', '3rd', '5th', 'dyad', null]
 /** Bass (one bar): root on 1 and 3, fifth on 2& and 4 */
 const BASS: Step[] = ['root', null, null, '5th', 'root', null, '5th', null]
 /**
@@ -59,8 +79,8 @@ function bachataSection(spec: SectionSpec) {
 export const bachataDerecho = bachataSection({
   id: 'bachata-derecho',
   guira: { instrument: 'guira', figure: GUIRA_DERECHO, volume: 0.8 },
-  bongos: { instrument: 'bongos', figure: ['high', 'high', 'high', 'high', 'high', 'high', 'low', 'high'] },
-  requinto: { instrument: 'requinto', figure: ['root', '3rd', '5th', '3rd'], volume: 0.6 },
+  bongos: { instrument: 'bongos', figure: BONGOS_DERECHO },
+  requinto: { instrument: 'requinto', figure: REQUINTO_DERECHO, volume: 0.6 },
 })
 
 /**
@@ -71,16 +91,9 @@ export const bachataDerecho = bachataSection({
  */
 export const bachataMajao = bachataSection({
   id: 'bachata-majao',
-  guira: { instrument: 'guira', figure: ['long', null], volume: 0.95 },
-  bongos: { instrument: 'bongos', figure: ['high', null, 'high', null, 'high', null, 'low', null] },
-  requinto: {
-    instrument: 'requinto',
-    figure: [
-      null, null, null, null, null, null, 'dyad', null,
-      null, null, null, null, 'dyad', '5th', '3rd', 'root',
-    ],
-    volume: 0.8,
-  },
+  guira: { instrument: 'guira', figure: GUIRA_MAJAO, volume: 0.95 },
+  bongos: { instrument: 'bongos', figure: BONGOS_MAJAO },
+  requinto: { instrument: 'requinto', figure: REQUINTO_MAJAO, volume: 0.8 },
 })
 
 /**
@@ -91,9 +104,9 @@ export const bachataMajao = bachataSection({
  */
 export const bachataMambo = bachataSection({
   id: 'bachata-mambo',
-  guira: { instrument: 'guira', figure: ['long', null, null, 'short', 'long', null, null, 'short'] },
-  campana: { instrument: 'campana', figure: ['open', null, 'neck', null], volume: 0.8 },
-  requinto: { instrument: 'requinto', figure: ['dyad', '5th', '3rd', 'root', '3rd', '5th', 'dyad', null], volume: 0.9 },
+  guira: { instrument: 'guira', figure: GUIRA_MAMBO },
+  campana: { instrument: 'campana', figure: CAMPANA, volume: 0.8 },
+  requinto: { instrument: 'requinto', figure: REQUINTO_MAMBO, volume: 0.9 },
 })
 
 export const bachataPresets = [
@@ -101,3 +114,52 @@ export const bachataPresets = [
   bachataMajao,
   bachataMambo,
 ]
+
+/**
+ * Every instrument has a page of its own. Each rhythm plays over the
+ * section it's heard in: the derecho unless said otherwise. Bachata has
+ * no clave: the güira keeps time, so the others are heard with it.
+ */
+export const bachataInstrumentPages: Record<string, InstrumentPage> = {
+  guira: {
+    variants: [
+      { id: 'derecho', figure: GUIRA_DERECHO },
+      { id: 'majao', figure: GUIRA_MAJAO, band: bachataMajao.id },
+      { id: 'mambo', figure: GUIRA_MAMBO, band: bachataMambo.id },
+    ],
+    companions: ['bass'],
+  },
+  bongos: {
+    variants: [
+      { id: 'derecho', figure: BONGOS_DERECHO },
+      { id: 'majao', figure: BONGOS_MAJAO, band: bachataMajao.id },
+    ],
+    companions: ['guira'],
+  },
+  campana: {
+    variants: [
+      { id: 'mambo', figure: CAMPANA, band: bachataMambo.id },
+    ],
+    companions: ['guira'],
+  },
+  bass: {
+    variants: [
+      { id: 'derecho', figure: BASS },
+    ],
+    companions: ['guira'],
+  },
+  requinto: {
+    variants: [
+      { id: 'derecho', figure: REQUINTO_DERECHO },
+      { id: 'majao', figure: REQUINTO_MAJAO, band: bachataMajao.id },
+      { id: 'mambo', figure: REQUINTO_MAMBO, band: bachataMambo.id },
+    ],
+    companions: ['guira', 'segunda'],
+  },
+  segunda: {
+    variants: [
+      { id: 'derecho', figure: SEGUNDA },
+    ],
+    companions: ['guira', 'bass'],
+  },
+}

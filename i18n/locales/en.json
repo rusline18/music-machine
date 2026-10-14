@@ -302,7 +302,6 @@
   },
   "instrumentPage": {
     "back": "← {genre}",
-    "more": "About the instruments",
     "open": "More about the instrument →",
     "player": "The instrument's rhythm",
     "variant": "Rhythm",
@@ -427,6 +426,233 @@
           "chachacha": {
             "name": "Cha-cha-chá",
             "description": "The same pattern in cha-cha-chá — slower, about 120 counts a minute."
+          }
+        }
+      },
+      "timbales": {
+        "title": "Timbales in salsa: the cáscara",
+        "description": "How the timbales sound in salsa: the cáscara on the shell, strokes on the heads and the timbalero's fills. Listen to cáscara in 3-2 and 2-3 and the cha-cha-chá rhythm, on its own and with the band.",
+        "about": "Timbales are two metal drums on a stand — the higher macho and the lower hembra — with bells and sometimes a cymbal. The timbalero plays with sticks.\nThey came from Cuban danzón and charanga. In a salsa band the timbalero leads the moves from one part of a song to the next.",
+        "strokes": "Rim: the stick on the drum's metal shell, a dry click. It's what the cáscara is played on.\nHigh and low: strokes on the macho and hembra heads, for accents and fills — short rolls before a new part of the song.\nThe cáscara follows the clave, so it differs in 3-2 and 2-3. In cha-cha-chá it's simpler: a click on the shell on 2 and an open hembra on 4.",
+        "dancer": "The cáscara is dense and steady through the verse. What helps a dancer most are the timbalero's fills: a short roll at the end of an eight warns that a new part of the song is coming.\nIn cha-cha-chá the open stroke on 4 is the cue for the \"cha-cha\".",
+        "variants": {
+          "cascara-3-2": {
+            "name": "3-2",
+            "description": "Cáscara in the verse, 3-2 clave."
+          },
+          "cascara-2-3": {
+            "name": "2-3",
+            "description": "Cáscara in the verse, 2-3 clave: the same pattern started from its second bar."
+          },
+          "chachacha": {
+            "name": "Cha-cha-chá",
+            "description": "Cha-cha-chá: a click on the shell on 2, the open hembra on 4."
+          }
+        }
+      },
+      "maracas": {
+        "title": "Maracas in salsa",
+        "description": "Maracas in salsa and son: how they sound, and why they help you feel the & between the counts. Listen on its own and with the band.",
+        "about": "Maracas are a pair of rattles on handles: hollow shells (once gourds) with seeds or shot inside.\nThey're among the oldest instruments of son. In salsa they're often played by one of the singers in the chorus.",
+        "strokes": "There's one sound: a short \"sh\" from a sharp flick of the wrist, as the seeds hit the shell.\nThe hands alternate, so the maracas sound evenly on every eighth note.",
+        "dancer": "Even eighths are the grid everything else sits on. When the count is hard to hear, the maracas help you feel the & between counts and keep your steps even.",
+        "variants": {
+          "eighths": {
+            "name": "Verse",
+            "description": "Eighth notes in the salsa verse."
+          },
+          "son": {
+            "name": "Son",
+            "description": "In son — slower, about 110 counts a minute, with the bongos and the tres."
+          }
+        }
+      },
+      "bass": {
+        "title": "Bass in salsa: the tumbao",
+        "description": "How the bass plays in salsa: the bass tumbao, the push on 4, and why the bass almost never plays the 1. Listen on its own and with the band, in salsa and cha-cha-chá.",
+        "about": "The bass in salsa is an upright bass, a bass guitar or a \"baby bass\" (an electric upright). It carries the harmony with the piano and holds the rhythm with the congas.",
+        "strokes": "The bass plays the root and fifth of the chord.\nThe bass tumbao: the fifth on the & of 2, then on 4 the next chord's root, held over the bar line. That's why the salsa bass almost never plays the 1.\nIn cha-cha-chá, pachanga and bolero the bass is simpler: the root on 1, the fifth on 3.",
+        "dancer": "A bass that skips the 1 throws beginners off: the lowest note lands on 4 and rings into the 1. Don't look for the 1 in the bass — it's right after the long note on 4 (and 8).\nIn cha-cha-chá it's the other way round: the steady bass on 1 and 3 is a great landmark.",
+        "variants": {
+          "tumbao": {
+            "name": "Tumbao",
+            "description": "The bass tumbao in the verse: the fifth on the & of 2, the next root on 4."
+          },
+          "one-three": {
+            "name": "On 1 and 3",
+            "description": "The root on 1, the fifth on 3 — as in cha-cha-chá."
+          }
+        }
+      },
+      "piano": {
+        "title": "Piano in salsa: the montuno",
+        "description": "How the piano plays in salsa: the montuno in 3-2 and 2-3 clave, the push on the & of 4, and bolero chords. Listen on its own and with the band.",
+        "about": "The piano in salsa plays the montuno: a repeating figure of chords and octaves, written to fit the clave. With the bass it sets the song's harmony.",
+        "strokes": "Chord: several notes at once, short. Octave: one note of the chord in both hands, an octave apart.\nPush: the next chord played on the & of 4, before the bar begins, and left ringing over the 1.\nThe 3-2 and 2-3 montunos are one pattern started from different bars. In a bolero the piano plays the chord on 1 and again on the & of 2.",
+        "dancer": "The montuno goes round and round through the whole song — the most recognizable part of the rhythm section. The push on the & of 4 (with the bass) makes the 1 feel like it has already arrived, so the step on 1 in salsa sounds like landing after a pickup.",
+        "variants": {
+          "montuno-3-2": {
+            "name": "3-2",
+            "description": "The montuno in the verse, 3-2 clave."
+          },
+          "montuno-2-3": {
+            "name": "2-3",
+            "description": "The montuno in the verse, 2-3 clave."
+          },
+          "bolero": {
+            "name": "Bolero",
+            "description": "Bolero: the chord on 1 and on the & of 2."
+          }
+        }
+      },
+      "tres": {
+        "title": "Tres in salsa: the guajeo",
+        "description": "The tres is the Cuban guitar with three double strings: how its guajeo sounds in salsa and in son. Listen on its own and with the band.",
+        "about": "The tres is a Cuban guitar with three pairs of strings, hence the name. It's the lead instrument of son, the music salsa grew out of. A salsa band doesn't always have one, but its metallic ring is easy to recognize.",
+        "strokes": "The tres plays single chord notes and dyads — two notes together.\nThe guajeo is a pattern that fills the gaps the piano leaves. It has the same push on the & of 4, and no stroke on the 1 after it.",
+        "dancer": "When the piano and the tres play together, their parts mesh like gears. For a dancer the tres is the sound of old-school, son-flavored salsa; in son it leads the whole band.",
+        "variants": {
+          "guajeo-3-2": {
+            "name": "Verse",
+            "description": "The guajeo in the salsa verse, 3-2 clave."
+          },
+          "son": {
+            "name": "Son",
+            "description": "The guajeo in son, 2-3 clave: here the tres leads the band."
+          }
+        }
+      },
+      "trumpet": {
+        "title": "Trumpets in salsa: moña and mambo",
+        "description": "How the trumpets play in salsa: the call and response with the trombones in the moña, and the clave in the mambo. Listen on its own and with the band.",
+        "about": "Trumpets are the top voice of a salsa band's horn section, usually two or three. They don't play the whole song, only certain parts: the moña in the montuno and the arranged mambo.",
+        "strokes": "The trumpets play chord notes (root, third, fifth), short hits as a section, and the push — a chord on the & of 4 that pulls into the next bar.",
+        "dancer": "The trumpets coming in signal that the song has moved to a new part. In the moña the trumpets and trombones trade phrases: the trumpets call in the first bar, the trombones answer in the second.\nIn the mambo the trumpets punch out the clave rhythm — a good moment for accents in the dance.",
+        "variants": {
+          "mona": {
+            "name": "Moña",
+            "description": "The moña in the montuno: trumpets call, trombones answer."
+          },
+          "mambo": {
+            "name": "Mambo",
+            "description": "The mambo: the trumpets punch out the clave over the trombones' riff."
+          }
+        }
+      },
+      "trombone": {
+        "title": "Trombones in salsa: moña and mambo",
+        "description": "How the trombones play in salsa: answering the trumpets in the moña, and the riff in the mambo. Listen on its own and with the band.",
+        "about": "Trombones are the low voice of the horn section. They gave 1960s–70s New York salsa its heavy, dense sound: Eddie Palmieri's and Willie Colón's bands were built on them.",
+        "strokes": "The trombones play chord notes, short hits as a section, and the push — a chord on the & of 4 that pulls into the next bar.",
+        "dancer": "In the moña the trombones answer the trumpets in the second bar. In the mambo they play a riff through both bars, pushing on the & of 4, while the trumpets punch out the clave over it.",
+        "variants": {
+          "mona": {
+            "name": "Moña",
+            "description": "The moña: the trombones answer the trumpets in the second bar."
+          },
+          "mambo": {
+            "name": "Mambo",
+            "description": "The mambo: a riff through both bars, under the trumpets."
+          }
+        }
+      }
+    },
+    "bachata": {
+      "guira": {
+        "title": "The güira in bachata",
+        "description": "The güira, a metal scraper, is bachata's metronome: how it sounds in the derecho, majao and mambo. Listen on its own and with the band.",
+        "about": "The güira is a metal cylinder punched with bumps, scraped with a metal brush. It's the Dominican cousin of the güiro. In bachata and merengue it keeps time, like a hi-hat in pop music.",
+        "strokes": "Short: a quick, short scrape. Long: a scrape along the whole length.\nIn the derecho (verse) the güira plays even short scrapes on every eighth; in the majao (chorus), long ones on every count; in the mambo, a strict pattern: 1, the & of 2, 3, the & of 4.",
+        "dancer": "The güira is bachata's metronome. In the verse it ticks off eighths; in the chorus it moves to long scrapes on every count, and the music seems to open up. A change in the güira tells you the song has moved to another part.",
+        "variants": {
+          "derecho": {
+            "name": "Derecho",
+            "description": "Derecho (verse): short scrapes on every eighth."
+          },
+          "majao": {
+            "name": "Majao",
+            "description": "Majao (chorus): a long scrape on every count."
+          },
+          "mambo": {
+            "name": "Mambo",
+            "description": "Mambo: 1, the & of 2, 3, the & of 4."
+          }
+        }
+      },
+      "bongos": {
+        "title": "Bongos in bachata: martillo and majao",
+        "description": "How the bongos sound in bachata: the martillo in the verse, strokes on the count in the chorus, and the low stroke on 4 that cues the tap. Listen on its own and with the band.",
+        "about": "Bongos are two small drums joined together: the higher macho and the lower hembra. In bachata they're the main percussion: the bongocero drives the rhythm and decorates it.",
+        "strokes": "High: a stroke on the macho. Low: an open stroke on the hembra. Slap: a sharp accent.\nIn the derecho (verse) the bongos play the martillo: every eighth on the macho, the hembra on 4. In the majao (chorus) they drop the upbeats: macho on 1, 2, 3 and hembra on 4.",
+        "dancer": "The low hembra stroke on 4 and 8 is the main landmark in bachata: it's where the tap of the basic step falls. Lost? Wait for that stroke and start on 1 right after it.",
+        "variants": {
+          "derecho": {
+            "name": "Derecho",
+            "description": "Derecho (verse): the martillo, the hembra on 4."
+          },
+          "majao": {
+            "name": "Majao",
+            "description": "Majao (chorus): only the counts, the hembra on 4."
+          }
+        }
+      },
+      "campana": {
+        "title": "The campana in bachata",
+        "description": "The campana is the bongocero's hand bell in the bachata mambo: how it sounds and how to keep the count by it. Listen on its own and with the band.",
+        "about": "The campana is a hand bell. The bongocero picks it up in the mambo — the song's instrumental climax, when the singer stops and the requinto solos.",
+        "strokes": "Mouth: a loud, open stroke. Neck: a short, dull one.\nThe mouth on 1 and 3, the neck on 2 and 4 — a stroke on every count.",
+        "dancer": "The bell comes in at the song's most energetic part. It's easy to keep the count by: loud strokes on 1 and 3 (5 and 7), quiet ones on 2 and 4.",
+        "variants": {
+          "mambo": {
+            "name": "Mambo",
+            "description": "Mambo: the mouth on 1 and 3, the neck on 2 and 4."
+          }
+        }
+      },
+      "bass": {
+        "title": "Bass in bachata",
+        "description": "How the bass plays in bachata: the root on 1 and 3, a pickup on the & of 2 and a note on 4. Listen on its own and with the band.",
+        "about": "The bass guitar in bachata sets the harmony and the bottom of the rhythm, together with the segunda.",
+        "strokes": "The bass plays the root and fifth of the chord: the root on 1 and 3, the fifth on the & of 2 and on 4. The first note rings for a count and a half.",
+        "dancer": "Unlike in salsa, the bachata bass plays the 1 — you hear it straight away. The note on 4, with the bongos' hembra, underlines the tap.",
+        "variants": {
+          "derecho": {
+            "name": "Derecho",
+            "description": "The root on 1 and 3, the fifth on the & of 2 and on 4."
+          }
+        }
+      },
+      "requinto": {
+        "title": "The requinto in bachata",
+        "description": "The requinto is bachata's lead guitar: arpeggios in the verse, answers to the singer in the chorus, and the riff in the mambo. Listen on its own and with the band.",
+        "about": "The requinto is bachata's first, lead guitar: small and tuned high. It's the voice of bachata — you know the style from the requinto's first notes.",
+        "strokes": "The requinto plays single chord notes (root, third, fifth) and dyads.\nIn the derecho it plays the chord's arpeggio up and down in eighths; in the majao, short answers to the singer; in the mambo, a repeating riff: the requinto takes the solo.",
+        "dancer": "The requinto is the melody you dance to musically: its phrases tell you where to accent or pause. In the mambo, when the singer stops, it leads — time for the most striking moves.",
+        "variants": {
+          "derecho": {
+            "name": "Derecho",
+            "description": "Derecho: an arpeggio up and down, a note per eighth."
+          },
+          "majao": {
+            "name": "Majao",
+            "description": "Majao: a dyad on 4, a run down on 7 and 8."
+          },
+          "mambo": {
+            "name": "Mambo",
+            "description": "Mambo: the lead riff."
+          }
+        }
+      },
+      "segunda": {
+        "title": "The segunda in bachata",
+        "description": "The segunda is bachata's rhythm guitar: bass notes on 1, 3 and 4 and strums on the other eighths. Listen on its own and with the band.",
+        "about": "The segunda is bachata's second, rhythm guitar. It plays the chords and holds the harmony together with the bass.",
+        "strokes": "A bass note on 1, 3 and 4, following the bass guitar, and short strums on the chord on the other eighths.",
+        "dancer": "The segunda sounds on every eighth and, like the güira, keeps an even grid. Its bass notes land with the steps on 1 and 3 and the tap on 4.",
+        "variants": {
+          "derecho": {
+            "name": "Derecho",
+            "description": "Bass notes on 1, 3 and 4, strums on the other eighths."
           }
         }
       }
