@@ -105,7 +105,8 @@
       "close": "Close the sounds",
       "sounds": "{instrument} sounds"
     },
-    "key": "Sound marks"
+    "key": "Sound marks",
+    "aboutInstrument": "About the instrument"
   },
   "instruments": {
     "voice": "Voice",

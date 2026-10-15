@@ -13,6 +13,14 @@ test.describe('instrument page', () => {
     await expect(page).toHaveURL(/\/salsa$/)
   })
 
+  test('the instrument\'s name on the grid opens its sheet', async ({ page }) => {
+    await page.goto('/salsa')
+    await page.getByRole('button', { name: 'Congas', exact: true }).click()
+    const sheet = page.getByRole('dialog', { name: 'Congas' })
+    await sheet.getByRole('link', { name: 'More about the instrument →' }).click()
+    await expect(page).toHaveURL(/\/salsa\/congas$/)
+  })
+
   test('shows only the instrument on the grid, and switches its rhythm', async ({ page }) => {
     await page.goto('/salsa/congas')
     const steps = page.getByRole('button', { name: /^.+ step \d+$/ })

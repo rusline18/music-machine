@@ -271,13 +271,22 @@ onBeforeUnmount(() => {
           />
         </svg>
       </button>
-      <UiControlLabel
+      <!-- Wider screens have room for the name: it opens the instrument's
+           sheet, the visible way to what a long press on the icon does. -->
+      <button
         v-if="showControls"
-        class="min-w-0 text-sm max-sm:hidden"
+        type="button"
+        class="-ml-1.5 flex min-w-0 items-center gap-1 rounded-lg px-1.5 py-1 text-left text-sm transition hover:bg-neutral-800 max-sm:hidden"
         :class="track.muted ? 'text-neutral-500' : 'text-neutral-200'"
-        :label="instrumentName"
-        :hint="t(`help.instruments.${track.instrument}`)"
-      />
+        :title="t('grid.aboutInstrument')"
+        @click="emit('open-instrument')"
+      >
+        <span class="leading-tight">{{ instrumentName }}</span>
+        <span
+          class="text-neutral-500"
+          aria-hidden="true"
+        >›</span>
+      </button>
       <UiControlLabel
         v-else
         class="instrument-icon min-w-0 truncate text-sm text-neutral-500"
