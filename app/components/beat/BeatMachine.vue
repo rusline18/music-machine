@@ -93,6 +93,8 @@ useHotkeys({
 
 /** The same array for an instrument every time (see stepNames), so rows aren't re-rendered for nothing. */
 const stepNamesFor = (instrument: string) => stepNames(props.genre, instrument)
+/** Whether the user already knows a long press opens the sheet (then the ⓘ's tip is left out). */
+const holdHint = useHoldHint()
 /** The sheet opened from the practice cards; `viaButton` when by its ⓘ, which then tips the long press. */
 const practiceSheet = ref<{ instrument: string, viaButton: boolean } | null>(null)
 const practiceTrack = computed(() => practiceSheet.value && pattern.value.tracks.find((track) => track.instrument === practiceSheet.value!.instrument))
@@ -255,7 +257,7 @@ const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(active
           :track="practiceTrack"
           :solo="solo"
           :link="practiceSheet ? instrumentLink(practiceSheet.instrument) : undefined"
-          :tip="practiceSheet?.viaButton ? $t('practice.longPressTip') : undefined"
+          :tip="practiceSheet?.viaButton && !holdHint.learnt.value ? $t('practice.longPressTip') : undefined"
           @close="closePracticeSheet"
           @solo="setSolo"
           @update:muted="setMuted"

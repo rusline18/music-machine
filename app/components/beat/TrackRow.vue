@@ -176,16 +176,39 @@ let iconStart: { x: number, y: number } | null = null
 /** Set when a press opened the sheet, so the click that ends it doesn't also mute. */
 let sheetOpened = false
 
+// Until a long press has opened a sheet once, a finger held on the icon
+// fills it and says what's coming; letting go early just mutes, as a tap.
+// A mouse has the name beside the icon for that, so it isn't hinted.
+const holdHint = useHoldHint()
+/** The icon is filling under a held finger. */
+const holding = ref(false)
+/** The bubble beside it is out, a moment after the finger lands (a tap never shows it). */
+const holdLabel = ref(false)
+const HOLD_LABEL_DELAY_MS = 120
+let labelTimer: ReturnType<typeof setTimeout> | undefined
+
 function iconDown(event: PointerEvent) {
   if (event.button !== 0) return
   sheetOpened = false
   iconStart = { x: event.clientX, y: event.clientY }
+  if (event.pointerType !== 'mouse' && !holdHint.learnt.value) {
+    holding.value = true
+    labelTimer = setTimeout(() => (holdLabel.value = true), HOLD_LABEL_DELAY_MS)
+  }
   clearTimeout(iconTimer)
   iconTimer = setTimeout(() => {
     iconStart = null
     sheetOpened = true
+    endHold()
+    holdHint.learn()
     emit('open-instrument')
   }, LONG_PRESS_MS)
+}
+
+function endHold() {
+  clearTimeout(labelTimer)
+  holding.value = false
+  holdLabel.value = false
 }
 
 function iconMove(event: PointerEvent) {
@@ -195,6 +218,7 @@ function iconMove(event: PointerEvent) {
 function iconCancel() {
   clearTimeout(iconTimer)
   iconStart = null
+  endHold()
 }
 
 function iconClick() {
@@ -204,6 +228,7 @@ function iconClick() {
 
 function iconMenu() {
   iconCancel()
+  holdHint.learn()
   if (!sheetOpened) emit('open-instrument')
   sheetOpened = false
 }
@@ -220,13 +245,13 @@ onBeforeUnmount(() => {
     class="flex items-center gap-2 border-t border-neutral-800/60 py-1.5 transition-colors sm:gap-3"
     :class="{ '-mx-1.5 rounded-xl border-transparent bg-accent-500/10 px-1.5': active }"
   >
-    <div class="flex w-11 shrink-0 items-center gap-2 sm:w-32">
+    <div class="relative flex w-11 shrink-0 items-center gap-2 sm:w-32">
       <!-- The icon is the switch, so a phone needs no room for an on/off
            button or the name; a long press opens the instrument's sheet. -->
       <button
         v-if="showControls"
         type="button"
-        class="instrument-icon relative flex size-11 shrink-0 select-none items-center justify-center rounded-xl border transition [-webkit-touch-callout:none] sm:size-9 sm:rounded-lg"
+        class="instrument-icon relative isolate flex size-11 shrink-0 select-none items-center justify-center overflow-hidden rounded-xl border transition [-webkit-touch-callout:none] sm:size-9 sm:rounded-lg"
         :class="[
           track.muted
             ? 'border-neutral-700 bg-neutral-900 text-neutral-500 hover:bg-neutral-800 [&>svg:first-child]:opacity-60'
@@ -270,7 +295,18 @@ onBeforeUnmount(() => {
             stroke-linecap="round"
           />
         </svg>
+        <!-- Fills from the bottom while held, behind the drawing. -->
+        <span
+          class="pointer-events-none absolute inset-0 -z-10 origin-bottom bg-neutral-100/30"
+          :class="holding ? 'scale-y-100 transition-transform duration-[450ms] ease-linear motion-reduce:transition-none' : 'scale-y-0'"
+          aria-hidden="true"
+        />
       </button>
+      <span
+        v-if="holdLabel"
+        role="status"
+        class="pointer-events-none absolute left-full top-1/2 z-20 ml-2.5 -translate-y-1/2 whitespace-nowrap rounded-xl bg-neutral-100 px-2.5 py-1.5 text-xs font-semibold text-neutral-950 shadow-xl before:absolute before:-left-1 before:top-1/2 before:size-2.5 before:-translate-y-1/2 before:rotate-45 before:bg-neutral-100"
+      >{{ t('grid.holdHint') }}</span>
       <!-- Wider screens have room for the name: it opens the instrument's
            sheet, the visible way to what a long press on the icon does. -->
       <button

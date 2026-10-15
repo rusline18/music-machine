@@ -10,6 +10,10 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
   by the ⓘ, the sheet tips that holding the card does the same.
 - On a wider screen, an instrument's name on the grid opens its sheet,
   the same one a long press or right-click on its icon opens.
+- Holding an instrument's icon on the grid, or its practice card, on a
+  phone fills it and says "keep holding — the sheet opens"; letting go
+  early mutes as before. Once a long press has opened a sheet, the hint
+  (and the ⓘ's tip about it) is gone on this device.
 - Instrument pages: "On its own" plays only the instrument (it used to
   bring the clave or the güira along).
 

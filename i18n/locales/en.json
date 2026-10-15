@@ -106,7 +106,8 @@
       "sounds": "{instrument} sounds"
     },
     "key": "Sound marks",
-    "aboutInstrument": "About the instrument"
+    "aboutInstrument": "About the instrument",
+    "holdHint": "Keep holding — the sheet opens"
   },
   "instruments": {
     "voice": "Voice",

@@ -106,7 +106,8 @@
       "sounds": "Звуки: {instrument}"
     },
     "key": "Обозначения звуков",
-    "aboutInstrument": "Описание инструмента"
+    "aboutInstrument": "Описание инструмента",
+    "holdHint": "Держите — откроется описание"
   },
   "instruments": {
     "voice": "Голос",
