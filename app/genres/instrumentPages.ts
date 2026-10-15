@@ -5,7 +5,7 @@ import type { Genre, InstrumentPage, InstrumentVariant } from './types'
 /** How loud the rest of the band plays under the instrument a page is about. */
 export const BAND_DUCK = 0.5
 
-/** Who's heard: the instrument (with its companions) on its own, or the whole band. */
+/** Who's heard: the instrument on its own, or the whole band. */
 export const INSTRUMENT_MIXES = ['solo', 'band'] as const
 export type InstrumentMix = (typeof INSTRUMENT_MIXES)[number]
 
@@ -50,19 +50,18 @@ export function instrumentPatterns(genre: Genre, instrument: string): Pattern[] 
 
 /**
  * Whether each track of `pattern` (a variant from instrumentPatterns) is
- * switched off in `mix`: on its own, only the instrument and its
- * companions play; with the band, whatever the preset plays. The counting
+ * switched off in `mix`: on its own, only the instrument plays; with the
+ * band, whatever the preset plays. The counting
  * voice is left out: it has its own switch.
  */
 export function mixMutes(genre: Genre, instrument: string, pattern: Pattern, mix: InstrumentMix): Map<string, boolean> {
   const page = findInstrumentPage(genre, instrument)
   const variant = page?.variants.find(({ id }) => id === pattern.id)
   const band = variant ? bandOf(genre, variant) : genre.presets[0]!
-  const heardAlone = new Set([instrument, ...page?.companions ?? []])
   return new Map(pattern.tracks
     .filter((track) => !genre.spoken[track.instrument])
     .map((track) => {
       const inBand = track.instrument === instrument || !(trackOf(band, track.instrument)?.muted ?? true)
-      return [track.instrument, !(mix === 'solo' ? heardAlone.has(track.instrument) : inBand)]
+      return [track.instrument, !(mix === 'solo' ? track.instrument === instrument : inBand)]
     }))
 }

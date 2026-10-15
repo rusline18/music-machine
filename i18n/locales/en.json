@@ -307,7 +307,7 @@
     "variant": "Rhythm",
     "mix": {
       "label": "Listen",
-      "hint": "On its own: the instrument and what it locks to, quietly. With the band: everyone, a little quieter, so the instrument stands out.",
+      "hint": "On its own: just this instrument. With the band: everyone, a little quieter, so the instrument stands out.",
       "solo": "On its own",
       "band": "With the band"
     },

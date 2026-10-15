@@ -117,8 +117,7 @@ export const bachataPresets = [
 
 /**
  * Every instrument has a page of its own. Each rhythm plays over the
- * section it's heard in: the derecho unless said otherwise. Bachata has
- * no clave: the güira keeps time, so the others are heard with it.
+ * section it's heard in: the derecho unless said otherwise.
  */
 export const bachataInstrumentPages: Record<string, InstrumentPage> = {
   guira: {
@@ -127,26 +126,22 @@ export const bachataInstrumentPages: Record<string, InstrumentPage> = {
       { id: 'majao', figure: GUIRA_MAJAO, band: bachataMajao.id },
       { id: 'mambo', figure: GUIRA_MAMBO, band: bachataMambo.id },
     ],
-    companions: ['bass'],
   },
   bongos: {
     variants: [
       { id: 'derecho', figure: BONGOS_DERECHO },
       { id: 'majao', figure: BONGOS_MAJAO, band: bachataMajao.id },
     ],
-    companions: ['guira'],
   },
   campana: {
     variants: [
       { id: 'mambo', figure: CAMPANA, band: bachataMambo.id },
     ],
-    companions: ['guira'],
   },
   bass: {
     variants: [
       { id: 'derecho', figure: BASS },
     ],
-    companions: ['guira'],
   },
   requinto: {
     variants: [
@@ -154,12 +149,10 @@ export const bachataInstrumentPages: Record<string, InstrumentPage> = {
       { id: 'majao', figure: REQUINTO_MAJAO, band: bachataMajao.id },
       { id: 'mambo', figure: REQUINTO_MAMBO, band: bachataMambo.id },
     ],
-    companions: ['guira', 'segunda'],
   },
   segunda: {
     variants: [
       { id: 'derecho', figure: SEGUNDA },
     ],
-    companions: ['guira', 'bass'],
   },
 }

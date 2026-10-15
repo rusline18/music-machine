@@ -31,10 +31,6 @@ describe.each(genres.flatMap((genre) => instrumentsWithPages(genre).map((instrum
         expect(patternLength(bandOf(genre, variant)) % variant.figure.length, variant.id).toBe(0)
       }
     })
-
-    it('has companions from the genre', () => {
-      for (const companion of page.companions ?? []) expect(genre.instruments).toContain(companion)
-    })
   },
 )
 
@@ -76,10 +72,10 @@ describe('mixMutes', () => {
   const [tumbao] = instrumentPatterns(salsa, 'congas')
   const band = salsa.presets[0]!
 
-  it('on its own, keeps only the instrument and its companions', () => {
+  it('on its own, plays only the instrument', () => {
     const mutes = mixMutes(salsa, 'congas', tumbao!, 'solo')
     expect(mutes.get('congas')).toBe(false)
-    expect(mutes.get('clave')).toBe(false)
+    expect([...mutes].filter(([instrument, muted]) => instrument !== 'congas' && !muted)).toEqual([])
     expect(mutes.get('bass')).toBe(true)
     expect(mutes.has('voice')).toBe(false)
   })
