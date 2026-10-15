@@ -550,14 +550,12 @@ export const salsaInstrumentPages: Record<string, InstrumentPage> = {
       { id: 'slap-open', figure: TUMBAO_SLAP_OPEN },
       { id: 'open', figure: TUMBAO_OPEN },
     ],
-    companions: ['clave'],
   },
   bongos: {
     variants: [
       { id: 'martillo', figure: MARTILLO },
       { id: 'bolero', figure: MARTILLO, band: salsaBolero.id },
     ],
-    companions: ['clave'],
   },
   // The bells come in with the montuno, when the bongocero and the
   // timbalero put down their drums for them.
@@ -565,7 +563,6 @@ export const salsaInstrumentPages: Record<string, InstrumentPage> = {
     variants: [
       { id: 'bongo-bell', figure: BONGO_BELL, band: salsaMontuno.id },
     ],
-    companions: ['clave'],
   },
   timbalebell: {
     variants: [
@@ -573,14 +570,12 @@ export const salsaInstrumentPages: Record<string, InstrumentPage> = {
       { id: 'mambo-2-3', figure: MAMBO_BELL_2_3, band: salsaMontuno23.id },
       { id: 'chachacha', figure: ['open', null], band: salsaChachacha.id },
     ],
-    companions: ['clave'],
   },
   guiro: {
     variants: [
       { id: 'montuno', figure: GUIRO, band: salsaMontuno.id },
       { id: 'chachacha', figure: GUIRO, band: salsaChachacha.id },
     ],
-    companions: ['clave'],
   },
   timbales: {
     variants: [
@@ -588,21 +583,18 @@ export const salsaInstrumentPages: Record<string, InstrumentPage> = {
       { id: 'cascara-2-3', figure: CASCARA_2_3, band: salsaVerse23.id },
       { id: 'chachacha', figure: CHACHACHA_TIMBALES, band: salsaChachacha.id },
     ],
-    companions: ['clave'],
   },
   maracas: {
     variants: [
       { id: 'eighths', figure: ['hit'] },
       { id: 'son', figure: ['hit'], band: salsaSon.id },
     ],
-    companions: ['clave'],
   },
   bass: {
     variants: [
       { id: 'tumbao', figure: BASS_TUMBAO },
       { id: 'one-three', figure: BASS_ONE_THREE, band: salsaChachacha.id },
     ],
-    companions: ['clave'],
   },
   piano: {
     variants: [
@@ -610,28 +602,23 @@ export const salsaInstrumentPages: Record<string, InstrumentPage> = {
       { id: 'montuno-2-3', figure: MONTUNO_2_3, band: salsaVerse23.id },
       { id: 'bolero', figure: BOLERO_PIANO, band: salsaBolero.id },
     ],
-    companions: ['clave'],
   },
   tres: {
     variants: [
       { id: 'guajeo-3-2', figure: GUAJEO_3_2 },
       { id: 'son', figure: GUAJEO_2_3, band: salsaSon.id },
     ],
-    companions: ['clave'],
   },
-  // The two brass sections answer each other, so each is heard with the other.
   trumpet: {
     variants: [
       { id: 'mona', figure: TRUMPET_MONA_3_2, band: salsaMontuno.id },
       { id: 'mambo', figure: TRUMPET_MAMBO_3_2, band: salsaMambo.id },
     ],
-    companions: ['clave', 'trombone'],
   },
   trombone: {
     variants: [
       { id: 'mona', figure: TROMBONE_MONA_3_2, band: salsaMontuno.id },
       { id: 'mambo', figure: TROMBONE_MAMBO_3_2, band: salsaMambo.id },
     ],
-    companions: ['clave', 'trumpet'],
   },
 }

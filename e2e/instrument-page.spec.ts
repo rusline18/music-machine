@@ -60,3 +60,29 @@ test.describe('instrument page', () => {
     }
   })
 })
+
+test.describe('instrument page on a phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true })
+
+  test('is reached from the practice cards: the ⓘ opens the sheet, which tips the long press', async ({ page }) => {
+    await page.goto('/salsa')
+    const congas = page.getByRole('switch', { name: 'Congas' })
+    await expect(congas).toHaveAttribute('aria-checked', 'true')
+
+    await page.getByRole('button', { name: 'About the instrument: Congas' }).tap()
+    const sheet = page.getByRole('dialog', { name: 'Congas' })
+    await expect(sheet.getByText('Next time, just press and hold')).toBeVisible()
+    await sheet.getByRole('link', { name: 'More about the instrument →' }).tap()
+    await expect(page).toHaveURL(/\/salsa\/congas$/)
+  })
+
+  test('a long press on a card opens the sheet without switching the instrument', async ({ page }) => {
+    await page.goto('/salsa')
+    const congas = page.getByRole('switch', { name: 'Congas' })
+    await congas.click({ button: 'right' })
+    const sheet = page.getByRole('dialog', { name: 'Congas' })
+    await expect(sheet.getByRole('link', { name: 'More about the instrument →' })).toBeVisible()
+    await expect(sheet.getByText('Next time, just press and hold')).toBeHidden()
+    await expect(congas).toHaveAttribute('aria-checked', 'true')
+  })
+})

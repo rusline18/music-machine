@@ -2,6 +2,15 @@
 
 What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
+## 2026-10-15
+
+- Practice view on a phone: each instrument card has an ⓘ, and a long
+  press on the card opens the instrument's sheet (description, its page,
+  listen alone, volume) as on the grid; a tap still switches it. Opened
+  by the ⓘ, the sheet tips that holding the card does the same.
+- Instrument pages: "On its own" plays only the instrument (it used to
+  bring the clave or the güira along).
+
 ## 2026-10-14
 
 - Every instrument has a page now: in salsa also the timbales, maracas,
@@ -21,7 +30,7 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 - Instrument pages, starting with the congas (`/salsa/congas`): what the
   instrument is, its strokes and what a dancer hears in it, with a small
   machine to play its rhythm — the full tumbao, or the strokes added one
-  at a time (open tones, then the slap) — on its own over the clave or
+  at a time (open tones, then the slap) — on its own or
   with the whole band, quieter. Linked from the instrument's sheet (a
   long press on its icon) and listed in `/sitemap.xml`. Rhythms and texts:
   `Genre.instrumentPages`, `instrumentPages.*` in i18n. Plan:

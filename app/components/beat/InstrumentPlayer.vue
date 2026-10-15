@@ -13,7 +13,7 @@ const props = defineProps<{
 
 const { t, locale } = useI18n()
 
-/** On its own (with its companions, quietly) or with the whole band. */
+/** On its own or with the whole band. */
 const mix = ref<InstrumentMix>('solo')
 
 // The machine's presets are the instrument's rhythms, each over the band

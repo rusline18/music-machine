@@ -35,8 +35,6 @@ export interface InstrumentPage {
    * `instrumentPages.<genre>.<instrument>.variants.<id>`.
    */
   variants: readonly InstrumentVariant[]
-  /** Play along, quieter, when the instrument is heard on its own (e.g. the clave under the congas). */
-  companions?: readonly string[]
 }
 
 export interface InstrumentVariant {
