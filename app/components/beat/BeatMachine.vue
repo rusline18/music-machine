@@ -93,6 +93,13 @@ useHotkeys({
 
 /** The same array for an instrument every time (see stepNames), so rows aren't re-rendered for nothing. */
 const stepNamesFor = (instrument: string) => stepNames(props.genre, instrument)
+/** The sheet opened from the practice cards; `viaButton` when by its ⓘ, which then tips the long press. */
+const practiceSheet = ref<{ instrument: string, viaButton: boolean } | null>(null)
+const practiceTrack = computed(() => practiceSheet.value && pattern.value.tracks.find((track) => track.instrument === practiceSheet.value!.instrument))
+function closePracticeSheet() {
+  practiceSheet.value = null
+  if (solo.value) setSolo(null)
+}
 const instrumentLink = (instrument: string) => (findInstrumentPage(props.genre, instrument) ? `/${props.genre.id}/${instrument}` : undefined)
 
 const root = useTemplateRef('root')
@@ -242,6 +249,17 @@ const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(active
           :class="shownView === 'practice' ? 'sm:hidden' : 'hidden'"
           :tracks="bandTracks"
           @update:muted="setMuted"
+          @open-instrument="(instrument, viaButton) => practiceSheet = { instrument, viaButton }"
+        />
+        <BeatInstrumentSheet
+          :track="practiceTrack"
+          :solo="solo"
+          :link="practiceSheet ? instrumentLink(practiceSheet.instrument) : undefined"
+          :tip="practiceSheet?.viaButton ? $t('practice.longPressTip') : undefined"
+          @close="closePracticeSheet"
+          @solo="setSolo"
+          @update:muted="setMuted"
+          @update:volume="setVolume"
         />
 
         <div :class="{ 'max-sm:hidden': shownView !== 'editor' }">

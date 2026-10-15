@@ -418,80 +418,14 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
       </div>
     </UiSheet>
 
-    <UiSheet
-      :open="sheet !== null"
-      :title="sheet ? t(`instruments.${sheet}`) : ''"
+    <BeatInstrumentSheet
+      :track="sheetTrack"
+      :solo="solo"
+      :link="sheet ? instrumentLink?.(sheet) : undefined"
       @close="closeSheet"
-    >
-      <div
-        v-if="sheetTrack"
-        class="space-y-4"
-      >
-        <div class="flex items-start gap-3">
-          <span
-            class="instrument-icon flex size-14 shrink-0 items-center justify-center rounded-2xl bg-neutral-950 text-neutral-200 [&_svg]:size-8"
-            :data-instrument="sheetTrack.instrument"
-          >
-            <UiIcon
-              :name="sheetTrack.instrument"
-              :accent="!sheetTrack.muted"
-            />
-          </span>
-          <div class="space-y-2">
-            <p class="text-sm leading-snug text-neutral-300">
-              {{ t(`help.instruments.${sheetTrack.instrument}`) }}
-            </p>
-            <NuxtLinkLocale
-              v-if="instrumentLink?.(sheetTrack.instrument)"
-              :to="instrumentLink(sheetTrack.instrument)!"
-              class="inline-block text-sm font-semibold text-accent-400 hover:text-accent-300"
-            >
-              {{ t('instrumentPage.open') }}
-            </NuxtLinkLocale>
-          </div>
-        </div>
-        <button
-          type="button"
-          class="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold transition"
-          :class="solo === sheetTrack.instrument ? 'bg-neutral-100 text-neutral-950' : 'bg-accent-500 text-neutral-950 hover:bg-accent-400'"
-          :aria-pressed="solo === sheetTrack.instrument"
-          @click="emit('solo', solo === sheetTrack.instrument ? null : sheetTrack.instrument)"
-        >
-          {{ solo === sheetTrack.instrument ? t('grid.listenAll') : t('grid.listenAlone') }}
-        </button>
-        <button
-          type="button"
-          role="switch"
-          class="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl bg-neutral-800 px-3 text-sm"
-          :aria-checked="!sheetTrack.muted"
-          @click="emit('update:muted', sheetTrack.instrument, !sheetTrack.muted)"
-        >
-          {{ t('grid.playing') }}
-          <span
-            class="relative h-6 w-10 shrink-0 rounded-full transition-colors"
-            :class="sheetTrack.muted ? 'bg-neutral-700' : 'bg-accent-500'"
-            aria-hidden="true"
-          >
-            <span
-              class="absolute left-0 top-1 size-4 rounded-full bg-neutral-100 transition-transform"
-              :class="sheetTrack.muted ? 'translate-x-1' : 'translate-x-5'"
-            />
-          </span>
-        </button>
-        <label class="flex items-center gap-3 text-sm text-neutral-300">
-          {{ t('grid.volumeLabel') }}
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.05"
-            :value="sheetTrack.volume"
-            class="range range-lg min-w-0 flex-1"
-            :style="{ '--v': `${sheetTrack.volume * 100}%` }"
-            @input="emit('update:volume', sheetTrack.instrument, Number(($event.target as HTMLInputElement).value))"
-          >
-        </label>
-      </div>
-    </UiSheet>
+      @solo="(instrument) => emit('solo', instrument)"
+      @update:muted="(instrument, muted) => emit('update:muted', instrument, muted)"
+      @update:volume="(instrument, volume) => emit('update:volume', instrument, volume)"
+    />
   </div>
 </template>

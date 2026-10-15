@@ -657,5 +657,9 @@
         }
       }
     }
+  },
+  "practice": {
+    "about": "About the instrument: {instrument}",
+    "longPressTip": "Next time, just press and hold the instrument's card."
   }
 }
