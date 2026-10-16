@@ -425,7 +425,7 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>, { persist = tr
     if (track.muted) return 'off'
     const length = patternLength(pattern.value)
     return COUNTING_MODES.find((mode) => {
-      const steps = resizeSteps(countingFigure(mode, pattern.value.stepsPerCount), length)
+      const steps = resizeSteps(countingFigure(mode, pattern.value.stepsPerCount, genre.unspokenCounts), length)
       return steps.every((step, i) => step === track.steps[i])
     })
   })
@@ -433,7 +433,7 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>, { persist = tr
   function setCounting(mode: CountingMode) {
     const track = voiceInstrument && findTrack(voiceInstrument)
     if (!track) return
-    track.steps = resizeSteps(countingFigure(mode, pattern.value.stepsPerCount), patternLength(pattern.value))
+    track.steps = resizeSteps(countingFigure(mode, pattern.value.stepsPerCount, genre.unspokenCounts), patternLength(pattern.value))
     setMuted(track.instrument, mode === 'off')
   }
 

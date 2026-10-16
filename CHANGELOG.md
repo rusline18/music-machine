@@ -2,6 +2,11 @@
 
 What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
+## 2026-10-16
+
+- Salsa: the counting voice says "1 2 3, 5 6 7", keeping quiet on 4 and
+  8 like dancers do (with "and" too: "1 and 2 and 3 and, 5 and…").
+
 ## 2026-10-15
 
 - Practice view on a phone: each instrument card has an ⓘ, and a long

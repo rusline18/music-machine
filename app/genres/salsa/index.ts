@@ -14,6 +14,8 @@ export const salsa: Genre = {
   // Clave is the key everything locks to; the congas' tumbao is the pulse,
   // and the bass's tumbao sits on it. Bells, piano and the rest come after.
   teachingOrder: ['clave', 'congas', 'bass', 'bongos', 'maracas', 'timbales', 'cowbell', 'timbalebell', 'guiro', 'piano', 'tres', 'trumpet', 'trombone'],
+  // Dancers count "1 2 3, 5 6 7": 4 and 8 are the pauses of the basic step.
+  unspokenCounts: [4, 8],
   presets: salsaPresets,
   instrumentPages: salsaInstrumentPages,
   clave: salsaClave,

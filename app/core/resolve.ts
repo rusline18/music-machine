@@ -3,7 +3,7 @@ import type { StepResolver } from './audio/scheduler'
 import type { PitchedInstrument } from './harmony'
 import { parseChord, voicesToNotes } from './harmony'
 import type { Pattern, Step } from './pattern'
-import { chordAt, COUNTS_PER_BAR, countInBlock, patternLength } from './pattern'
+import { chordAt, COUNTS_PER_BAR, COUNTS_PER_BLOCK, countInBlock, patternLength } from './pattern'
 
 /**
  * A recorded stroke: its URL, or its URL and how loud to play it (1 = as
@@ -43,13 +43,19 @@ export function stepNamesAt(names: readonly string[], stepIndex: number, stepsPe
 export const COUNTING_MODES = ['off', 'counts', 'ands'] as const
 export type CountingMode = (typeof COUNTING_MODES)[number]
 
-/** One count of voice steps: silence, "1 2 3…", or "1 and 2 and…". */
-export function countingFigure(mode: CountingMode, stepsPerCount: number): Step[] {
-  return Array.from({ length: stepsPerCount }, (_, i) => {
+/**
+ * Voice steps: silence, "1 2 3…", or "1 and 2 and…". One count of them, or,
+ * when some counts are left `unspoken` (salsa's "1 2 3 … 5 6 7 …"), a whole
+ * 8-count block with those counts silent.
+ */
+export function countingFigure(mode: CountingMode, stepsPerCount: number, unspoken: readonly number[] = []): Step[] {
+  const count: Step[] = Array.from({ length: stepsPerCount }, (_, i) => {
     if (mode === 'off') return null
     if (i === 0) return 'count'
     return mode === 'ands' && i * 2 === stepsPerCount ? 'and' : null
   })
+  if (unspoken.length === 0) return count
+  return Array.from({ length: COUNTS_PER_BLOCK }, (_, i) => (unspoken.includes(i + 1) ? count.map(() => null) : count)).flat()
 }
 
 /** What a genre's instruments can play — enough to turn a pattern into notes. */
