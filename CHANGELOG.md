@@ -4,6 +4,11 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-16
 
+- Desktop: a right-click on a cell opens a small menu of its sounds right
+  where the click landed, like a desktop context menu, instead of a modal
+  at the top of the page over a dimmed grid. Each sound has its mark from
+  the key over the grid. Keys: 1–9 pick a sound, 0 (or Delete) silence,
+  ↑/↓ and Enter, Esc closes. A phone keeps the sheet from the bottom.
 - Smoother playback on slow phones: the instruments' icons only move
   where they can be seen. Each instrument has an icon in the practice
   cards and one on the grid, and a phone shows one view at a time, so

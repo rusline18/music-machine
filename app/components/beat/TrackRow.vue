@@ -22,8 +22,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   /** A tap: a hit on or off. */
   'toggle-step': [stepIndex: number]
-  /** A long press or right-click: choose the sound. */
-  'step-menu': [stepIndex: number]
+  /** A long press or right-click: choose the sound; `at` is where on screen to open the menu. */
+  'step-menu': [stepIndex: number, at: { x: number, y: number }]
   'update:volume': [volume: number]
   'update:muted': [muted: boolean]
   /** The instrument's sheet (description, switch, volume). */
@@ -75,12 +75,22 @@ function cellClick(event: MouseEvent) {
   const cell = cellAt(event)
   if (cell) cellPress.click(stepOf(cell))
 }
+/** Where the right-click landed, for the menu; the menu key has no point, so it opens at the cell. */
+let menuAt: { x: number, y: number } | null = null
 function cellMenu(event: MouseEvent) {
   const cell = cellAt(event)
   if (!cell) return
   event.preventDefault()
   hintOut()
+  menuAt = event.clientX || event.clientY ? { x: event.clientX, y: event.clientY } : null
   cellPress.contextMenu(stepOf(cell))
+  menuAt = null
+}
+/** A cell's lower left corner on screen: where a long press or the menu key opens the menu. */
+const cells = ref<HTMLElement>()
+function cellCorner(stepIndex: number) {
+  const rect = cells.value?.querySelector(`[data-step="${stepIndex}"]`)?.getBoundingClientRect()
+  return rect ? { x: rect.left, y: rect.bottom + 4 } : { x: 0, y: 0 }
 }
 
 // The hint under a cell, for the mouse: what's in it and what the two
@@ -127,7 +137,7 @@ function cellClass(stepIndex: number): string {
 // opens the sound menu.
 const cellPress = useLongPress<number>({
   tap: (stepIndex) => emit('toggle-step', stepIndex),
-  longPress: (stepIndex) => emit('step-menu', stepIndex),
+  longPress: (stepIndex) => emit('step-menu', stepIndex, menuAt ?? cellCorner(stepIndex)),
 })
 
 // The icon is the track's switch: a tap mutes it, a long press (or
@@ -266,6 +276,7 @@ onBeforeUnmount(hintOut)
     </label>
     <div
       v-else
+      ref="cells"
       class="flex min-w-0 flex-1 gap-1"
       :class="{ 'opacity-50': track.muted }"
       @pointerdown="cellDown"
