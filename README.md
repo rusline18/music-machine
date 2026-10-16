@@ -29,6 +29,7 @@ app/
     song.ts              Songs built from presets: which sections fit together (clave,
                          tempo, length) and joining them with a fill between sections
     sendLink.ts          Share sheet on touch screens, clipboard elsewhere
+    compress.ts          Deflate + base64url (the browser's CompressionStream), for links and the Telegram cloud
     telegram.ts          Telegram Mini App links: t.me/<bot>?startapp=<genre>[-<packed pattern>]
     audio/
       engine.ts          AudioContext, per-instrument gain, sample loading (Opus with
@@ -47,6 +48,11 @@ app/
       index.ts           The genre definition
   composables/
     useBeatMachine.ts    Vue state for one genre page: wires pattern + engine + scheduler
+    useSampleLoading.ts  Downloads a genre's sounds on mount, decodes them once playing
+    usePatternStorage.ts Restores and saves the pattern: links (?b= now, ?p= older), this
+                         browser, the Telegram cloud
+    useLayers.ts         "Build it layer by layer"
+    useControlOptions.ts Tempo and counting-voice choices, labelled, for the controls
     useUiMode.ts         Simple / advanced mode, remembered in the browser
     useNarrowScreen.ts   Phone-sized screen, for the one-bar-at-a-time grid
     useBeatEffects.ts    Playhead and beat animations, by toggling classes (no re-render)

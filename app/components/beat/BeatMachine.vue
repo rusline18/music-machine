@@ -2,7 +2,6 @@
 import { prefetchSamples } from '~/core/audio/prefetch'
 import { COUNTS_PER_BAR } from '~/core/pattern'
 import { COUNTING_MODES, sampleUrls, stepNames } from '~/core/resolve'
-import { TEMPO_CHOICES } from '~/core/tempo'
 import type { Genre } from '~/genres'
 import { genres } from '~/genres'
 import { findInstrumentPage } from '~/genres/instrumentPages'
@@ -60,8 +59,7 @@ const { t, locale } = useI18n()
 // or touched, so its page plays on the first tap.
 const prefetchGenre = (other: Genre) => other.id !== props.genre.id && prefetchSamples(sampleUrls(other, locale.value))
 
-const countingOptions = computed(() => COUNTING_MODES.map((mode) => ({ value: mode, label: t(`controls.counting.${mode}`) })))
-const tempoOptions = computed(() => TEMPO_CHOICES.map((choice) => ({ value: choice, label: t(`controls.tempo.${choice}`) })))
+const { tempoOptions, countingOptions } = useControlOptions()
 
 /** The presets, plus the pattern from a link while that's what's loaded. */
 const presetIds = computed(() => {

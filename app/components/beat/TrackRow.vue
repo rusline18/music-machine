@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Track } from '~/core/pattern'
 import { countInBlock, switchStep } from '~/core/pattern'
-import { stepNamesAt } from '~/core/resolve'
+import { AND_STEP, COUNT_STEP, isSpokenStep, stepNamesAt } from '~/core/resolve'
 
 const props = defineProps<{
   track: Track
@@ -34,13 +34,12 @@ const { t } = useI18n()
 
 const stepIndices = computed(() => Array.from({ length: props.length }, (_, i) => props.start + i))
 const instrumentName = computed(() => t(`instruments.${props.track.instrument}`))
-const isSpoken = (name: string | null | undefined) => name === 'count' || name === 'and'
 
 /** For a counting voice, what a cell shows: the number it says, or "&". */
 function spokenLabel(stepIndex: number): string {
   const name = props.track.steps[stepIndex]
-  if (name === 'count') return String(countInBlock(stepIndex, props.stepsPerCount) + 1)
-  return name === 'and' ? t('grid.and') : ''
+  if (name === COUNT_STEP) return String(countInBlock(stepIndex, props.stepsPerCount) + 1)
+  return name === AND_STEP ? t('grid.and') : ''
 }
 
 // The cells' pointer events are handled once for the row rather than on
@@ -118,7 +117,7 @@ const hintClick = computed(() => {
 function cellClass(stepIndex: number): string {
   const name = props.track.steps[stepIndex]
   if (!name) return 'bg-neutral-800 text-neutral-600 hover:bg-neutral-700'
-  if (name === 'count' || name === 'and') return 'bg-neutral-700 text-neutral-100'
+  if (isSpokenStep(name)) return 'bg-neutral-700 text-neutral-100'
   return name === props.stepNames[0] ? 'bg-accent-500 text-neutral-950' : 'bg-accent-300 text-neutral-950'
 }
 
@@ -389,7 +388,7 @@ onBeforeUnmount(() => {
         :aria-label="t('grid.step', { instrument: instrumentName, n: stepIndex + 1 })"
         aria-haspopup="menu"
       >
-        <template v-if="isSpoken(track.steps[stepIndex])">
+        <template v-if="isSpokenStep(track.steps[stepIndex])">
           {{ spokenLabel(stepIndex) }}
         </template>
         <!-- A cell is too narrow for the word, even on a desktop: the

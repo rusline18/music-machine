@@ -6,6 +6,10 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 - Salsa: the counting voice says "1 2 3, 5 6 7", keeping quiet on 4 and
   8 like dancers do (with "and" too: "1 and 2 and 3 and, 5 and…").
+- Code: useBeatMachine split up — sound loading, saving the pattern
+  (links, browser, Telegram cloud) and "layer by layer" each have their own
+  composable; compression moved out of core/telegram.ts into
+  core/compress.ts. Nothing changes for the user.
 
 ## 2026-10-15
 

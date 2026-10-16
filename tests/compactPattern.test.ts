@@ -3,7 +3,8 @@ import { packPattern, unpackPattern } from '~/core/compactPattern'
 import { CUSTOM_PATTERN_ID, decodePattern, encodePattern } from '~/core/share'
 import { buildSong } from '~/core/song'
 import { stepNames } from '~/core/resolve'
-import { inflateFromBase64Url, deflateToBase64Url, MAX_START_PARAM } from '~/core/telegram'
+import { deflateToBase64Url, inflateFromBase64Url } from '~/core/compress'
+import { MAX_START_PARAM } from '~/core/telegram'
 import { findGenre, genres } from '~/genres'
 
 const salsa = findGenre('salsa')!

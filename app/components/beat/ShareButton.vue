@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SHARE_CODE_PARAM, SHARE_PARAM } from '~/composables/useBeatMachine'
+import { SHARE_CODE_PARAM, SHARE_PARAM } from '~/composables/usePatternStorage'
 import { sendLink } from '~/core/sendLink'
 import { packPattern } from '~/core/compactPattern'
 import { decodePattern } from '~/core/share'
