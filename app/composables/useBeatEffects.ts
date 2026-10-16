@@ -58,9 +58,45 @@ export function useBeatEffects(
   // track shown or hidden). Our own class changes don't count.
   const found = new Map<string, readonly HTMLElement[]>()
   let observer: MutationObserver | undefined
+
+  // Only icons on screen are animated: each instrument has one in the
+  // practice cards and one on the grid, and a phone shows only one of the
+  // two views (the other is display: none), with rows scrolled away besides.
+  // Their motions are most of the work a beat costs, as they move parts
+  // inside the SVG, which the browser redraws on the main thread.
+  /** Icons on screen now; without IntersectionObserver every icon counts. */
+  let onScreen: Set<Element> | undefined
+  let visibility: IntersectionObserver | undefined
+  let rewatch = false
+  function watchIcons() {
+    rewatch = false
+    if (!visibility || !root.value) return
+    visibility.disconnect()
+    onScreen!.clear()
+    for (const icon of root.value.querySelectorAll('.instrument-icon')) visibility.observe(icon)
+  }
+
   onMounted(() => {
     if (!root.value) return
-    observer = new MutationObserver(() => found.clear())
+    if (typeof IntersectionObserver === 'function') {
+      onScreen = new Set()
+      visibility = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) onScreen!.add(entry.target)
+          else onScreen!.delete(entry.target)
+        }
+      })
+      watchIcons()
+    }
+    observer = new MutationObserver((mutations) => {
+      found.clear()
+      // Icons come and go with the markup (a page turn, a view switch): watch
+      // the new set once this burst of changes is over.
+      if (visibility && !rewatch && mutations.some((m) => m.type === 'childList')) {
+        rewatch = true
+        queueMicrotask(watchIcons)
+      }
+    })
     observer.observe(root.value, {
       subtree: true,
       childList: true,
@@ -69,6 +105,7 @@ export function useBeatEffects(
   })
   onBeforeUnmount(() => {
     observer?.disconnect()
+    visibility?.disconnect()
     found.clear()
   })
 
@@ -102,6 +139,7 @@ export function useBeatEffects(
       const motion = INSTRUMENT_MOTION[instrument]
       if (!motion) continue
       for (const icon of all(`.instrument-icon[data-instrument="${instrument}"]`)) {
+        if (onScreen && !onScreen.has(icon)) continue
         const svg = icon.querySelector('svg')
         if (!svg) continue
         svg.style.transformOrigin = motion.origin ?? '50% 50%'
