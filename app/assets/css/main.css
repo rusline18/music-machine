@@ -65,6 +65,14 @@ select:not([multiple]) {
   line-height: 1.25rem;
 }
 
+/* iOS Safari zooms the page into any field under 16px when it's tapped. */
+@media (max-width: 639px) {
+  select:not([multiple]) {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+}
+
 /* Sheets slide up on a phone. */
 @media (max-width: 639px) {
   .sheet[open] {
