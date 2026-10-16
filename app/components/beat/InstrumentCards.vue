@@ -20,10 +20,11 @@ let pressStart: { x: number, y: number } | null = null
 /** Set when a press opened the sheet, so the click that ends it doesn't also switch. */
 let sheetOpened = false
 
-// As on the grid's icons: until a long press has opened a sheet once, a
-// held card fills and says what's coming (useHoldHint, shared with the grid).
+// As on the grid's icons: a held card fills until its sheet opens and,
+// until a long press has opened a sheet once, says what's coming
+// (useHoldHint, shared with the grid).
 const holdHint = useHoldHint()
-/** The card filling under a held finger, and the one whose bubble is out. */
+/** The card filling under a held press, and the one whose bubble is out. */
 const holding = ref<string | null>(null)
 const holdLabel = ref<string | null>(null)
 const HOLD_LABEL_DELAY_MS = 120
@@ -33,10 +34,12 @@ function pressDown(event: PointerEvent, instrument: string) {
   if (event.button !== 0) return
   sheetOpened = false
   pressStart = { x: event.clientX, y: event.clientY }
-  if (event.pointerType !== 'mouse' && !holdHint.learnt.value) {
+  const hint = event.pointerType !== 'mouse' && !holdHint.learnt.value
+  // A moment in, so a tap never flashes the fill.
+  labelTimer = setTimeout(() => {
     holding.value = instrument
-    labelTimer = setTimeout(() => (holdLabel.value = instrument), HOLD_LABEL_DELAY_MS)
-  }
+    holdLabel.value = hint ? instrument : null
+  }, HOLD_LABEL_DELAY_MS)
   clearTimeout(pressTimer)
   pressTimer = setTimeout(() => {
     pressStart = null
@@ -120,7 +123,7 @@ onBeforeUnmount(pressCancel)
         <!-- Fills from the bottom while held, behind the content. -->
         <span
           class="pointer-events-none absolute inset-0 -z-10 origin-bottom bg-neutral-100/20"
-          :class="holding === track.instrument ? 'scale-y-100 transition-transform duration-[450ms] ease-linear motion-reduce:transition-none' : 'scale-y-0'"
+          :class="holding === track.instrument ? 'scale-y-100 transition-transform duration-[330ms] ease-linear motion-reduce:transition-none' : 'scale-y-0'"
           aria-hidden="true"
         />
       </button>

@@ -2,6 +2,20 @@
 
 What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
+## 2026-10-16
+
+- Smoother playback on slow phones: the instruments' icons only move
+  where they can be seen. Each instrument has an icon in the practice
+  cards and one on the grid, and a phone shows one view at a time, so
+  every hit used to animate a hidden copy too (and rows scrolled away).
+  Those motions are most of what a beat costs. With the CPU slowed 4×,
+  the grid went from about 35 to about 48 frames a second, and with 6×
+  from about 14 to about 29; the practice view from about 47 to 54.
+- A held instrument icon (grid) or practice card fills from the bottom
+  every time, not only until the long press is learnt; the "keep
+  holding" bubble still goes once it is. The fill starts a moment in,
+  so a tap doesn't flash it, and works with a mouse too.
+
 ## 2026-10-15
 
 - Practice view on a phone: each instrument card has an ⓘ, and a long
