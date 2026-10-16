@@ -1,6 +1,8 @@
 import type { Genre } from '../types'
 import { countingVoice } from '../voice'
-import { salsaClave, salsaInstrumentPages, salsaPresets, TIMBALES_FILL } from './patterns'
+import { TIMBALES_FILL } from './figures'
+import { salsaInstrumentPages } from './instrumentPages'
+import { salsaClave, salsaPresets } from './patterns'
 import { salsaPitched, salsaSamples } from './samples'
 
 export const salsa: Genre = {

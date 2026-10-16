@@ -10,6 +10,10 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
   (links, browser, Telegram cloud) and "layer by layer" each have their own
   composable; compression moved out of core/telegram.ts into
   core/compress.ts. Nothing changes for the user.
+- Code: the long press of grid cells, instrument icons and practice cards
+  is one composable (useLongPress / useHoldToOpen) instead of three
+  copies; salsa's figures and instrument pages have their own files next
+  to the presets.
 
 ## 2026-10-15
 

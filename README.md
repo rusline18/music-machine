@@ -46,6 +46,8 @@ app/
       samples.ts         Sample paths (read by `npm run samples`) and pitched instruments
       patterns.ts        Presets, written as repeating figures
       index.ts           The genre definition
+    salsa/figures.ts     Salsa's figures (clave, tumbao, montuno…), which its presets are built from
+    salsa/instrumentPages.ts  The rhythms each salsa instrument's page offers
   composables/
     useBeatMachine.ts    Vue state for one genre page: wires pattern + engine + scheduler
     useSampleLoading.ts  Downloads a genre's sounds on mount, decodes them once playing
@@ -53,6 +55,8 @@ app/
                          browser, the Telegram cloud
     useLayers.ts         "Build it layer by layer"
     useControlOptions.ts Tempo and counting-voice choices, labelled, for the controls
+    useLongPress.ts      Tap vs long press on one control; useHoldToOpen adds the "keep
+                         holding" fill and bubble of the instrument icons and cards
     useUiMode.ts         Simple / advanced mode, remembered in the browser
     useNarrowScreen.ts   Phone-sized screen, for the one-bar-at-a-time grid
     useBeatEffects.ts    Playhead and beat animations, by toggling classes (no re-render)
