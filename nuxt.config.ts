@@ -70,7 +70,10 @@ export default defineNuxtConfig({
     head: {
       // viewport-fit=cover: the page runs under the notch and the home bar,
       // and the practice bar keeps clear of them with env(safe-area-inset-*).
-      viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
+      // No pinch zoom: it's an app screen of big pads, and a zoomed Telegram
+      // Mini App leaves its controls off-screen. maximum-scale=1 also stops
+      // iOS zooming in on a focused input.
+      viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover',
       // Installable on a phone's home screen (public/manifest.webmanifest).
       link: [
         { rel: 'manifest', href: '/manifest.webmanifest' },

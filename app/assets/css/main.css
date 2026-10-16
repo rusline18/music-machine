@@ -23,6 +23,9 @@ body {
   background-color: theme('colors.neutral.950');
   color: theme('colors.neutral.100');
   font-family: theme('fontFamily.sans');
+  /* No double-tap zoom (pinch zoom is off in the viewport meta), and taps
+     land without the 300 ms wait for a second one. */
+  touch-action: manipulation;
 }
 
 /* The playhead: classes toggled by useBeatEffects, not by Vue. Gold in
