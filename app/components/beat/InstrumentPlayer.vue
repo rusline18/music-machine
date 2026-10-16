@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { COUNTS_PER_BAR, trackOf } from '~/core/pattern'
-import { COUNTING_MODES, stepNames } from '~/core/resolve'
-import { TEMPO_CHOICES } from '~/core/tempo'
+import { stepNames } from '~/core/resolve'
 import type { Genre } from '~/genres'
 import type { InstrumentMix } from '~/genres/instrumentPages'
 import { INSTRUMENT_MIXES, instrumentPatterns, mixMutes } from '~/genres/instrumentPages'
@@ -68,8 +67,7 @@ function selectVariant(id: string) {
 
 const variantOptions = computed(() => variants.map(({ id }) => ({ value: id, label: t(`${textKey}.variants.${id}.name`) })))
 const mixOptions = computed(() => INSTRUMENT_MIXES.map((value) => ({ value, label: t(`instrumentPage.mix.${value}`) })))
-const tempoOptions = computed(() => TEMPO_CHOICES.map((choice) => ({ value: choice, label: t(`controls.tempo.${choice}`) })))
-const countingOptions = computed(() => COUNTING_MODES.map((mode) => ({ value: mode, label: t(`controls.counting.${mode}`) })))
+const { tempoOptions, countingOptions } = useControlOptions()
 
 /** Only the instrument's own row is on the grid. */
 const hidden = props.genre.instruments.filter((instrument) => instrument !== props.instrument)

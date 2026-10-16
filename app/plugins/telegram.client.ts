@@ -1,6 +1,7 @@
-import { parseLaunchParams, parseStartParam, unpackCode } from '~/core/telegram'
+import { unpackCode } from '~/core/compress'
+import { parseLaunchParams, parseStartParam } from '~/core/telegram'
 import { findGenre } from '~/genres'
-import { SHARE_CODE_PARAM, SHARE_PARAM } from '~/composables/useBeatMachine'
+import { SHARE_CODE_PARAM, SHARE_PARAM } from '~/composables/usePatternStorage'
 
 /** The page background (neutral-950), so Telegram's header and edges blend in. */
 const BACKGROUND = '#110E0D'

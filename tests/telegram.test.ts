@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { decodePattern, encodePattern } from '~/core/share'
-import { MAX_START_PARAM, miniAppLink, packCode, parseLaunchParams, parseStartParam, startParam, telegramShareUrl, unpackCode } from '~/core/telegram'
+import { packCode, unpackCode } from '~/core/compress'
+import { MAX_START_PARAM, miniAppLink, parseLaunchParams, parseStartParam, startParam, telegramShareUrl } from '~/core/telegram'
 import { genres } from '~/genres'
 
 describe('start parameters', () => {

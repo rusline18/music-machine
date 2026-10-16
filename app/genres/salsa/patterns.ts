@@ -1,138 +1,39 @@
-import type { Step } from '~/core/pattern'
-import { definePattern, rotateFigure } from '~/core/pattern'
-import type { InstrumentPage } from '../types'
+import { definePattern } from '~/core/pattern'
 import { voiceTrack } from '../voice'
+import {
+  BASS_ONE_THREE,
+  BASS_TUMBAO,
+  BOLERO_PIANO,
+  BONGO_BELL,
+  CASCARA_2_3,
+  CASCARA_3_2,
+  CHACHACHA_TIMBALES,
+  CLAVE_2_3,
+  CLAVE_3_2,
+  GUAJEO_2_3,
+  GUAJEO_3_2,
+  GUIRO,
+  MAMBO_BELL_2_3,
+  MAMBO_BELL_3_2,
+  MARTILLO,
+  MONTUNO_2_3,
+  MONTUNO_3_2,
+  PACHANGA_CONGAS,
+  PROGRESSION,
+  RUMBA_CLAVE_3_2,
+  TROMBONE_MAMBO_2_3,
+  TROMBONE_MAMBO_3_2,
+  TROMBONE_MONA_2_3,
+  TROMBONE_MONA_3_2,
+  TRUMPET_MAMBO_2_3,
+  TRUMPET_MAMBO_3_2,
+  TRUMPET_MONA_2_3,
+  TRUMPET_MONA_3_2,
+  TUMBAO,
+} from './figures'
 
-// Figures are eighth notes; one 8-count block = one two-bar clave cycle
-// (cells 0–7 = counts 1–4, cells 8–15 = counts 5–8). Built from documented
-// references, but still needs sign-off from a salsa player. The clave is the
-// anchor: every part that isn't the same in both bars (cáscara, bells,
-// piano, tres, brass) is written for 3-2 and turned with the clave for 2-3.
+// The presets, each built from the figures in figures.ts.
 
-/** I–V7, a chord per bar; bass and piano follow it. */
-const PROGRESSION = ['C', 'G7']
-
-/** 3-2 son clave: 1, &2, 4 | 2, 3 */
-const CLAVE_3_2: Step[] = [
-  'hit', null, null, 'hit', null, null, 'hit', null,
-  null, null, 'hit', null, 'hit', null, null, null,
-]
-/**
- * Tumbao (one bar), the full hand pattern: heel and toe rock on the drum
- * through 1 and 3, slap on 2, open tones on 4 and &4.
- */
-const TUMBAO: Step[] = ['heel', 'toe', 'slap', 'toe', 'heel', 'toe', 'open', 'open']
-/**
- * The tumbao the way it's learnt, the strokes added one at a time: first
- * the open tones on 4 and &4 (what a dancer hears most), then the slap on 2.
- */
-const TUMBAO_OPEN: Step[] = [null, null, null, null, null, null, 'open', 'open']
-const TUMBAO_SLAP_OPEN: Step[] = [null, null, 'slap', null, null, null, 'open', 'open']
-/** Martillo (one bar): eighths on the macho, hembra on 4 */
-const MARTILLO: Step[] = ['high', 'high', 'high', 'high', 'high', 'high', 'low', null]
-/** Cáscara (3-2) on the timbal shell */
-const CASCARA_3_2: Step[] = [
-  'rim', null, 'rim', null, 'rim', 'rim', null, 'rim',
-  null, 'rim', 'rim', null, 'rim', null, 'rim', null,
-]
-/**
- * Mambo bell (3-2) on the timbales bell: the mouth on every beat, the neck
- * on the cáscara's off-beat strokes, so the bell keeps the clave's shape.
- */
-const MAMBO_BELL_3_2: Step[] = CASCARA_3_2.map((step, i) => (i % 2 === 0 ? 'open' : step && 'neck'))
-/**
- * Bongo bell (two counts): quarter notes, the mouth on 1 and 3, the neck on
- * 2 and 4 — half as busy as the martillo it replaces.
- */
-const BONGO_BELL: Step[] = ['hit', null, 'neck', null]
-/** Güiro (one count): long on the beat, two short scrapes after */
-const GUIRO: Step[] = ['long', null, 'short', 'short']
-/**
- * Bass tumbao (one bar): the fifth on &2, then the next bar's root on 4,
- * held over the bar line — the bass doesn't play the 1.
- */
-const BASS_TUMBAO: Step[] = [null, null, null, '5th', null, null, 'push', null]
-/**
- * Piano montuno (3-2): octaves on the chord tones over short chord stabs,
- * the next chord pushed on &4 of each bar and left ringing over the 1.
- */
-const MONTUNO_3_2: Step[] = [
-  null, 'chord', '3rd', null, 'chord', '5th', null, 'push',
-  null, 'chord', 'root', 'chord', null, '3rd', 'chord', 'push',
-]
-/**
- * Tres guajeo (3-2): single notes and thirds in the gaps the piano leaves,
- * the same push on &4 as the bass and piano, and no downbeat after it.
- */
-const GUAJEO_3_2: Step[] = [
-  null, '5th', 'dyad', null, '3rd', 'dyad', 'root', 'push',
-  null, '3rd', null, 'dyad', '5th', null, 'dyad', 'push',
-]
-/**
- * Brass moña (3-2), call and response over the two bars: the trumpets play
- * a riff on the 3 side ending in a push, the trombones answer on the 2
- * side with stabs and their own push into the next cycle.
- */
-const TRUMPET_MONA_3_2: Step[] = [
-  null, '5th', null, '3rd', null, '5th', '3rd', 'push',
-  null, null, null, null, null, null, null, null,
-]
-const TROMBONE_MONA_3_2: Step[] = [
-  null, null, null, null, null, null, null, null,
-  null, 'hit', null, 'hit', 'root', null, '5th', 'push',
-]
-/**
- * Mambo section (3-2): the arranged brass break, both sections at once.
- * The trombones lock into a riff that runs through both bars, pushing on &4;
- * over it the trumpets punch out the clave itself — 2& and 4, then 6 and
- * 7 — and push into the next cycle.
- */
-const TROMBONE_MAMBO_3_2: Step[] = [
-  null, 'root', null, '3rd', '5th', null, '3rd', 'push',
-  null, 'root', null, '3rd', null, '5th', null, 'push',
-]
-const TRUMPET_MAMBO_3_2: Step[] = [
-  null, null, null, 'hit', null, null, 'hit', null,
-  null, null, 'hit', null, 'hit', null, null, 'push',
-]
-/** Cha-cha-chá timbales (one bar): a click on the shell on 2, the open hembra on 4. */
-const CHACHACHA_TIMBALES: Step[] = [null, null, 'rim', null, null, null, 'low', null]
-/** Bass on 1 and 3 (one bar): the root, then the fifth — cha-cha-chá, pachanga, bolero. */
-const BASS_ONE_THREE: Step[] = ['root', null, null, null, '5th', null, null, null]
-/** Bolero piano (one bar): the chord on the 1, pushed again on 2&. */
-const BOLERO_PIANO: Step[] = ['chord', null, null, 'chord', null, null, null, null]
-/**
- * Timbales fill (the last two counts of a block): macho, then down to the
- * hembra. Leads from one section of a song into the next.
- */
-export const TIMBALES_FILL: Step[] = ['high', 'high', 'high', 'low']
-
-// 2-3 is the same two-bar cycle started from the other bar. Only the parts
-// that follow the clave turn; tumbao, martillo, bongo bell and bass repeat
-// every bar, and the voice keeps counting from the dancer's 1.
-/** 2-3 son clave: 2, 3 | 1, &2, 4 */
-const CLAVE_2_3 = rotateFigure(CLAVE_3_2, 8)
-/** Cáscara (2-3) */
-const CASCARA_2_3 = rotateFigure(CASCARA_3_2, 8)
-/** Mambo bell (2-3) */
-const MAMBO_BELL_2_3 = rotateFigure(MAMBO_BELL_3_2, 8)
-/** Piano montuno (2-3) */
-const MONTUNO_2_3 = rotateFigure(MONTUNO_3_2, 8)
-/** Tres guajeo (2-3) */
-const GUAJEO_2_3 = rotateFigure(GUAJEO_3_2, 8)
-/** Brass moña (2-3) */
-const TRUMPET_MONA_2_3 = rotateFigure(TRUMPET_MONA_3_2, 8)
-const TROMBONE_MONA_2_3 = rotateFigure(TROMBONE_MONA_3_2, 8)
-/** Mambo section (2-3) */
-const TRUMPET_MAMBO_2_3 = rotateFigure(TRUMPET_MAMBO_3_2, 8)
-const TROMBONE_MAMBO_2_3 = rotateFigure(TROMBONE_MAMBO_3_2, 8)
-/** 3-2 rumba clave: like son clave, but the third stroke moves from 4 to &4. */
-const RUMBA_CLAVE_3_2: Step[] = [
-  'hit', null, null, 'hit', null, null, null, 'hit',
-  null, null, 'hit', null, 'hit', null, null, null,
-]
-
-/** Verse feel in 3-2 son clave: tumbao, martillo, cáscara, bass, piano montuno and tres guajeo. */
 export const salsaVerse = definePattern({
   id: 'salsa-verse-3-2',
   counts: 8,
@@ -428,13 +329,6 @@ export const salsaBolero = definePattern({
 })
 
 /**
- * Pachanga conga (one bar): a slap on the beat and two open tones after it,
- * on every other count — the "bouncing" figure the dance's knee bounce
- * follows.
- */
-const PACHANGA_CONGAS: Step[] = ['slap', null, 'open', 'open', 'slap', null, 'open', 'open']
-
-/**
  * Pachanga: the charanga dance craze of the early 1960s, between cha-cha-chá
  * and salsa in tempo. Like cha-cha-chá it's a charanga sound (no bongó,
  * tres or brass): quarter notes on the timbales bell, the güiro's
@@ -530,95 +424,4 @@ export const salsaClave: Record<string, string> = {
   'salsa-chachacha-2-3': 'son-2-3',
   'salsa-pachanga-2-3': 'son-2-3',
   'salsa-guaguanco-3-2': 'rumba-3-2',
-}
-
-/**
- * Every instrument has a page of its own. Each rhythm plays over the
- * preset it's heard in: the verse unless said otherwise.
- */
-export const salsaInstrumentPages: Record<string, InstrumentPage> = {
-  clave: {
-    variants: [
-      { id: 'son-3-2', figure: CLAVE_3_2 },
-      { id: 'son-2-3', figure: CLAVE_2_3, band: salsaVerse23.id },
-      { id: 'rumba-3-2', figure: RUMBA_CLAVE_3_2, band: salsaGuaguanco.id },
-    ],
-  },
-  congas: {
-    variants: [
-      { id: 'tumbao', figure: TUMBAO },
-      { id: 'slap-open', figure: TUMBAO_SLAP_OPEN },
-      { id: 'open', figure: TUMBAO_OPEN },
-    ],
-  },
-  bongos: {
-    variants: [
-      { id: 'martillo', figure: MARTILLO },
-      { id: 'bolero', figure: MARTILLO, band: salsaBolero.id },
-    ],
-  },
-  // The bells come in with the montuno, when the bongocero and the
-  // timbalero put down their drums for them.
-  cowbell: {
-    variants: [
-      { id: 'bongo-bell', figure: BONGO_BELL, band: salsaMontuno.id },
-    ],
-  },
-  timbalebell: {
-    variants: [
-      { id: 'mambo-3-2', figure: MAMBO_BELL_3_2, band: salsaMontuno.id },
-      { id: 'mambo-2-3', figure: MAMBO_BELL_2_3, band: salsaMontuno23.id },
-      { id: 'chachacha', figure: ['open', null], band: salsaChachacha.id },
-    ],
-  },
-  guiro: {
-    variants: [
-      { id: 'montuno', figure: GUIRO, band: salsaMontuno.id },
-      { id: 'chachacha', figure: GUIRO, band: salsaChachacha.id },
-    ],
-  },
-  timbales: {
-    variants: [
-      { id: 'cascara-3-2', figure: CASCARA_3_2 },
-      { id: 'cascara-2-3', figure: CASCARA_2_3, band: salsaVerse23.id },
-      { id: 'chachacha', figure: CHACHACHA_TIMBALES, band: salsaChachacha.id },
-    ],
-  },
-  maracas: {
-    variants: [
-      { id: 'eighths', figure: ['hit'] },
-      { id: 'son', figure: ['hit'], band: salsaSon.id },
-    ],
-  },
-  bass: {
-    variants: [
-      { id: 'tumbao', figure: BASS_TUMBAO },
-      { id: 'one-three', figure: BASS_ONE_THREE, band: salsaChachacha.id },
-    ],
-  },
-  piano: {
-    variants: [
-      { id: 'montuno-3-2', figure: MONTUNO_3_2 },
-      { id: 'montuno-2-3', figure: MONTUNO_2_3, band: salsaVerse23.id },
-      { id: 'bolero', figure: BOLERO_PIANO, band: salsaBolero.id },
-    ],
-  },
-  tres: {
-    variants: [
-      { id: 'guajeo-3-2', figure: GUAJEO_3_2 },
-      { id: 'son', figure: GUAJEO_2_3, band: salsaSon.id },
-    ],
-  },
-  trumpet: {
-    variants: [
-      { id: 'mona', figure: TRUMPET_MONA_3_2, band: salsaMontuno.id },
-      { id: 'mambo', figure: TRUMPET_MAMBO_3_2, band: salsaMambo.id },
-    ],
-  },
-  trombone: {
-    variants: [
-      { id: 'mona', figure: TROMBONE_MONA_3_2, band: salsaMontuno.id },
-      { id: 'mambo', figure: TROMBONE_MAMBO_3_2, band: salsaMambo.id },
-    ],
-  },
 }

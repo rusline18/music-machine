@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
+import { gotoHydrated } from './hydrated'
 
 /** Matches every step cell of the grid (the instrument is in the label). */
 const STEP = /^.+ step \d+$/
@@ -11,7 +12,7 @@ async function advanced(page: Page) {
 
 test.describe('salsa beat machine', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/salsa')
+    await gotoHydrated(page, '/salsa')
   })
 
   test('a click turns a step on and off', async ({ page }) => {
@@ -202,6 +203,21 @@ test('animation can be switched off, and stays off', async ({ page }) => {
   await expect(page.locator('html')).toHaveClass(/no-motion/)
   await page.reload()
   await expect(page.locator('html')).toHaveClass(/no-motion/)
+})
+
+test.describe('icons move with the beat', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, reducedMotion: 'no-preference' })
+
+  test('only where they can be seen: the practice card, not the hidden grid', async ({ page }) => {
+    await page.goto('/salsa')
+    await page.getByRole('button', { name: '▶ Play' }).click()
+    await expect(page.getByRole('button', { name: '■ Stop' })).toBeVisible()
+    // The congas play on every eighth: within a second each visible icon has moved.
+    const moving = () => page.evaluate(() => [...document.querySelectorAll('.instrument-icon[data-instrument="congas"]')]
+      .map((icon) => ({ grid: icon.tagName === 'BUTTON', animations: icon.querySelector('svg')?.getAnimations({ subtree: true }).length ?? 0 })))
+    await expect.poll(async () => (await moving()).find((icon) => !icon.grid)?.animations).toBeGreaterThan(0)
+    expect((await moving()).find((icon) => icon.grid)?.animations).toBe(0)
+  })
 })
 
 test('bachata starts at 8 counts and shows chord selectors in advanced mode', async ({ page }) => {
