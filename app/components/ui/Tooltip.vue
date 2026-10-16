@@ -12,13 +12,21 @@ const EDGE = 8
 
 const id = useId()
 const root = ref<HTMLElement>()
+const bubble = ref<HTMLElement>()
+/** In a modal sheet the bubble stays put: outside it, it would sit under the dialog. */
+const inDialog = ref(false)
+onMounted(() => {
+  inDialog.value = !!root.value!.closest('dialog')
+})
 /** Where the bubble sits on screen while open. */
 const position = ref<{ top: number, left: number }>()
 
 // title="" never shows on touch screens, so the bubble opens on mouse hover, on
 // keyboard focus and on tap, and closes on Esc, a tap anywhere else or a
 // scroll. Hover is mouse-only: phones fire a fake mouse leave after a tap.
-// It's fixed to the screen so a scrolling grid doesn't clip it.
+// It's fixed to the screen so a scrolling grid doesn't clip it, and moved to
+// the end of the page: inside a backdrop-blur (the practice bar) "fixed"
+// would count from that box, not the screen, and land far below.
 function show() {
   const rect = root.value!.getBoundingClientRect()
   const width = Math.min(BUBBLE_WIDTH, window.innerWidth * 0.8)
@@ -33,7 +41,8 @@ function hide() {
 }
 
 function closeOnOutside(event: PointerEvent) {
-  if (!root.value?.contains(event.target as Node)) hide()
+  const target = event.target as Node
+  if (!root.value?.contains(target) && !bubble.value?.contains(target)) hide()
 }
 
 watch(position, (open, wasOpen) => {
@@ -70,20 +79,26 @@ onBeforeUnmount(() => {
     >
       <slot />
     </button>
-    <span
-      v-show="position"
-      :id="id"
-      role="tooltip"
-      class="fixed z-30 w-64 max-w-[80vw] rounded-xl border border-neutral-700 bg-neutral-900 px-3 py-2 text-left text-xs font-normal normal-case leading-snug tracking-normal text-neutral-200 shadow-lg"
-      :style="position && { top: `${position.top}px`, left: `${position.left}px` }"
+    <Teleport
+      to="#teleports"
+      :disabled="inDialog"
     >
-      <strong
-        v-if="title"
-        class="mb-1 block text-sm font-bold text-neutral-50"
-      >{{ title }}</strong>
-      {{ text }}
-      <!-- Extra content under the text, e.g. a little diagram. -->
-      <slot name="details" />
-    </span>
+      <span
+        v-show="position"
+        :id="id"
+        ref="bubble"
+        role="tooltip"
+        class="fixed z-30 w-64 max-w-[80vw] rounded-xl border border-neutral-700 bg-neutral-900 px-3 py-2 text-left text-xs font-normal normal-case leading-snug tracking-normal text-neutral-200 shadow-lg"
+        :style="position && { top: `${position.top}px`, left: `${position.left}px` }"
+      >
+        <strong
+          v-if="title"
+          class="mb-1 block text-sm font-bold text-neutral-50"
+        >{{ title }}</strong>
+        {{ text }}
+        <!-- Extra content under the text, e.g. a little diagram. -->
+        <slot name="details" />
+      </span>
+    </Teleport>
   </span>
 </template>

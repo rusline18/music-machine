@@ -107,7 +107,7 @@ const fill = computed(() => props.genre.transitionFill?.instrument)
         v-model="picked"
         :aria-label="$t('song.add')"
         :disabled="full"
-        class="max-w-full rounded-xl border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 disabled:opacity-50"
+        class="min-h-11 max-w-full rounded-xl border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 disabled:opacity-50 sm:min-h-9"
         @change="add"
       >
         <option

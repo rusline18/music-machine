@@ -10,7 +10,7 @@ const model = defineModel<string>({ required: true })
   <select
     v-model="model"
     :aria-label="$t('controls.preset')"
-    class="rounded-xl border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-200"
+    class="min-h-11 rounded-xl border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 sm:min-h-9"
   >
     <option
       v-for="id in presetIds"
