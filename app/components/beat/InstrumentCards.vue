@@ -68,7 +68,7 @@ const { holding, holdLabel } = press
         <!-- Fills from the bottom while held, behind the content. -->
         <span
           class="pointer-events-none absolute inset-0 -z-10 origin-bottom bg-neutral-100/20"
-          :class="holding === track ? 'scale-y-100 transition-transform duration-[450ms] ease-linear motion-reduce:transition-none' : 'scale-y-0'"
+          :class="holding === track ? 'scale-y-100 transition-transform duration-[330ms] ease-linear motion-reduce:transition-none' : 'scale-y-0'"
           aria-hidden="true"
         />
       </button>

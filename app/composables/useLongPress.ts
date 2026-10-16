@@ -2,7 +2,7 @@
 export const LONG_PRESS_MS = 450
 /** Moving further than this is a scroll or a swipe, not a press. */
 const PRESS_SLOP_PX = 10
-/** The "keep holding" bubble comes out a moment after the finger lands, so a tap never shows it. */
+/** The fill and the "keep holding" bubble start a moment after the press lands, so a tap never flashes them. */
 const HOLD_LABEL_DELAY_MS = 120
 
 interface LongPressHandlers<K> {
@@ -77,10 +77,10 @@ export function useLongPress<K>({ tap, longPress, pressed, released }: LongPress
 
 /**
  * An instrument's icon or card: a tap switches it, a long press opens its
- * sheet. Until a long press has opened a sheet once (useHoldHint), a finger
- * held on it fills it (`holding`) and a bubble says what's coming
- * (`holdLabel`); a mouse isn't hinted. Both hold the key of the control
- * being pressed, or null.
+ * sheet. A held press fills it until the sheet opens (`holding`); until a
+ * long press has opened a sheet once (useHoldHint), a bubble also says
+ * what's coming (`holdLabel`; not for a mouse, which has the name beside
+ * the icon). Both hold the key of the control being pressed, or null.
  */
 export function useHoldToOpen<K>({ tap, open }: { tap: (key: K) => void, open: (key: K) => void }) {
   const holdHint = useHoldHint()
@@ -95,9 +95,12 @@ export function useHoldToOpen<K>({ tap, open }: { tap: (key: K) => void, open: (
       open(key)
     },
     pressed: (event, key) => {
-      if (event.pointerType === 'mouse' || holdHint.learnt.value) return
-      holding.value = key
-      labelTimer = setTimeout(() => (holdLabel.value = key), HOLD_LABEL_DELAY_MS)
+      const hint = event.pointerType !== 'mouse' && !holdHint.learnt.value
+      clearTimeout(labelTimer)
+      labelTimer = setTimeout(() => {
+        holding.value = key
+        holdLabel.value = hint ? key : null
+      }, HOLD_LABEL_DELAY_MS)
     },
     released: () => {
       clearTimeout(labelTimer)
