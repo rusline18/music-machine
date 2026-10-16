@@ -176,14 +176,16 @@ let iconStart: { x: number, y: number } | null = null
 /** Set when a press opened the sheet, so the click that ends it doesn't also mute. */
 let sheetOpened = false
 
-// Until a long press has opened a sheet once, a finger held on the icon
-// fills it and says what's coming; letting go early just mutes, as a tap.
-// A mouse has the name beside the icon for that, so it isn't hinted.
+// A held icon fills from the bottom until its sheet opens; letting go
+// early just mutes, as a tap. Until a long press has opened a sheet once,
+// a bubble also says what's coming (not for a mouse: the name beside the
+// icon opens the sheet).
 const holdHint = useHoldHint()
-/** The icon is filling under a held finger. */
+/** The icon is filling under a held press. */
 const holding = ref(false)
-/** The bubble beside it is out, a moment after the finger lands (a tap never shows it). */
+/** The bubble beside it is out. */
 const holdLabel = ref(false)
+/** Both start a moment after the press lands, so a tap never flashes them. */
 const HOLD_LABEL_DELAY_MS = 120
 let labelTimer: ReturnType<typeof setTimeout> | undefined
 
@@ -191,10 +193,11 @@ function iconDown(event: PointerEvent) {
   if (event.button !== 0) return
   sheetOpened = false
   iconStart = { x: event.clientX, y: event.clientY }
-  if (event.pointerType !== 'mouse' && !holdHint.learnt.value) {
+  const hint = event.pointerType !== 'mouse' && !holdHint.learnt.value
+  labelTimer = setTimeout(() => {
     holding.value = true
-    labelTimer = setTimeout(() => (holdLabel.value = true), HOLD_LABEL_DELAY_MS)
-  }
+    holdLabel.value = hint
+  }, HOLD_LABEL_DELAY_MS)
   clearTimeout(iconTimer)
   iconTimer = setTimeout(() => {
     iconStart = null
@@ -298,7 +301,7 @@ onBeforeUnmount(() => {
         <!-- Fills from the bottom while held, behind the drawing. -->
         <span
           class="pointer-events-none absolute inset-0 -z-10 origin-bottom bg-neutral-100/30"
-          :class="holding ? 'scale-y-100 transition-transform duration-[450ms] ease-linear motion-reduce:transition-none' : 'scale-y-0'"
+          :class="holding ? 'scale-y-100 transition-transform duration-[330ms] ease-linear motion-reduce:transition-none' : 'scale-y-0'"
           aria-hidden="true"
         />
       </button>

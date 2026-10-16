@@ -2,6 +2,13 @@
 
 What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
+## 2026-10-16
+
+- A held instrument icon (grid) or practice card fills from the bottom
+  every time, not only until the long press is learnt; the "keep
+  holding" bubble still goes once it is. The fill starts a moment in,
+  so a tap doesn't flash it, and works with a mouse too.
+
 ## 2026-10-15
 
 - Practice view on a phone: each instrument card has an ⓘ, and a long
