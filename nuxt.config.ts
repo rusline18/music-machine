@@ -1,4 +1,5 @@
 import { contentSecurityPolicy } from './server/csp'
+import { VIEWPORT } from './shared/viewport'
 
 /**
  * Loads Telegram's Mini App SDK, but only when the page was opened as a Mini
@@ -68,12 +69,8 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      // viewport-fit=cover: the page runs under the notch and the home bar,
-      // and the practice bar keeps clear of them with env(safe-area-inset-*).
-      // No pinch zoom: it's an app screen of big pads, and a zoomed Telegram
-      // Mini App leaves its controls off-screen. maximum-scale=1 also stops
-      // iOS zooming in on a focused input.
-      viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover',
+      // The Telegram Mini App swaps in one with zoom off (plugins/telegram.client.ts).
+      viewport: VIEWPORT,
       // Installable on a phone's home screen (public/manifest.webmanifest).
       link: [
         { rel: 'manifest', href: '/manifest.webmanifest' },

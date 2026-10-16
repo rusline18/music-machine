@@ -23,8 +23,11 @@ body {
   background-color: theme('colors.neutral.950');
   color: theme('colors.neutral.100');
   font-family: theme('fontFamily.sans');
-  /* No double-tap zoom (pinch zoom is off in the viewport meta), and taps
-     land without the 300 ms wait for a second one. */
+}
+
+/* In the Telegram Mini App: no double-tap zoom (the plugin turns pinch
+   zoom off), and taps land without the 300 ms wait for a second one. */
+html[data-telegram] {
   touch-action: manipulation;
 }
 
