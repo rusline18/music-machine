@@ -2,19 +2,19 @@ import { createAudioEngine } from '~/core/audio/engine'
 import type { Beat } from '~/core/audio/playhead'
 import { createPlayhead } from '~/core/audio/playhead'
 import { createScheduler } from '~/core/audio/scheduler'
-import { layerOrder } from '~/core/layers'
 import type { Pattern } from '~/core/pattern'
 import { patternLength, resizeSteps, setPatternCounts, switchStep, trackOf } from '~/core/pattern'
 import type { CountingMode } from '~/core/resolve'
-import { unpackPattern } from '~/core/compactPattern'
-import { decodePattern, encodePattern } from '~/core/share'
-import { packCode, unpackCode } from '~/core/telegram'
+import { encodePattern } from '~/core/share'
 import type { SectionFit } from '~/core/song'
 import { buildSong, sectionFit, songBpm } from '~/core/song'
-import { COUNTING_MODES, countingFigure, patternSampleUrls, sampleUrls, stepNames, stepNamesAt, stepResolver } from '~/core/resolve'
+import { COUNTING_MODES, countingFigure, patternSampleUrls, stepNames, stepNamesAt, stepResolver } from '~/core/resolve'
 import type { TempoChoice } from '~/core/tempo'
 import { nudgeBpm, tempoChoice, tempoFor } from '~/core/tempo'
 import type { Genre } from '~/genres'
+import { useLayers } from './useLayers'
+import { usePatternStorage } from './usePatternStorage'
+import { useSampleLoading } from './useSampleLoading'
 
 /**
  * How loosely the band plays (0–1, see humanizeNote) and how much room
@@ -27,18 +27,11 @@ const RANDOM_DENSITY = 0.25
 /** How long the music fades out when the page is left while it plays: about the curtain closing. */
 const LEAVE_FADE_SECONDS = 0.4
 
-/** Query parameter carrying a shared pattern, packed by packPattern (core/compactPattern.ts): /salsa?b=… */
-export const SHARE_PARAM = 'b'
-/** The same as a share.ts code: older links, and browsers that can't compress. */
-export const SHARE_CODE_PARAM = 'p'
-const storageKey = (genreId: string) => `latin-beat-machine:pattern:${genreId}`
-/** The same pattern in the user's Telegram cloud (CloudStorage keys: letters, digits, _ and -). */
-const cloudKey = (genreId: string) => `pattern-${genreId}`
-/** Edits come in bursts of taps: the cloud is written once they pause. */
-const CLOUD_SAVE_DELAY_MS = 1000
-
 /**
- * Pattern state + audio engine + scheduler for one genre page.
+ * Pattern state + audio engine + scheduler for one genre page. The parts
+ * with a life of their own are in their own composables: useSampleLoading
+ * (downloading and decoding sounds), usePatternStorage (links, this
+ * browser, the Telegram cloud) and useLayers ("layer by layer").
  * Samples start downloading on mount, but the AudioContext is only created
  * on the first `play()` (from a user gesture), so this is safe to call
  * during SSR.
@@ -68,55 +61,15 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>, { persist = tr
   /** Set when soloing started playback, so ending the solo stops it again. */
   let soloStartedPlay = false
 
-  /**
-   * "Layer by layer": the instruments to bring in, and how many are in so
-   * far. Null when the guide isn't running.
-   */
-  const layers = ref<{ order: string[], added: number } | null>(null)
-
-  /** Set once the audio graph exists (after the first play). */
-  let started = false
-
-  const urls = () => [...sampleUrls(genre, locale.value)]
-  /** Samples whose download has finished (or failed), for the progress bar. */
-  const samplesFetched = ref(0)
-  const sampleCount = ref(urls().length)
-  /** 0–1 share of the samples downloaded so far. */
-  const loadProgress = computed(() => Math.min(1, samplesFetched.value / sampleCount.value))
   /** Play was pressed and is waiting for samples. */
   const isLoading = ref(false)
-  /** Samples the last load gave up on; they stay silent until the next Play retries them. */
-  const failedSamples = ref(0)
-  /** Set once every sample of the current language is decoded. */
-  let samplesLoaded = false
-
-  /**
-   * Decodes every sample in the background, once playback has started with
-   * the ones the pattern needs. A sound put in before it arrives is skipped
-   * until then.
-   */
-  async function loadTheRest() {
-    const failed = await engine.preloadSamples(urls())
-    failedSamples.value = failed.length
-    samplesLoaded = failed.length === 0
-  }
-
-  /** The language whose samples are downloading, so each set is fetched once. */
-  let prefetchedLocale: string | undefined
-
-  /** Download (not decode) the samples; needs no AudioContext, so it can run before any click. */
-  function prefetch() {
-    if (prefetchedLocale === locale.value) return
-    prefetchedLocale = locale.value
-    const list = urls()
-    sampleCount.value = list.length
-    samplesFetched.value = 0
-    engine.prefetchSamples(list, () => {
-      samplesFetched.value++
-    })
-  }
-
-  onMounted(prefetch)
+  const samples = useSampleLoading(engine, genre, locale)
+  const { layers, startLayers, addLayer, endLayers } = useLayers(genre, pattern, {
+    voiceInstrument,
+    isPlaying,
+    play,
+    setMuted,
+  })
 
   /** Called with each step as it's heard, and with null on stop. */
   const beatListeners = new Set<(beat: Beat | null) => void>()
@@ -127,17 +80,9 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>, { persist = tr
 
   scheduler.setFeel(FEEL)
 
-  // The voice's words in the new language load in the background; until
-  // they arrive the voice is skipped, the band keeps playing.
-  watch(locale, () => {
-    samplesLoaded = false
-    if (started) engine.preloadSamples(urls())
-    else prefetch()
-  })
-
   /** Swap in a new pattern, carrying on playing if we were. */
   function loadPattern(next: Pattern) {
-    layers.value = null
+    endLayers(false)
     const wasPlaying = isPlaying.value
     stop()
     pattern.value = next
@@ -191,89 +136,8 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>, { persist = tr
   /** Code for a link to the current pattern (see core/share.ts). */
   const shareCode = computed(() => encodePattern(pattern.value, genre))
 
-  // A link wins over the last visit's pattern. Both are read after
-  // mounting: the server has no localStorage, and rendering the preset
-  // first keeps hydration consistent.
-  const route = useRoute()
-  const router = useRouter()
-  onMounted(async () => {
-    if (!persist) return
-    const { [SHARE_PARAM]: packed, [SHARE_CODE_PARAM]: code, ...query } = route.query
-    const fromLink = typeof packed === 'string' || typeof code === 'string'
-    let restored: Pattern | null = null
-    if (fromLink) {
-      // Drop the code from the address bar: edits from here on are the
-      // user's own and get saved locally instead.
-      router.replace({ query })
-      const before = shareCode.value
-      restored = typeof packed === 'string' ? await unpackPattern(packed, genre) : decodePattern(code as string, genre)
-      // Unpacking waits for the browser: a tap on the grid meanwhile wins.
-      if (shareCode.value !== before) return
-    }
-    if (!restored) {
-      try {
-        const saved = localStorage.getItem(storageKey(genre.id))
-        if (saved) restored = decodePattern(saved, genre)
-      } catch { /* storage blocked: start from the preset */ }
-    }
-    if (restored) loadPattern(restored)
-    if (!fromLink && inTelegram()) restoreFromCloud()
-  })
-
-  // Inside Telegram the pattern is also kept in the user's Telegram cloud,
-  // so it follows them from phone to computer. The cloud copy wins over
-  // this device's, unless the user has started editing before it arrives.
-  let cloudRead: Promise<void> = Promise.resolve()
-  function restoreFromCloud() {
-    const before = shareCode.value
-    cloudRead = (async () => {
-      const packed = await cloudGet(cloudKey(genre.id))
-      const code = packed && await unpackCode(packed)
-      const fromCloud = code && decodePattern(code, genre)
-      if (fromCloud && shareCode.value === before) loadPattern(fromCloud)
-    })()
-  }
-
-  /** Bumped by every save, so a slower, older one gives way. */
-  let cloudSaves = 0
-  let cloudTimer: ReturnType<typeof setTimeout> | undefined
-  /** Saves `code` to the cloud, or removes it for null (an untouched preset). */
-  function saveToCloud(code: string | null) {
-    if (!inTelegram()) return
-    const save = ++cloudSaves
-    clearTimeout(cloudTimer)
-    cloudTimer = setTimeout(async () => {
-      // Not before the cloud's own copy is in, or this device's older one would overwrite it.
-      await cloudRead
-      const packed = code === null ? null : await packCode(code)
-      if (save !== cloudSaves) return
-      if (code === null) cloudSet(cloudKey(genre.id), null)
-      // Too long for a cloud value (a long song), or no compression on this phone: this device only.
-      else if (packed && packed.length <= CLOUD_VALUE_MAX) cloudSet(cloudKey(genre.id), packed)
-    }, CLOUD_SAVE_DELAY_MS)
-  }
-
-  /** Presets never change (loading one clones it), so each one's code is worked out once. */
-  const presetCodes = new Map<string, string>()
-  function presetCode(id: string): string | undefined {
-    const preset = genre.presets.find((p) => p.id === id)
-    if (!preset) return undefined
-    let code = presetCodes.get(id)
-    if (code === undefined) presetCodes.set(id, (code = encodePattern(preset, genre)))
-    return code
-  }
-
-  // Only edits are kept: an untouched preset isn't stored, so it picks up
-  // fixes to the preset data on the next visit.
-  watch(shareCode, (code) => {
-    if (!persist) return
-    const edited = presetCode(pattern.value.id) !== code
-    try {
-      if (edited) localStorage.setItem(storageKey(genre.id), code)
-      else localStorage.removeItem(storageKey(genre.id))
-    } catch { /* storage full or blocked: nothing to save to */ }
-    saveToCloud(edited ? code : null)
-  })
+  // A link wins over the last visit's pattern, and edits are saved.
+  if (persist) usePatternStorage(genre, pattern, shareCode, loadPattern)
 
   const findTrack = (instrument: string) => trackOf(pattern.value, instrument)
 
@@ -302,8 +166,8 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>, { persist = tr
     // Create and unlock the AudioContext inside the click itself: Safari
     // refuses to start one after a long await on the network.
     const unlocked = engine.resume()
-    isLoading.value = !samplesLoaded
-    prefetch()
+    isLoading.value = !samples.allLoaded()
+    samples.prefetch()
     // Only what this pattern plays is waited for; the rest follows once it's playing.
     const needed = [...patternSampleUrls(genre, pattern.value, locale.value)]
     try {
@@ -312,15 +176,14 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>, { persist = tr
       // The room is worked out while the samples load, not after them.
       engine.setReverb(REVERB_WET)
       const failed = await loading
-      failedSamples.value = failed.length
+      samples.failedSamples.value = failed.length
       await unlocked
     } finally {
       if (request === playRequest) isLoading.value = false
     }
     // Stopped, or left the page, while loading; or nothing to play at all.
-    if (request !== playRequest || (needed.length > 0 && failedSamples.value === needed.length)) return
-    started = true
-    if (!samplesLoaded) loadTheRest()
+    if (request !== playRequest || (needed.length > 0 && samples.failedSamples.value === needed.length)) return
+    samples.playing()
     for (const track of pattern.value.tracks) {
       engine.setInstrumentVolume(track.instrument, track.volume)
       applyMuted(track.instrument)
@@ -425,7 +288,7 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>, { persist = tr
     if (track.muted) return 'off'
     const length = patternLength(pattern.value)
     return COUNTING_MODES.find((mode) => {
-      const steps = resizeSteps(countingFigure(mode, pattern.value.stepsPerCount), length)
+      const steps = resizeSteps(countingFigure(mode, pattern.value.stepsPerCount, genre.unspokenCounts), length)
       return steps.every((step, i) => step === track.steps[i])
     })
   })
@@ -433,7 +296,7 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>, { persist = tr
   function setCounting(mode: CountingMode) {
     const track = voiceInstrument && findTrack(voiceInstrument)
     if (!track) return
-    track.steps = resizeSteps(countingFigure(mode, pattern.value.stepsPerCount), patternLength(pattern.value))
+    track.steps = resizeSteps(countingFigure(mode, pattern.value.stepsPerCount, genre.unspokenCounts), patternLength(pattern.value))
     setMuted(track.instrument, mode === 'off')
   }
 
@@ -453,36 +316,10 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>, { persist = tr
     }
   }
 
-  /**
-   * Starts "layer by layer": silences the band but the first instrument
-   * (the counting voice is left as it is) and starts playing.
-   */
-  function startLayers() {
-    const order = layerOrder(pattern.value, genre.teachingOrder)
-    if (order.length === 0) return
-    for (const track of pattern.value.tracks) {
-      if (track.instrument !== voiceInstrument) setMuted(track.instrument, track.instrument !== order[0])
-    }
-    layers.value = { order, added: 1 }
-    if (!isPlaying.value) play()
-  }
-
-  function addLayer() {
-    const next = layers.value?.order[layers.value.added]
-    if (!next) return
-    setMuted(next, false)
-    layers.value!.added++
-  }
-
-  /** Ends the guide; with `addRest`, brings in every instrument it hadn't reached. */
-  function endLayers(addRest: boolean) {
-    if (addRest) for (const instrument of layers.value?.order ?? []) setMuted(instrument, false)
-    layers.value = null
-  }
-
   // Leaving for another page: the music fades out while the curtain
   // closes instead of cutting off when the page goes. A language change
   // keeps the page and the music.
+  const router = useRouter()
   let removeFadeGuard: (() => void) | undefined
   onMounted(() => {
     removeFadeGuard = router.beforeEach((to, from) => {
@@ -514,8 +351,8 @@ export function useBeatMachine(genre: Genre, locale: Ref<string>, { persist = tr
     shareCode,
     isPlaying: readonly(isPlaying),
     isLoading: readonly(isLoading),
-    loadProgress,
-    failedSamples: readonly(failedSamples),
+    loadProgress: samples.loadProgress,
+    failedSamples: readonly(samples.failedSamples),
     /** Changes on every step: read it only where that's cheap; `onBeat` is for the rest. */
     activeStep: readonly(activeStep),
     onBeat,

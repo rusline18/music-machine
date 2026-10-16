@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Track } from '~/core/pattern'
 import { countInBlock, switchStep } from '~/core/pattern'
-import { stepNamesAt } from '~/core/resolve'
+import { AND_STEP, COUNT_STEP, isSpokenStep, stepNamesAt } from '~/core/resolve'
 
 const props = defineProps<{
   track: Track
@@ -34,13 +34,12 @@ const { t } = useI18n()
 
 const stepIndices = computed(() => Array.from({ length: props.length }, (_, i) => props.start + i))
 const instrumentName = computed(() => t(`instruments.${props.track.instrument}`))
-const isSpoken = (name: string | null | undefined) => name === 'count' || name === 'and'
 
 /** For a counting voice, what a cell shows: the number it says, or "&". */
 function spokenLabel(stepIndex: number): string {
   const name = props.track.steps[stepIndex]
-  if (name === 'count') return String(countInBlock(stepIndex, props.stepsPerCount) + 1)
-  return name === 'and' ? t('grid.and') : ''
+  if (name === COUNT_STEP) return String(countInBlock(stepIndex, props.stepsPerCount) + 1)
+  return name === AND_STEP ? t('grid.and') : ''
 }
 
 // The cells' pointer events are handled once for the row rather than on
@@ -57,29 +56,31 @@ function cellOver(event: PointerEvent) {
   const cell = cellAt(event)
   if (cell === hovered) return
   // Leaving a cell (for the next one, or the gap between them).
-  pressCancel()
+  cellPress.cancel()
   hintOut()
   hovered = cell
   if (cell) hintIn(event, cell)
 }
 function rowLeave() {
   hovered = null
-  pressCancel()
+  cellPress.cancel()
   hintOut()
 }
 function cellDown(event: PointerEvent) {
+  hintOut()
   const cell = cellAt(event)
-  if (cell) pressDown(event, stepOf(cell))
+  if (cell) cellPress.down(event, stepOf(cell))
 }
 function cellClick(event: MouseEvent) {
   const cell = cellAt(event)
-  if (cell) click(stepOf(cell))
+  if (cell) cellPress.click(stepOf(cell))
 }
 function cellMenu(event: MouseEvent) {
   const cell = cellAt(event)
   if (!cell) return
   event.preventDefault()
-  contextMenu(stepOf(cell))
+  hintOut()
+  cellPress.contextMenu(stepOf(cell))
 }
 
 // The hint under a cell, for the mouse: what's in it and what the two
@@ -118,129 +119,27 @@ const hintClick = computed(() => {
 function cellClass(stepIndex: number): string {
   const name = props.track.steps[stepIndex]
   if (!name) return 'bg-neutral-800 text-neutral-600 hover:bg-neutral-700'
-  if (name === 'count' || name === 'and') return 'bg-neutral-700 text-neutral-100'
+  if (isSpokenStep(name)) return 'bg-neutral-700 text-neutral-100'
   return name === props.stepNames[0] ? 'bg-accent-500 text-neutral-950' : 'bg-accent-300 text-neutral-950'
 }
 
-// A long press opens the sound menu. iOS doesn't fire contextmenu on touch,
-// hence the timer; elsewhere contextmenu (right-click, the menu key,
-// Android's long press) opens it too.
-const LONG_PRESS_MS = 450
-/** Moving further than this is a scroll or a swipe, not a press. */
-const PRESS_SLOP_PX = 10
-let pressTimer: ReturnType<typeof setTimeout> | undefined
-let pressStart: { x: number, y: number } | null = null
-/** Set when a press opened the menu, so the click that ends it doesn't also toggle. */
-let menuOpened = false
-
-function pressDown(event: PointerEvent, stepIndex: number) {
-  hintOut()
-  if (event.button !== 0) return
-  menuOpened = false
-  pressStart = { x: event.clientX, y: event.clientY }
-  clearTimeout(pressTimer)
-  pressTimer = setTimeout(() => {
-    pressStart = null
-    menuOpened = true
-    emit('step-menu', stepIndex)
-  }, LONG_PRESS_MS)
-}
-
-function pressMove(event: PointerEvent) {
-  if (pressStart && Math.hypot(event.clientX - pressStart.x, event.clientY - pressStart.y) > PRESS_SLOP_PX) pressCancel()
-}
-
-function pressCancel() {
-  clearTimeout(pressTimer)
-  pressStart = null
-}
-
-function click(stepIndex: number) {
-  if (menuOpened) menuOpened = false
-  else emit('toggle-step', stepIndex)
-}
-
-function contextMenu(stepIndex: number) {
-  pressCancel()
-  hintOut()
-  // Android fires this after our own timer already opened the menu.
-  if (!menuOpened) emit('step-menu', stepIndex)
-  menuOpened = false
-}
+// A tap puts a hit in or takes it out; a long press (or right-click)
+// opens the sound menu.
+const cellPress = useLongPress<number>({
+  tap: (stepIndex) => emit('toggle-step', stepIndex),
+  longPress: (stepIndex) => emit('step-menu', stepIndex),
+})
 
 // The icon is the track's switch: a tap mutes it, a long press (or
-// right-click, the menu key) opens the instrument's sheet. Same timing as
-// the cells' long press.
-let iconTimer: ReturnType<typeof setTimeout> | undefined
-let iconStart: { x: number, y: number } | null = null
-/** Set when a press opened the sheet, so the click that ends it doesn't also mute. */
-let sheetOpened = false
-
-// A held icon fills from the bottom until its sheet opens; letting go
-// early just mutes, as a tap. Until a long press has opened a sheet once,
-// a bubble also says what's coming (not for a mouse: the name beside the
-// icon opens the sheet).
-const holdHint = useHoldHint()
-/** The icon is filling under a held press. */
-const holding = ref(false)
-/** The bubble beside it is out. */
-const holdLabel = ref(false)
-/** Both start a moment after the press lands, so a tap never flashes them. */
-const HOLD_LABEL_DELAY_MS = 120
-let labelTimer: ReturnType<typeof setTimeout> | undefined
-
-function iconDown(event: PointerEvent) {
-  if (event.button !== 0) return
-  sheetOpened = false
-  iconStart = { x: event.clientX, y: event.clientY }
-  const hint = event.pointerType !== 'mouse' && !holdHint.learnt.value
-  labelTimer = setTimeout(() => {
-    holding.value = true
-    holdLabel.value = hint
-  }, HOLD_LABEL_DELAY_MS)
-  clearTimeout(iconTimer)
-  iconTimer = setTimeout(() => {
-    iconStart = null
-    sheetOpened = true
-    endHold()
-    holdHint.learn()
-    emit('open-instrument')
-  }, LONG_PRESS_MS)
-}
-
-function endHold() {
-  clearTimeout(labelTimer)
-  holding.value = false
-  holdLabel.value = false
-}
-
-function iconMove(event: PointerEvent) {
-  if (iconStart && Math.hypot(event.clientX - iconStart.x, event.clientY - iconStart.y) > PRESS_SLOP_PX) iconCancel()
-}
-
-function iconCancel() {
-  clearTimeout(iconTimer)
-  iconStart = null
-  endHold()
-}
-
-function iconClick() {
-  if (sheetOpened) sheetOpened = false
-  else emit('update:muted', !props.track.muted)
-}
-
-function iconMenu() {
-  iconCancel()
-  holdHint.learn()
-  if (!sheetOpened) emit('open-instrument')
-  sheetOpened = false
-}
-
-onBeforeUnmount(() => {
-  pressCancel()
-  hintOut()
-  iconCancel()
+// right-click, the menu key) opens the instrument's sheet, with the
+// "keep holding" hint until that's been done once.
+const iconPress = useHoldToOpen<string>({
+  tap: () => emit('update:muted', !props.track.muted),
+  open: () => emit('open-instrument'),
 })
+const { holding, holdLabel } = iconPress
+
+onBeforeUnmount(hintOut)
 </script>
 
 <template>
@@ -265,13 +164,13 @@ onBeforeUnmount(() => {
         :aria-label="t('grid.mute', { instrument: instrumentName })"
         :title="t('grid.muteHint')"
         :data-instrument="track.instrument"
-        @pointerdown="iconDown"
-        @pointermove="iconMove"
-        @pointerup="iconCancel"
-        @pointerleave="iconCancel"
-        @pointercancel="iconCancel"
-        @contextmenu.prevent="iconMenu"
-        @click="iconClick"
+        @pointerdown="iconPress.down($event, track.instrument)"
+        @pointermove="iconPress.move"
+        @pointerup="iconPress.cancel"
+        @pointerleave="iconPress.cancel"
+        @pointercancel="iconPress.cancel"
+        @contextmenu.prevent="iconPress.contextMenu(track.instrument)"
+        @click="iconPress.click(track.instrument)"
       >
         <UiIcon
           :name="track.instrument"
@@ -370,9 +269,9 @@ onBeforeUnmount(() => {
       class="flex min-w-0 flex-1 gap-1"
       :class="{ 'opacity-50': track.muted }"
       @pointerdown="cellDown"
-      @pointermove="pressMove"
-      @pointerup="pressCancel"
-      @pointercancel="pressCancel"
+      @pointermove="cellPress.move"
+      @pointerup="cellPress.cancel"
+      @pointercancel="cellPress.cancel"
       @pointerover="cellOver"
       @pointerleave="rowLeave"
       @contextmenu="cellMenu"
@@ -392,7 +291,7 @@ onBeforeUnmount(() => {
         :aria-label="t('grid.step', { instrument: instrumentName, n: stepIndex + 1 })"
         aria-haspopup="menu"
       >
-        <template v-if="isSpoken(track.steps[stepIndex])">
+        <template v-if="isSpokenStep(track.steps[stepIndex])">
           {{ spokenLabel(stepIndex) }}
         </template>
         <!-- A cell is too narrow for the word, even on a desktop: the

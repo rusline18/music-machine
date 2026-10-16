@@ -15,6 +15,20 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
   every time, not only until the long press is learnt; the "keep
   holding" bubble still goes once it is. The fill starts a moment in,
   so a tap doesn't flash it, and works with a mouse too.
+- Salsa: the counting voice says "1 2 3, 5 6 7", keeping quiet on 4 and
+  8 like dancers do (with "and" too: "1 and 2 and 3 and, 5 and…").
+- Code: useBeatMachine split up — sound loading, saving the pattern
+  (links, browser, Telegram cloud) and "layer by layer" each have their own
+  composable; compression moved out of core/telegram.ts into
+  core/compress.ts. Nothing changes for the user.
+- Code: the long press of grid cells, instrument icons and practice cards
+  is one composable (useLongPress / useHoldToOpen) instead of three
+  copies; salsa's figures and instrument pages have their own files next
+  to the presets.
+- Tests: e2e tests that pick or click right after opening a page wait for
+  it to be hydrated first (e2e/hydrated.ts). On a busy machine a click
+  could land before the app took over and be lost, so the Telegram cloud
+  and offline tests failed now and then.
 
 ## 2026-10-15
 

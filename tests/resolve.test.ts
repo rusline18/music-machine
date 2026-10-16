@@ -131,6 +131,14 @@ describe('countingFigure', () => {
     expect(countingFigure('ands', 2)).toEqual(['count', 'and'])
     expect(countingFigure('ands', 4)).toEqual(['count', null, 'and', null])
   })
+
+  it('leaves unspoken counts of the block silent', () => {
+    const figure = countingFigure('ands', 2, [4, 8])
+    expect(figure).toHaveLength(16)
+    expect(figure.slice(4, 8)).toEqual(['count', 'and', null, null])
+    expect(figure.slice(12, 16)).toEqual(['count', 'and', null, null])
+    expect(countingFigure('off', 2, [4, 8])).toEqual(Array.from({ length: 16 }, () => null))
+  })
 })
 
 describe('bachata pitched tracks', () => {

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { gotoHydrated } from './hydrated'
 
 test.use({ serviceWorkers: 'allow' })
 
@@ -30,7 +31,7 @@ test('works offline once visited', async ({ page, context }) => {
   const failed: string[] = []
   page.on('requestfailed', (request) => failed.push(`${request.url()} ${request.failure()?.errorText}`))
   await context.setOffline(true)
-  await page.goto('/bachata')
+  await gotoHydrated(page, '/bachata')
   await expect(page.getByRole('heading', { name: 'Bachata' })).toBeVisible()
   await page.getByRole('button', { name: '▶ Play' }).click()
   await expect(page.getByRole('button', { name: '■ Stop' })).toBeVisible()

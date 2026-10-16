@@ -5,7 +5,7 @@ import type { ShareGenre } from './share'
 import { CUSTOM_PATTERN_ID, decodePattern, encodePattern } from './share'
 import type { SongGenre } from './song'
 import { buildSong, SONG_PATTERN_ID } from './song'
-import { deflateToBase64Url, inflateFromBase64Url } from './telegram'
+import { deflateToBase64Url, inflateFromBase64Url } from './compress'
 
 /**
  * Patterns packed small enough for a short link to the Telegram Mini App

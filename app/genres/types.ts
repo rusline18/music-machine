@@ -17,6 +17,11 @@ export interface Genre extends InstrumentSet, SongGenre {
    */
   teachingOrder: readonly string[]
   /**
+   * Counts of the 8-count block the voice leaves silent: salsa dancers
+   * count "1 2 3, 5 6 7", pausing on 4 and 8. Defaults to none.
+   */
+  unspokenCounts?: readonly number[]
+  /**
    * Presets offered in the pattern picker; the first one loads by default.
    * Each is also a section the user can build a song from (core/song.ts).
    */

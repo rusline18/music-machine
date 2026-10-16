@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { gotoHydrated } from './hydrated'
 
 /** Served by the site itself (public/telegram-web-app.js). */
 const SDK = '**/telegram-web-app.js'
@@ -136,7 +137,7 @@ test('links shared before the short format still open their pattern', async ({ p
 
 test('Share in Telegram sends a t.me link that opens the same pattern in the Mini App', async ({ page, browser }) => {
   await fakeTelegram(page)
-  await page.goto(`/salsa${LAUNCH}`)
+  await gotoHydrated(page, `/salsa${LAUNCH}`)
   await page.getByRole('combobox', { name: 'Pattern' }).selectOption('salsa-chachacha-2-3')
   await page.getByRole('button', { name: 'Clave step 1', exact: true }).click()
   await page.getByRole('button', { name: 'Share' }).click()
@@ -206,7 +207,7 @@ test('the language and a start link don\'t wait for Telegram\'s SDK, so a tap on
 
 test('in Telegram an edited pattern is kept in the user\'s cloud and opens on another device', async ({ page, browser }) => {
   await fakeTelegram(page)
-  await page.goto(`/salsa${LAUNCH}`)
+  await gotoHydrated(page, `/salsa${LAUNCH}`)
   await page.getByRole('combobox', { name: 'Pattern' }).selectOption('salsa-chachacha-2-3')
   await page.getByRole('button', { name: 'Clave step 1', exact: true }).click()
   const cloud = () => page.evaluate(() => (window as unknown as { fakeCloud: Record<string, string> }).fakeCloud)

@@ -11,68 +11,13 @@ const emit = defineEmits<{
   'open-instrument': [instrument: string, viaButton: boolean]
 }>()
 
-// A long press on a card opens the instrument's sheet, as on the grid's
-// icons; a tap still switches it. Same timing as the grid.
-const LONG_PRESS_MS = 450
-const PRESS_SLOP_PX = 10
-let pressTimer: ReturnType<typeof setTimeout> | undefined
-let pressStart: { x: number, y: number } | null = null
-/** Set when a press opened the sheet, so the click that ends it doesn't also switch. */
-let sheetOpened = false
-
-// As on the grid's icons: a held card fills until its sheet opens and,
-// until a long press has opened a sheet once, says what's coming
-// (useHoldHint, shared with the grid).
-const holdHint = useHoldHint()
-/** The card filling under a held press, and the one whose bubble is out. */
-const holding = ref<string | null>(null)
-const holdLabel = ref<string | null>(null)
-const HOLD_LABEL_DELAY_MS = 120
-let labelTimer: ReturnType<typeof setTimeout> | undefined
-
-function pressDown(event: PointerEvent, instrument: string) {
-  if (event.button !== 0) return
-  sheetOpened = false
-  pressStart = { x: event.clientX, y: event.clientY }
-  const hint = event.pointerType !== 'mouse' && !holdHint.learnt.value
-  // A moment in, so a tap never flashes the fill.
-  labelTimer = setTimeout(() => {
-    holding.value = instrument
-    holdLabel.value = hint ? instrument : null
-  }, HOLD_LABEL_DELAY_MS)
-  clearTimeout(pressTimer)
-  pressTimer = setTimeout(() => {
-    pressStart = null
-    sheetOpened = true
-    endHold()
-    holdHint.learn()
-    emit('open-instrument', instrument, false)
-  }, LONG_PRESS_MS)
-}
-function endHold() {
-  clearTimeout(labelTimer)
-  holding.value = null
-  holdLabel.value = null
-}
-function pressMove(event: PointerEvent) {
-  if (pressStart && Math.hypot(event.clientX - pressStart.x, event.clientY - pressStart.y) > PRESS_SLOP_PX) pressCancel()
-}
-function pressCancel() {
-  clearTimeout(pressTimer)
-  pressStart = null
-  endHold()
-}
-function click(track: Track) {
-  if (sheetOpened) sheetOpened = false
-  else emit('update:muted', track.instrument, !track.muted)
-}
-function contextMenu(instrument: string) {
-  pressCancel()
-  holdHint.learn()
-  if (!sheetOpened) emit('open-instrument', instrument, false)
-  sheetOpened = false
-}
-onBeforeUnmount(pressCancel)
+// A tap switches a card's instrument, a long press opens its sheet: as on
+// the grid's icons, with the same "keep holding" hint (useHoldToOpen).
+const press = useHoldToOpen<Track>({
+  tap: (track) => emit('update:muted', track.instrument, !track.muted),
+  open: (track) => emit('open-instrument', track.instrument, false),
+})
+const { holding, holdLabel } = press
 </script>
 
 <template>
@@ -90,13 +35,13 @@ onBeforeUnmount(pressCancel)
         class="relative isolate flex min-h-16 w-full select-none items-center gap-2.5 overflow-hidden rounded-2xl border px-2.5 py-2 text-left transition [-webkit-touch-callout:none] active:scale-[0.98]"
         :class="track.muted ? 'border-neutral-800 bg-neutral-950 text-neutral-500' : 'border-accent-500/40 bg-accent-500/10 text-neutral-100'"
         :aria-checked="!track.muted"
-        @pointerdown="pressDown($event, track.instrument)"
-        @pointermove="pressMove"
-        @pointerup="pressCancel"
-        @pointerleave="pressCancel"
-        @pointercancel="pressCancel"
-        @contextmenu.prevent="contextMenu(track.instrument)"
-        @click="click(track)"
+        @pointerdown="press.down($event, track)"
+        @pointermove="press.move"
+        @pointerup="press.cancel"
+        @pointerleave="press.cancel"
+        @pointercancel="press.cancel"
+        @contextmenu.prevent="press.contextMenu(track)"
+        @click="press.click(track)"
       >
         <span
           class="instrument-icon"
@@ -123,14 +68,14 @@ onBeforeUnmount(pressCancel)
         <!-- Fills from the bottom while held, behind the content. -->
         <span
           class="pointer-events-none absolute inset-0 -z-10 origin-bottom bg-neutral-100/20"
-          :class="holding === track.instrument ? 'scale-y-100 transition-transform duration-[330ms] ease-linear motion-reduce:transition-none' : 'scale-y-0'"
+          :class="holding === track ? 'scale-y-100 transition-transform duration-[330ms] ease-linear motion-reduce:transition-none' : 'scale-y-0'"
           aria-hidden="true"
         />
       </button>
       <!-- Above the card, from its outer edge, so it stays on screen in
            either column. -->
       <span
-        v-if="holdLabel === track.instrument"
+        v-if="holdLabel === track"
         role="status"
         class="pointer-events-none absolute bottom-full z-20 mb-2.5 whitespace-nowrap rounded-xl bg-neutral-100 px-2.5 py-1.5 text-xs font-semibold text-neutral-950 shadow-xl before:absolute before:-bottom-1 before:size-2.5 before:rotate-45 before:bg-neutral-100"
         :class="index % 2 === 0 ? 'left-1 before:left-5' : 'right-1 before:right-5'"
