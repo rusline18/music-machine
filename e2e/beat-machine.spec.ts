@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
+import { gotoHydrated } from './hydrated'
 
 /** Matches every step cell of the grid (the instrument is in the label). */
 const STEP = /^.+ step \d+$/
@@ -11,7 +12,7 @@ async function advanced(page: Page) {
 
 test.describe('salsa beat machine', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/salsa')
+    await gotoHydrated(page, '/salsa')
   })
 
   test('a click turns a step on and off', async ({ page }) => {

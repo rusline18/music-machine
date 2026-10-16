@@ -14,6 +14,10 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
   is one composable (useLongPress / useHoldToOpen) instead of three
   copies; salsa's figures and instrument pages have their own files next
   to the presets.
+- Tests: e2e tests that pick or click right after opening a page wait for
+  it to be hydrated first (e2e/hydrated.ts). On a busy machine a click
+  could land before the app took over and be lost, so the Telegram cloud
+  and offline tests failed now and then.
 
 ## 2026-10-15
 
