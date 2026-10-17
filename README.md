@@ -327,3 +327,8 @@ script.
   [CHANGELOG.md](CHANGELOG.md).
 - Patterns are 8, 16, 24 or 32 dance counts long, shown as 8-count blocks.
   Each count is two cells ("1 &"); BPM is counts per minute.
+
+## License
+
+All Rights Reserved — see [LICENSE](LICENSE). Third-party samples keep their
+own licenses, listed in [audio-sources/README.md](audio-sources/README.md).
