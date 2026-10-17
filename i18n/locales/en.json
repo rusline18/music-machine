@@ -62,6 +62,8 @@
     "reset": "Reset",
     "slower": "Slower",
     "faster": "Faster",
+    "tapTempo": "{bpm} BPM. Tap in time to set the tempo",
+    "tapping": "Tap…",
     "silentMode": "No sound? Turn off silent mode: the switch on the side of the iPhone.",
     "dismiss": "Dismiss",
     "close": "Close",
@@ -224,7 +226,9 @@
       "share": "A link to this exact pattern — tempo, length, mutes and all. On a phone it opens the share menu, on a computer it copies the link. Send it to a partner or your students.",
       "reset": "Throws away your changes and goes back to the preset.",
       "stepper": "Tap for 1 BPM, hold to change by 5.",
-      "animation": "Icons and counts move in time with the music. Switch it off if it distracts you."
+      "tempoDial": "Drag up or down to change the tempo. Or tap it in time with the music: from the third tap the tempo follows yours.",
+      "animation": "Icons and counts move in time with the music. Switch it off if it distracts you.",
+      "view": "Or swipe sideways over the cards or the grid."
     },
     "hotkeys": "Keys: Space — play/stop · ← → — tempo (Shift: by 5) · 1…0, -, = and Q…] — switch an instrument on and off (Shift: hear it alone; its key is on its icon)"
   },

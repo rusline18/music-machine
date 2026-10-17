@@ -4,6 +4,19 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-17
 
+- Gestures on a phone (in the browser and the Telegram Mini App):
+  - a sheet (instrument, sound menu, loop and chords) closes when pulled
+    down by its top: a handle shows where; a short pull springs back;
+  - the tempo number is a dial: dragged up or down it changes the tempo
+    by 1 BPM every few pixels, with a tick in Telegram; it works with a
+    mouse too;
+  - tap tempo: tapping the number in time with a song sets the tempo from
+    the third tap on ("Tap…" under it while it counts); Enter and Space
+    count as taps;
+  - a sideways swipe over the cards or the grid switches between Practice
+    and Edit grid. On the grid a swipe still turns the bar; a swipe back
+    from the first bar goes to Practice. A swipe that starts on a slider
+    no longer turns the bar.
 - Every instrument has a key now, not just the first nine: the number row
   (1…0, -, =) and then the row under it (Q…]), 24 in all, so salsa's bass,
   piano, tres and brass can be switched too. By the physical key, so the

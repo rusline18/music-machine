@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { dragsItself, swipeDirection } from '~/core/gestures'
 import { CHORD_NAMES } from '~/core/harmony'
 import { STEP_GLYPHS } from '~/icons'
 import type { Pattern } from '~/core/pattern'
@@ -67,18 +68,21 @@ function turnTo(section: number) {
 }
 
 // A sideways swipe on a phone turns the page. touch-action: pan-y on the
-// section leaves vertical scrolling to the browser.
-const SWIPE_PX = 50
+// section leaves vertical scrolling to the browser. A swipe back from the
+// first bar isn't the grid's: it goes on up to the page, which turns to
+// the practice view (BeatMachine).
 let swipeStart: { x: number, y: number } | null = null
 function swipeDown(event: PointerEvent) {
-  swipeStart = narrow.value ? { x: event.clientX, y: event.clientY } : null
+  swipeStart = narrow.value && !dragsItself(event.target) ? { x: event.clientX, y: event.clientY } : null
 }
 function swipeUp(event: PointerEvent) {
   if (!swipeStart) return
-  const dx = event.clientX - swipeStart.x
-  const dy = event.clientY - swipeStart.y
+  const direction = swipeDirection(event.clientX - swipeStart.x, event.clientY - swipeStart.y)
   swipeStart = null
-  if (Math.abs(dx) > SWIPE_PX && Math.abs(dx) > 1.5 * Math.abs(dy)) turnTo(shownSections.value[0]! + (dx < 0 ? 1 : -1))
+  const target = shownSections.value[0]! - direction
+  if (!direction || target < 0 || target >= sectionCount.value) return
+  event.stopPropagation()
+  turnTo(target)
 }
 
 /** The cell whose sound menu is open, and where on screen (a wider screen opens it there; a phone, as a sheet). */
