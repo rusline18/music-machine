@@ -53,6 +53,16 @@ export function telegramWebApp(): TelegramWebApp | null {
   return webApp && webApp.platform !== 'unknown' ? webApp : null
 }
 
+/**
+ * A tick on the phone inside Telegram, as when a list settles on a value:
+ * for gestures, which Telegram's tap on every control (plugins/telegram.client.ts)
+ * doesn't cover. Nothing elsewhere.
+ */
+export function hapticTick() {
+  const webApp = telegramWebApp()
+  if (webApp?.isVersionAtLeast('6.1')) webApp.HapticFeedback.selectionChanged()
+}
+
 /** Whether the page was opened as a Mini App (its SDK may still be loading). */
 export function inTelegram(): boolean {
   return import.meta.client && Boolean(window.telegramReady)
