@@ -25,6 +25,12 @@ body {
   font-family: theme('fontFamily.sans');
 }
 
+/* In the Telegram Mini App: no double-tap zoom (the plugin turns pinch
+   zoom off), and taps land without the 300 ms wait for a second one. */
+html[data-telegram] {
+  touch-action: manipulation;
+}
+
 /* The playhead: classes toggled by useBeatEffects, not by Vue. Gold in
    every genre: it marks the count, not the instrument. */
 @layer components {

@@ -12,6 +12,10 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
   on a small badge on its icon in the grid (only with a mouse). Shift and
   the key plays the instrument alone; again, the whole band. Inside the
   cell's sound menu the keys go to the menu instead.
+- In the Telegram Mini App the screen no longer zooms: pinch and
+  double-tap zoom are off there, so the controls stay in view (and a
+  focused field doesn't zoom in on iOS). The site in a browser can still
+  be zoomed.
 
 ## 2026-10-16
 
