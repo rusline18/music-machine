@@ -126,8 +126,8 @@ Both modes have **Build it layer by layer** (starts from the genre's
 foundation instrument and adds one at a time, in `teachingOrder` from the
 genre definition) and a large 1–8 count display with 1 and 5 marked. The
 count and Play/tempo stay in view: stuck to the top of the screen, or to the
-bottom on a phone. Keys: Space plays/stops, ←/→ change the tempo, 1–9 switch
-instruments. The screen stays on while playing (Wake Lock), and iOS plays
+bottom on a phone. Keys: Space plays/stops, ←/→ change the tempo, 1…0, -, =
+and Q…] switch instruments (with Shift, only that one stays on). The screen stays on while playing (Wake Lock), and iOS plays
 with the silent switch on.
 
 A phone opens in a **practice** view: one big switch per instrument. **Edit

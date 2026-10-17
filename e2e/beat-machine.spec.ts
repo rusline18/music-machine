@@ -180,14 +180,29 @@ test.describe('salsa beat machine', () => {
     await page.keyboard.press('q')
     await expect(pastDigits).toHaveAttribute('aria-pressed', was === 'true' ? 'false' : 'true')
 
-    // With Shift, one instrument alone: it starts the music, and again brings the band back (and stops).
+    // With Shift, only that instrument stays on, the others are switched off; again, they're back as they were.
+    const second = page.locator('button[aria-keyshortcuts="2"]')
+    const third = page.locator('button[aria-keyshortcuts="3"]')
+    const thirdWas = await third.getAttribute('aria-pressed')
     await page.keyboard.press('Shift+2')
-    await expect(page.getByRole('button', { name: '■ Stop' })).toBeVisible()
+    await expect(second).toHaveAttribute('aria-pressed', 'false')
+    await expect(third).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.getByRole('button', { name: 'Mute Clave' })).toHaveAttribute('aria-pressed', 'true')
     await page.keyboard.press('Shift+2')
-    await expect(page.getByRole('button', { name: '▶ Play' })).toBeVisible()
+    await expect(third).toHaveAttribute('aria-pressed', thirdWas!)
+    await expect(page.getByRole('button', { name: 'Mute Clave' })).toHaveAttribute('aria-pressed', 'true')
 
     await page.keyboard.press('Space')
     await expect(page.getByRole('button', { name: '■ Stop' })).toBeVisible()
+    await page.keyboard.press('Space')
+    await expect(page.getByRole('button', { name: '▶ Play' })).toBeVisible()
+
+    // An instrument's icon clicked with the mouse keeps the focus, but Space still plays rather than switching it.
+    await third.click()
+    const clicked = (await third.getAttribute('aria-pressed'))!
+    await page.keyboard.press('Space')
+    await expect(page.getByRole('button', { name: '■ Stop' })).toBeVisible()
+    await expect(third).toHaveAttribute('aria-pressed', clicked)
     await page.keyboard.press('Space')
     await expect(page.getByRole('button', { name: '▶ Play' })).toBeVisible()
   })

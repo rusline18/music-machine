@@ -102,6 +102,8 @@ function viewSwipeUp(event: PointerEvent) {
 /** The phone's voice button: off → counts → counts with "and" → off. */
 const nextCounting = () => setCounting(COUNTING_MODES[(COUNTING_MODES.indexOf(countingMode.value ?? 'off') + 1) % COUNTING_MODES.length]!)
 
+/** The switches before Shift+key left one instrument on, to bring back with Shift+key again. */
+let beforeOnly: Map<string, boolean> | null = null
 const togglePlay = () => (isPlaying.value || isLoading.value ? stop() : play())
 useWakeLock(() => isPlaying.value)
 useClosingConfirmation(() => isPlaying.value)
@@ -112,9 +114,20 @@ useHotkeys({
     const track = keyedTrack(index)
     if (track) setMuted(track.instrument, !track.muted)
   },
-  toggleSolo: (index) => {
+  toggleOnly: (index) => {
     const track = keyedTrack(index)
-    if (track) setSolo(solo.value === track.instrument ? null : track.instrument)
+    if (!track) return
+    const band = keyed.flatMap((instrument) => pattern.value.tracks.filter((other) => other.instrument === instrument))
+    const onlyThis = (other: typeof track) => other.muted === (other !== track)
+    if (band.every(onlyThis)) {
+      // Again: the switches as they were, or all on if they were just this one already.
+      const back = beforeOnly && !band.every((other) => beforeOnly!.get(other.instrument) === (other !== track)) ? beforeOnly : null
+      for (const other of band) setMuted(other.instrument, back?.get(other.instrument) ?? false)
+      beforeOnly = null
+    } else {
+      beforeOnly = new Map(band.map((other) => [other.instrument, other.muted]))
+      for (const other of band) setMuted(other.instrument, other !== track)
+    }
   },
 })
 

@@ -75,7 +75,7 @@ const stepNamesFor = (instrument: string) => stepNames(props.genre, instrument)
 
 const togglePlay = () => (isPlaying.value || isLoading.value ? stop() : play())
 useWakeLock(() => isPlaying.value)
-useHotkeys({ togglePlay, nudgeTempo, toggleInstrument: () => {}, toggleSolo: () => {} })
+useHotkeys({ togglePlay, nudgeTempo, toggleInstrument: () => {}, toggleOnly: () => {} })
 
 const root = useTemplateRef('root')
 const motion = useMotion()
