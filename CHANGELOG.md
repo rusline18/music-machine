@@ -23,8 +23,14 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
   same keys work in a Russian layout. Each instrument's key is fixed by the
   genre's list, so it doesn't move from preset to preset, and it's shown
   on a small badge on its icon in the grid (only with a mouse). Shift and
-  the key plays the instrument alone; again, the whole band. Inside the
-  cell's sound menu the keys go to the menu instead.
+  the key leaves only that instrument on: the others are switched off, as
+  if by their own keys, so the grid shows it; Shift and the key again
+  brings them back as they were. Inside the cell's sound menu the keys go
+  to the menu instead.
+- Space plays and stops even after an instrument's icon (or any other
+  button) was clicked with the mouse: before, it pressed that button
+  again, switching the instrument off. A button reached with Tab still
+  takes Space itself.
 - In the Telegram Mini App the screen no longer zooms: pinch and
   double-tap zoom are off there, so the controls stay in view (and a
   focused field doesn't zoom in on iOS). The site in a browser can still
