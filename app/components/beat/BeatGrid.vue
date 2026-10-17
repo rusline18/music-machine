@@ -19,6 +19,8 @@ const props = defineProps<{
   solo?: string | null
   /** The address of an instrument's own page, if it has one; its sheet links there. */
   instrumentLink?: (instrument: string) => string | undefined
+  /** The key that switches an instrument (useHotkeys), for the badge on its icon. */
+  hotkey?: (instrument: string) => string | undefined
 }>()
 
 const emit = defineEmits<{
@@ -396,6 +398,7 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
         :show-controls="narrow || section === 0"
         :volume-mode="volumeMode"
         :active="brush?.instrument === track.instrument"
+        :hotkey="hotkey?.(track.instrument)"
         @toggle-step="(stepIndex: number) => tap(track.instrument, stepIndex)"
         @step-menu="(stepIndex: number, at: { x: number, y: number }) => openMenu(track.instrument, stepIndex, at)"
         @open-instrument="sheet = track.instrument"

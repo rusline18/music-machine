@@ -17,6 +17,8 @@ const props = defineProps<{
   volumeMode?: boolean
   /** On a phone: the row the sound palette is for (BeatGrid). */
   active?: boolean
+  /** The key that switches the instrument (useHotkeys), shown on its icon where there's a keyboard. */
+  hotkey?: string
 }>()
 
 const emit = defineEmits<{
@@ -172,6 +174,7 @@ onBeforeUnmount(hintOut)
         ]"
         :aria-pressed="track.muted"
         :aria-label="t('grid.mute', { instrument: instrumentName })"
+        :aria-keyshortcuts="hotkey"
         :title="t('grid.muteHint')"
         :data-instrument="track.instrument"
         @pointerdown="iconPress.down($event, track.instrument)"
@@ -214,6 +217,12 @@ onBeforeUnmount(hintOut)
           aria-hidden="true"
         />
       </button>
+      <!-- The icon's key, on its corner: only with a mouse (and so a keyboard, most likely). -->
+      <kbd
+        v-if="showControls && hotkey"
+        class="pointer-events-none absolute left-6 top-1/2 z-10 mt-1.5 hidden h-4 min-w-4 items-center justify-center rounded border border-neutral-700 bg-neutral-900 px-0.5 font-mono text-[10px] leading-none text-neutral-400 [@media(hover:hover)_and_(pointer:fine)]:sm:flex"
+        aria-hidden="true"
+      >{{ hotkey }}</kbd>
       <span
         v-if="holdLabel"
         role="status"

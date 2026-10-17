@@ -2,6 +2,17 @@
 
 What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
+## 2026-10-17
+
+- Every instrument has a key now, not just the first nine: the number row
+  (1…0, -, =) and then the row under it (Q…]), 24 in all, so salsa's bass,
+  piano, tres and brass can be switched too. By the physical key, so the
+  same keys work in a Russian layout. Each instrument's key is fixed by the
+  genre's list, so it doesn't move from preset to preset, and it's shown
+  on a small badge on its icon in the grid (only with a mouse). Shift and
+  the key plays the instrument alone; again, the whole band. Inside the
+  cell's sound menu the keys go to the menu instead.
+
 ## 2026-10-16
 
 - Desktop: a right-click on a cell opens a small menu of its sounds right

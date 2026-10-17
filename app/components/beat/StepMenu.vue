@@ -82,7 +82,8 @@ function onKey(event: KeyboardEvent) {
   else if (event.key === 'Home') items()[0]?.focus()
   else if (event.key === 'End') items().at(-1)?.focus()
   else if (event.key === 'Escape' || event.key === 'Tab') emit('close')
-  else return
+  // Any other key stops here too: the instruments' keys mustn't switch one behind the menu.
+  else if (event.key.length !== 1) return
   event.preventDefault()
   event.stopPropagation()
 }
