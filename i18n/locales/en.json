@@ -226,7 +226,7 @@
       "stepper": "Tap for 1 BPM, hold to change by 5.",
       "animation": "Icons and counts move in time with the music. Switch it off if it distracts you."
     },
-    "hotkeys": "Keys: Space — play/stop · ← → — tempo (Shift: by 5) · 1–9 — switch instruments on and off"
+    "hotkeys": "Keys: Space — play/stop · ← → — tempo (Shift: by 5) · 1…0, -, = and Q…] — switch an instrument on and off (Shift: hear it alone; its key is on its icon)"
   },
   "layers": {
     "start": "Build it layer by layer",
