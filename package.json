@@ -2,6 +2,7 @@
   "name": "music-machine",
   "type": "module",
   "private": true,
+  "license": "UNLICENSED",
   "scripts": {
     "dev": "nuxt dev",
     "build": "nuxt build",
