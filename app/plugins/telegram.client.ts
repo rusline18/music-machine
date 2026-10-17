@@ -2,6 +2,7 @@ import { unpackCode } from '~/core/compress'
 import { parseLaunchParams, parseStartParam } from '~/core/telegram'
 import { findGenre } from '~/genres'
 import { SHARE_CODE_PARAM, SHARE_PARAM } from '~/composables/usePatternStorage'
+import { MINI_APP_VIEWPORT } from '#shared/viewport'
 
 /** The page background (neutral-950), so Telegram's header and edges blend in. */
 const BACKGROUND = '#110E0D'
@@ -30,15 +31,19 @@ const LANGUAGE_APPLIED = 'telegram-language-applied'
  * Inside Telegram (opened as a Mini App): full height, Telegram's colors
  * matched to the site, and its own Back button instead of the browser's.
  * Vertical swipes are off, or dragging across the beat grid would pull the
- * app closed. Controls answer with a light vibration. The first time, the
- * site takes the language Telegram is set to, if it has it (the switcher
- * still changes it after that). A link with a start
- * parameter (core/telegram.ts) opens its genre, with the shared pattern if
+ * app closed; so is zoom (shared/viewport.ts, and main.css by data-telegram).
+ * Controls answer with a light vibration. The first time, the site takes
+ * the language Telegram is set to, if it has it (the switcher still changes
+ * it after that). A link with a start parameter (core/telegram.ts) opens its genre, with the shared pattern if
  * it carries one. The SDK is loaded only there (TELEGRAM_LOADER in
  * nuxt.config.ts); elsewhere this does nothing.
  */
 export default defineNuxtPlugin(() => {
   if (!inTelegram()) return
+  useHead({
+    meta: [{ name: 'viewport', content: MINI_APP_VIEWPORT }],
+    htmlAttrs: { 'data-telegram': '' },
+  })
   const router = useRouter()
   const localePath = useLocalePath()
   const switchLocalePath = useSwitchLocalePath()

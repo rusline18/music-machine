@@ -2,6 +2,13 @@
 
 What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
+## 2026-10-17
+
+- In the Telegram Mini App the screen no longer zooms: pinch and
+  double-tap zoom are off there, so the controls stay in view (and a
+  focused field doesn't zoom in on iOS). The site in a browser can still
+  be zoomed.
+
 ## 2026-10-16
 
 - Smoother playback on slow phones: the instruments' icons only move
