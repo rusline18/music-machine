@@ -28,7 +28,7 @@ test.describe('salsa beat machine', () => {
     const step = page.getByRole('button', { name: 'Bongos step 8', exact: true })
     await expect(step).not.toHaveAttribute('data-sound')
     await step.click({ button: 'right' })
-    const menu = page.getByRole('dialog', { name: 'Bongos · count 4 &' })
+    const menu = page.getByRole('menu', { name: 'Bongos · count 4 &' })
     await menu.getByRole('menuitemradio', { name: 'slap' }).click()
     await expect(menu).toBeHidden()
     await expect(step).toHaveAttribute('data-sound', 'slap')
@@ -36,6 +36,29 @@ test.describe('salsa beat machine', () => {
     await step.click({ button: 'right' })
     await expect(menu.getByRole('menuitemradio', { name: 'slap' })).toHaveAttribute('aria-checked', 'true')
     await menu.getByRole('menuitemradio', { name: 'Silence' }).click()
+    await expect(step).not.toHaveAttribute('data-sound')
+  })
+
+  test('the sound menu works from the keyboard', async ({ page }) => {
+    const step = page.getByRole('button', { name: 'Bongos step 8', exact: true })
+    const menu = page.getByRole('menu', { name: 'Bongos · count 4 &' })
+    // A number picks the sound in that place in the menu: low, high, slap.
+    const name = 'high'
+    await step.click({ button: 'right' })
+    await page.keyboard.press('2')
+    await expect(menu).toBeHidden()
+    await expect(step).toHaveAttribute('data-sound', name)
+
+    // The arrows move from the sound that's in, Enter picks; Esc closes; 0 is silence.
+    await step.click({ button: 'right' })
+    await expect(menu.getByRole('menuitemradio', { name, exact: true })).toBeFocused()
+    await page.keyboard.press('ArrowUp')
+    await expect(menu.getByRole('menuitemradio').first()).toBeFocused()
+    await page.keyboard.press('Escape')
+    await expect(menu).toBeHidden()
+    await expect(step).toHaveAttribute('data-sound', name)
+    await step.click({ button: 'right' })
+    await page.keyboard.press('0')
     await expect(step).not.toHaveAttribute('data-sound')
   })
 
@@ -112,7 +135,34 @@ test.describe('salsa beat machine', () => {
     expect((start - held) % 5).toBe(0)
   })
 
-  test('keyboard: Space plays and stops, arrows change the tempo, digits switch instruments', async ({ page }) => {
+  test('the tempo number: dragged it turns the tempo, tapped in time it takes the taps\' tempo', async ({ page }) => {
+    const bpm = page.getByRole('group', { name: 'BPM' }).locator('output')
+    const read = async () => Number((await bpm.textContent())!.match(/\d+/)![0])
+    const start = await read()
+    const dial = page.getByRole('button', { name: /Tap in time/ })
+    const box = (await dial.boundingBox())!
+    const x = box.x + box.width / 2
+    const y = box.y + box.height / 2
+    // 1 BPM every 8 px: up 40 is 5 faster, and the release isn't a tap.
+    await page.mouse.move(x, y)
+    await page.mouse.down()
+    await page.mouse.move(x, y - 20, { steps: 4 })
+    await page.mouse.move(x, y - 40, { steps: 4 })
+    await page.mouse.up()
+    await expect(bpm).toContainText(String(start + 5))
+    await expect(bpm).toContainText('BPM')
+
+    for (let tap = 0; tap < 4; tap++) {
+      if (tap) await page.waitForTimeout(500)
+      await dial.click()
+    }
+    await expect(bpm).toContainText('Tap…')
+    // A tap every 500 ms is 120 BPM, give or take the test's own timing.
+    await expect.poll(read).toBeGreaterThanOrEqual(110)
+    expect(await read()).toBeLessThanOrEqual(130)
+  })
+
+  test('keyboard: Space plays and stops, arrows change the tempo, each instrument has a key', async ({ page }) => {
     const bpm = page.getByRole('group', { name: 'BPM' }).locator('output')
     const start = Number((await bpm.textContent())!.match(/\d+/)![0])
     await page.locator('h1').click()
@@ -123,6 +173,18 @@ test.describe('salsa beat machine', () => {
 
     await page.keyboard.press('1')
     await expect(page.getByRole('button', { name: 'Mute Clave' })).toHaveAttribute('aria-pressed', 'true')
+
+    // Past the number row, the row under it: by the physical key, shown on the icon.
+    const pastDigits = page.locator('button[aria-keyshortcuts="Q"]')
+    const was = await pastDigits.getAttribute('aria-pressed')
+    await page.keyboard.press('q')
+    await expect(pastDigits).toHaveAttribute('aria-pressed', was === 'true' ? 'false' : 'true')
+
+    // With Shift, one instrument alone: it starts the music, and again brings the band back (and stops).
+    await page.keyboard.press('Shift+2')
+    await expect(page.getByRole('button', { name: '■ Stop' })).toBeVisible()
+    await page.keyboard.press('Shift+2')
+    await expect(page.getByRole('button', { name: '▶ Play' })).toBeVisible()
 
     await page.keyboard.press('Space')
     await expect(page.getByRole('button', { name: '■ Stop' })).toBeVisible()
@@ -314,6 +376,48 @@ test.describe('on a phone', () => {
     await playing.tap()
     await expect(playing).toHaveAttribute('aria-checked', 'false')
     await expect(sheet.getByRole('slider', { name: 'Volume' })).toBeVisible()
+  })
+
+  test('a sideways swipe turns between practice and the grid', async ({ page }) => {
+    await gotoHydrated(page, '/salsa')
+    const swipe = async (from: number, to: number) => {
+      const area = page.locator('.max-sm\\:touch-pan-y')
+      const box = (await area.boundingBox())!
+      const y = box.y + 30
+      const at = (x: number) => ({ clientX: x, clientY: y, button: 0, pointerType: 'touch', isPrimary: true })
+      const target = page.getByRole(from > to ? 'switch' : 'button', { name: from > to ? 'Clave' : 'Mute Clave' }).first()
+      await target.dispatchEvent('pointerdown', at(box.x + from * box.width))
+      await target.dispatchEvent('pointerup', at(box.x + to * box.width))
+    }
+    const cell = page.getByRole('button', { name: 'Clave step 1', exact: true })
+    await swipe(0.8, 0.2)
+    await expect(cell).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Edit grid' })).toHaveAttribute('aria-pressed', 'true')
+    // On the grid's first bar a swipe back is the page's: back to practice.
+    await swipe(0.2, 0.8)
+    await expect(cell).toBeHidden()
+    await expect(page.getByRole('switch', { name: 'Clave' })).toBeVisible()
+  })
+
+  test('a sheet pulled down by its top closes; a short pull springs back', async ({ page }) => {
+    await gotoHydrated(page, '/salsa')
+    await page.getByRole('switch', { name: 'Clave' }).click({ button: 'right' })
+    const sheet = page.getByRole('dialog', { name: 'Clave' })
+    await expect(sheet).toBeVisible()
+    const title = sheet.getByRole('heading', { name: 'Clave' })
+    const box = (await title.boundingBox())!
+    const at = (dy: number) => ({ clientX: box.x + 10, clientY: box.y + dy, button: 0, pointerType: 'touch', isPrimary: true, pointerId: 1 })
+    const pull = async (dy: number) => {
+      await title.dispatchEvent('pointerdown', at(0))
+      await title.dispatchEvent('pointermove', at(dy))
+      await page.waitForTimeout(300)
+      await title.dispatchEvent('pointerup', at(dy))
+    }
+    await pull(30)
+    await page.waitForTimeout(300)
+    await expect(sheet).toBeVisible()
+    await pull(150)
+    await expect(sheet).toBeHidden()
   })
 
   test('volume mode: the cells give way to sliders, in simple mode too', async ({ page }) => {

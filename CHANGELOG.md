@@ -4,6 +4,27 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-17
 
+- Gestures on a phone (in the browser and the Telegram Mini App):
+  - a sheet (instrument, sound menu, loop and chords) closes when pulled
+    down by its top: a handle shows where; a short pull springs back;
+  - the tempo number is a dial: dragged up or down it changes the tempo
+    by 1 BPM every few pixels, with a tick in Telegram; it works with a
+    mouse too;
+  - tap tempo: tapping the number in time with a song sets the tempo from
+    the third tap on ("Tap…" under it while it counts); Enter and Space
+    count as taps;
+  - a sideways swipe over the cards or the grid switches between Practice
+    and Edit grid. On the grid a swipe still turns the bar; a swipe back
+    from the first bar goes to Practice. A swipe that starts on a slider
+    no longer turns the bar.
+- Every instrument has a key now, not just the first nine: the number row
+  (1…0, -, =) and then the row under it (Q…]), 24 in all, so salsa's bass,
+  piano, tres and brass can be switched too. By the physical key, so the
+  same keys work in a Russian layout. Each instrument's key is fixed by the
+  genre's list, so it doesn't move from preset to preset, and it's shown
+  on a small badge on its icon in the grid (only with a mouse). Shift and
+  the key plays the instrument alone; again, the whole band. Inside the
+  cell's sound menu the keys go to the menu instead.
 - In the Telegram Mini App the screen no longer zooms: pinch and
   double-tap zoom are off there, so the controls stay in view (and a
   focused field doesn't zoom in on iOS). The site in a browser can still
@@ -11,6 +32,11 @@ What's done. Plans: [docs/roadmap.md](docs/roadmap.md).
 
 ## 2026-10-16
 
+- Desktop: a right-click on a cell opens a small menu of its sounds right
+  where the click landed, like a desktop context menu, instead of a modal
+  at the top of the page over a dimmed grid. Each sound has its mark from
+  the key over the grid. Keys: 1–9 pick a sound, 0 (or Delete) silence,
+  ↑/↓ and Enter, Esc closes. A phone keeps the sheet from the bottom.
 - Smoother playback on slow phones: the instruments' icons only move
   where they can be seen. Each instrument has an icon in the practice
   cards and one on the grid, and a phone shows one view at a time, so

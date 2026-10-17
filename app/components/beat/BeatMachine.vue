@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { prefetchSamples } from '~/core/audio/prefetch'
+import { dragsItself, swipeDirection } from '~/core/gestures'
 import { COUNTS_PER_BAR } from '~/core/pattern'
 import { COUNTING_MODES, sampleUrls, stepNames } from '~/core/resolve'
 import type { Genre } from '~/genres'
@@ -68,11 +69,35 @@ const presetIds = computed(() => {
 })
 /** Simple mode leaves these off the grid: the voice has its own switch above it. */
 const simpleHides = props.genre.instruments.filter((instrument) => props.genre.spoken[instrument])
-/** The band, without the counting voice: the practice switches and the 1–9 keys. */
+/** The band, without the counting voice: the practice switches. */
 const bandTracks = computed(() => pattern.value.tracks.filter((track) => !simpleHides.includes(track.instrument)))
+/** Each instrument's key (useHotkeys), by the genre's own list, so it stays the same in every preset. */
+const keyed = props.genre.instruments.filter((instrument) => !simpleHides.includes(instrument))
+const hotkeyOf = (instrument: string) => INSTRUMENT_KEYS[keyed.indexOf(instrument)]?.label
+const keyedTrack = (index: number) => pattern.value.tracks.find((track) => track.instrument === keyed[index])
 
 const { view: shownView, setView } = useBeatView()
 const viewOptions = computed(() => (['practice', 'editor'] as const).map((value) => ({ value, label: t(`view.${value}`) })))
+
+// On a phone a sideways swipe over the cards or the grid turns between the
+// views, in the switch's order: left to the grid, right back to practice.
+// The grid turns its own bars first (BeatGrid), so on the grid it's a swipe
+// back from the first bar. touch-action: pan-y (with pinch zoom) keeps a
+// sideways move from being the browser's.
+const narrow = useNarrowScreen()
+let viewSwipe: { x: number, y: number } | null = null
+function viewSwipeDown(event: PointerEvent) {
+  viewSwipe = narrow.value && event.isPrimary && !dragsItself(event.target) ? { x: event.clientX, y: event.clientY } : null
+}
+function viewSwipeUp(event: PointerEvent) {
+  if (!viewSwipe) return
+  const direction = swipeDirection(event.clientX - viewSwipe.x, event.clientY - viewSwipe.y)
+  viewSwipe = null
+  const next = direction < 0 ? 'editor' : direction > 0 ? 'practice' : null
+  if (!next || next === shownView.value) return
+  setView(next)
+  hapticTick()
+}
 
 /** The phone's voice button: off → counts → counts with "and" → off. */
 const nextCounting = () => setCounting(COUNTING_MODES[(COUNTING_MODES.indexOf(countingMode.value ?? 'off') + 1) % COUNTING_MODES.length]!)
@@ -84,8 +109,12 @@ useHotkeys({
   togglePlay,
   nudgeTempo,
   toggleInstrument: (index) => {
-    const track = bandTracks.value[index]
+    const track = keyedTrack(index)
     if (track) setMuted(track.instrument, !track.muted)
+  },
+  toggleSolo: (index) => {
+    const track = keyedTrack(index)
+    if (track) setSolo(solo.value === track.instrument ? null : track.instrument)
   },
 })
 
@@ -179,6 +208,7 @@ const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(active
     <UiSegmentedControl
       class="mb-6 sm:hidden"
       :label="$t('view.label')"
+      :hint="$t('help.controls.view')"
       :options="viewOptions"
       :model-value="shownView"
       @update:model-value="(next) => next && setView(next)"
@@ -242,7 +272,12 @@ const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(active
     <!-- The grid, with the song builder and the layer guide beside it on a
          wide screen and after it on a phone (what's practised comes first). -->
     <div class="flex flex-col gap-6 max-sm:mb-6 lg:flex-row lg:items-start">
-      <div class="flex min-w-0 flex-1 flex-col gap-6">
+      <div
+        class="flex min-w-0 flex-1 flex-col gap-6 max-sm:touch-pan-y max-sm:touch-pinch-zoom"
+        @pointerdown="viewSwipeDown"
+        @pointerup="viewSwipeUp"
+        @pointercancel="viewSwipe = null"
+      >
         <!-- Practice view on a phone. Shown and hidden with CSS, so the server
              renders the right one and nothing jumps after loading. -->
         <BeatInstrumentCards
@@ -282,6 +317,7 @@ const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(active
             :simple-hides="simpleHides"
             :solo="solo"
             :instrument-link="instrumentLink"
+            :hotkey="hotkeyOf"
             @solo="setSolo"
             @toggle-step="switchStep"
             @set-step="setStep"

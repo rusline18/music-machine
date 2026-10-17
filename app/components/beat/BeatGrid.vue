@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { dragsItself, swipeDirection } from '~/core/gestures'
 import { CHORD_NAMES } from '~/core/harmony'
 import { STEP_GLYPHS } from '~/icons'
 import type { Pattern } from '~/core/pattern'
@@ -19,6 +20,8 @@ const props = defineProps<{
   solo?: string | null
   /** The address of an instrument's own page, if it has one; its sheet links there. */
   instrumentLink?: (instrument: string) => string | undefined
+  /** The key that switches an instrument (useHotkeys), for the badge on its icon. */
+  hotkey?: (instrument: string) => string | undefined
 }>()
 
 const emit = defineEmits<{
@@ -65,29 +68,35 @@ function turnTo(section: number) {
 }
 
 // A sideways swipe on a phone turns the page. touch-action: pan-y on the
-// section leaves vertical scrolling to the browser.
-const SWIPE_PX = 50
+// section leaves vertical scrolling to the browser. A swipe back from the
+// first bar isn't the grid's: it goes on up to the page, which turns to
+// the practice view (BeatMachine).
 let swipeStart: { x: number, y: number } | null = null
 function swipeDown(event: PointerEvent) {
-  swipeStart = narrow.value ? { x: event.clientX, y: event.clientY } : null
+  swipeStart = narrow.value && !dragsItself(event.target) ? { x: event.clientX, y: event.clientY } : null
 }
 function swipeUp(event: PointerEvent) {
   if (!swipeStart) return
-  const dx = event.clientX - swipeStart.x
-  const dy = event.clientY - swipeStart.y
+  const direction = swipeDirection(event.clientX - swipeStart.x, event.clientY - swipeStart.y)
   swipeStart = null
-  if (Math.abs(dx) > SWIPE_PX && Math.abs(dx) > 1.5 * Math.abs(dy)) turnTo(shownSections.value[0]! + (dx < 0 ? 1 : -1))
+  const target = shownSections.value[0]! - direction
+  if (!direction || target < 0 || target >= sectionCount.value) return
+  event.stopPropagation()
+  turnTo(target)
 }
 
-/** The cell whose sound menu is open. */
-const menu = ref<{ instrument: string, stepIndex: number } | null>(null)
+/** The cell whose sound menu is open, and where on screen (a wider screen opens it there; a phone, as a sheet). */
+const menu = ref<{ instrument: string, stepIndex: number, at: { x: number, y: number } } | null>(null)
 const menuTrack = computed(() => trackOf(props.pattern, menu.value?.instrument))
 /** What this cell can be set to (a counting voice: the number on the count, "and" between). */
 const cellNames = (instrument: string, stepIndex: number) =>
   stepNamesAt(props.stepNames(instrument), stepIndex, props.pattern.stepsPerCount)
-function openMenu(instrument: string, stepIndex: number) {
-  if (cellNames(instrument, stepIndex).length > 0) menu.value = { instrument, stepIndex }
+function openMenu(instrument: string, stepIndex: number, at: { x: number, y: number }) {
+  if (cellNames(instrument, stepIndex).length > 0) menu.value = { instrument, stepIndex, at }
 }
+const menuTitle = computed(() => (menu.value
+  ? t('grid.stepAt', { instrument: t(`instruments.${menu.value.instrument}`), place: stepPlace(menu.value.stepIndex) })
+  : ''))
 function pick(name: string | null) {
   if (menu.value) emit('set-step', menu.value.instrument, menu.value.stepIndex, name)
   menu.value = null
@@ -113,6 +122,7 @@ function setVolumeMode(on: boolean) {
 }
 
 watch(narrow, (isNarrow) => {
+  menu.value = null
   if (isNarrow) return
   brush.value = null
   volumeMode.value = false
@@ -392,8 +402,9 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
         :show-controls="narrow || section === 0"
         :volume-mode="volumeMode"
         :active="brush?.instrument === track.instrument"
+        :hotkey="hotkey?.(track.instrument)"
         @toggle-step="(stepIndex: number) => tap(track.instrument, stepIndex)"
-        @step-menu="(stepIndex: number) => openMenu(track.instrument, stepIndex)"
+        @step-menu="(stepIndex: number, at: { x: number, y: number }) => openMenu(track.instrument, stepIndex, at)"
         @open-instrument="sheet = track.instrument"
         @update:volume="(volume: number) => emit('update:volume', track.instrument, volume)"
         @update:muted="(muted: boolean) => emit('update:muted', track.instrument, muted)"
@@ -401,8 +412,8 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
     </div>
 
     <UiSheet
-      :open="menu !== null"
-      :title="menu ? t('grid.stepAt', { instrument: t(`instruments.${menu.instrument}`), place: stepPlace(menu.stepIndex) }) : ''"
+      :open="narrow && menu !== null"
+      :title="menuTitle"
       @close="menu = null"
     >
       <div
@@ -433,6 +444,15 @@ const countOf = (section: number, cellIndex: number) => Math.floor((section * st
         </button>
       </div>
     </UiSheet>
+
+    <BeatStepMenu
+      :at="!narrow && menu ? menu.at : null"
+      :title="menuTitle"
+      :names="menu ? cellNames(menu.instrument, menu.stepIndex) : []"
+      :current="menu ? menuTrack?.steps[menu.stepIndex] ?? null : null"
+      @pick="pick"
+      @close="menu = null"
+    />
 
     <BeatInstrumentSheet
       :track="sheetTrack"

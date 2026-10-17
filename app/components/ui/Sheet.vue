@@ -22,6 +22,58 @@ watch(() => props.open, (open) => {
 function onClick(event: MouseEvent) {
   if (event.target === dialog.value) dialog.value?.close()
 }
+
+const narrow = useNarrowScreen()
+
+// On a phone the sheet can be pulled down by its top (the handle and the
+// title): it follows the finger, and closes if let go far enough down or
+// flicked; otherwise it springs back. The rest of the sheet has sliders and
+// lists of its own, so it doesn't drag.
+/** Pulled down further than this, the sheet closes… */
+const CLOSE_PX = 80
+/** …or flicked down faster than this (px/ms). */
+const FLICK_SPEED = 0.5
+const SETTLE_MS = 150
+let drag: { y: number, time: number, id: number } | null = null
+
+function moveTo(dy: number, animate: boolean) {
+  const style = dialog.value?.style
+  if (!style) return
+  style.transition = animate ? `transform ${SETTLE_MS}ms ease-out` : 'none'
+  style.transform = dy ? `translateY(${dy}px)` : ''
+}
+
+// No pointer capture: a finger's events stay with what it touched anyway,
+// and capturing would take the click away from the ✕.
+function dragDown(event: PointerEvent) {
+  if (narrow.value && event.isPrimary) drag = { y: event.clientY, time: event.timeStamp, id: event.pointerId }
+}
+
+function dragMove(event: PointerEvent) {
+  if (drag?.id === event.pointerId) moveTo(Math.max(0, event.clientY - drag.y), false)
+}
+
+function dragUp(event: PointerEvent) {
+  if (drag?.id !== event.pointerId) return
+  const dy = Math.max(0, event.clientY - drag.y)
+  const speed = dy / Math.max(1, event.timeStamp - drag.time)
+  drag = null
+  if (dy > CLOSE_PX || (dy > CLOSE_PX / 3 && speed > FLICK_SPEED)) {
+    const panel = dialog.value
+    moveTo(panel?.offsetHeight ?? 0, true)
+    setTimeout(() => {
+      panel?.close()
+      moveTo(0, false)
+    }, SETTLE_MS)
+  } else {
+    moveTo(0, true)
+  }
+}
+
+function dragCancel() {
+  drag = null
+  moveTo(0, true)
+}
 </script>
 
 <template>
@@ -32,19 +84,32 @@ function onClick(event: MouseEvent) {
     @close="emit('close')"
     @click="onClick"
   >
-    <div class="p-4 max-sm:pb-[max(1rem,env(safe-area-inset-bottom))]">
-      <div class="mb-3 flex items-center justify-between gap-3">
-        <h2 class="font-semibold">
-          {{ title }}
-        </h2>
-        <button
-          type="button"
-          class="-m-2 flex size-11 items-center justify-center rounded text-neutral-400 hover:text-neutral-100"
-          :aria-label="$t('controls.close')"
-          @click="dialog?.close()"
-        >
-          ✕
-        </button>
+    <div class="p-4 max-sm:pb-[max(1rem,env(safe-area-inset-bottom))] max-sm:pt-2">
+      <div
+        class="max-sm:touch-none"
+        @pointerdown="dragDown"
+        @pointermove="dragMove"
+        @pointerup="dragUp"
+        @pointercancel="dragCancel"
+      >
+        <!-- The handle: a phone's sheet is pulled down by it to close. -->
+        <div
+          class="mx-auto mb-2 h-1 w-10 rounded-full bg-neutral-700 sm:hidden"
+          aria-hidden="true"
+        />
+        <div class="mb-3 flex items-center justify-between gap-3">
+          <h2 class="font-semibold">
+            {{ title }}
+          </h2>
+          <button
+            type="button"
+            class="-m-2 flex size-11 items-center justify-center rounded text-neutral-400 hover:text-neutral-100"
+            :aria-label="$t('controls.close')"
+            @click="dialog?.close()"
+          >
+            ✕
+          </button>
+        </div>
       </div>
       <slot />
     </div>
