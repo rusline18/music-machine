@@ -69,8 +69,12 @@ const presetIds = computed(() => {
 })
 /** Simple mode leaves these off the grid: the voice has its own switch above it. */
 const simpleHides = props.genre.instruments.filter((instrument) => props.genre.spoken[instrument])
-/** The band, without the counting voice: the practice switches and the 1–9 keys. */
+/** The band, without the counting voice: the practice switches. */
 const bandTracks = computed(() => pattern.value.tracks.filter((track) => !simpleHides.includes(track.instrument)))
+/** Each instrument's key (useHotkeys), by the genre's own list, so it stays the same in every preset. */
+const keyed = props.genre.instruments.filter((instrument) => !simpleHides.includes(instrument))
+const hotkeyOf = (instrument: string) => INSTRUMENT_KEYS[keyed.indexOf(instrument)]?.label
+const keyedTrack = (index: number) => pattern.value.tracks.find((track) => track.instrument === keyed[index])
 
 const { view: shownView, setView } = useBeatView()
 const viewOptions = computed(() => (['practice', 'editor'] as const).map((value) => ({ value, label: t(`view.${value}`) })))
@@ -105,8 +109,12 @@ useHotkeys({
   togglePlay,
   nudgeTempo,
   toggleInstrument: (index) => {
-    const track = bandTracks.value[index]
+    const track = keyedTrack(index)
     if (track) setMuted(track.instrument, !track.muted)
+  },
+  toggleSolo: (index) => {
+    const track = keyedTrack(index)
+    if (track) setSolo(solo.value === track.instrument ? null : track.instrument)
   },
 })
 
@@ -309,6 +317,7 @@ const playingBar = computed(() => (activeStep.value < 0 ? -1 : Math.floor(active
             :simple-hides="simpleHides"
             :solo="solo"
             :instrument-link="instrumentLink"
+            :hotkey="hotkeyOf"
             @solo="setSolo"
             @toggle-step="switchStep"
             @set-step="setStep"

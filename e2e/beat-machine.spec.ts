@@ -28,7 +28,7 @@ test.describe('salsa beat machine', () => {
     const step = page.getByRole('button', { name: 'Bongos step 8', exact: true })
     await expect(step).not.toHaveAttribute('data-sound')
     await step.click({ button: 'right' })
-    const menu = page.getByRole('dialog', { name: 'Bongos · count 4 &' })
+    const menu = page.getByRole('menu', { name: 'Bongos · count 4 &' })
     await menu.getByRole('menuitemradio', { name: 'slap' }).click()
     await expect(menu).toBeHidden()
     await expect(step).toHaveAttribute('data-sound', 'slap')
@@ -36,6 +36,29 @@ test.describe('salsa beat machine', () => {
     await step.click({ button: 'right' })
     await expect(menu.getByRole('menuitemradio', { name: 'slap' })).toHaveAttribute('aria-checked', 'true')
     await menu.getByRole('menuitemradio', { name: 'Silence' }).click()
+    await expect(step).not.toHaveAttribute('data-sound')
+  })
+
+  test('the sound menu works from the keyboard', async ({ page }) => {
+    const step = page.getByRole('button', { name: 'Bongos step 8', exact: true })
+    const menu = page.getByRole('menu', { name: 'Bongos · count 4 &' })
+    // A number picks the sound in that place in the menu: low, high, slap.
+    const name = 'high'
+    await step.click({ button: 'right' })
+    await page.keyboard.press('2')
+    await expect(menu).toBeHidden()
+    await expect(step).toHaveAttribute('data-sound', name)
+
+    // The arrows move from the sound that's in, Enter picks; Esc closes; 0 is silence.
+    await step.click({ button: 'right' })
+    await expect(menu.getByRole('menuitemradio', { name, exact: true })).toBeFocused()
+    await page.keyboard.press('ArrowUp')
+    await expect(menu.getByRole('menuitemradio').first()).toBeFocused()
+    await page.keyboard.press('Escape')
+    await expect(menu).toBeHidden()
+    await expect(step).toHaveAttribute('data-sound', name)
+    await step.click({ button: 'right' })
+    await page.keyboard.press('0')
     await expect(step).not.toHaveAttribute('data-sound')
   })
 
@@ -139,7 +162,7 @@ test.describe('salsa beat machine', () => {
     expect(await read()).toBeLessThanOrEqual(130)
   })
 
-  test('keyboard: Space plays and stops, arrows change the tempo, digits switch instruments', async ({ page }) => {
+  test('keyboard: Space plays and stops, arrows change the tempo, each instrument has a key', async ({ page }) => {
     const bpm = page.getByRole('group', { name: 'BPM' }).locator('output')
     const start = Number((await bpm.textContent())!.match(/\d+/)![0])
     await page.locator('h1').click()
@@ -150,6 +173,18 @@ test.describe('salsa beat machine', () => {
 
     await page.keyboard.press('1')
     await expect(page.getByRole('button', { name: 'Mute Clave' })).toHaveAttribute('aria-pressed', 'true')
+
+    // Past the number row, the row under it: by the physical key, shown on the icon.
+    const pastDigits = page.locator('button[aria-keyshortcuts="Q"]')
+    const was = await pastDigits.getAttribute('aria-pressed')
+    await page.keyboard.press('q')
+    await expect(pastDigits).toHaveAttribute('aria-pressed', was === 'true' ? 'false' : 'true')
+
+    // With Shift, one instrument alone: it starts the music, and again brings the band back (and stops).
+    await page.keyboard.press('Shift+2')
+    await expect(page.getByRole('button', { name: '■ Stop' })).toBeVisible()
+    await page.keyboard.press('Shift+2')
+    await expect(page.getByRole('button', { name: '▶ Play' })).toBeVisible()
 
     await page.keyboard.press('Space')
     await expect(page.getByRole('button', { name: '■ Stop' })).toBeVisible()
